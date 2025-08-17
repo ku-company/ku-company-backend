@@ -1,0 +1,34 @@
+{
+  "name": "ku-company-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc -w & nodemon dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/student-scollab/ku-company-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/student-scollab/ku-company-backend/issues"
+  },
+  "homepage": "https://github.com/student-scollab/ku-company-backend#readme",
+  "dependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "typescript": "^5.9.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "nodemon": "^3.1.10"
+  }
+}
