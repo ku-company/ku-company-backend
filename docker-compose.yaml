@@ -6,9 +6,9 @@ services:
     container_name: postgres_db
     restart: always
     environment:
-      POSTGRES_PASSWORD: hackme
-      POSTGRES_USER: admin
-      POSTGRES_DB: mydatabase
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_DATABASE}
     ports:
       - 5432:5432 # Expose PostgreSQL port
 
@@ -26,7 +26,7 @@ services:
     depends_on:
       - postgres # Ensure PostgreSQL is started before the Express app
     environment:
-      DATABASE_URL: postgres://admin:hackme@postgres:5432/mydatabase?schema=public
+      DATABASE_URL: ${DATABASE_URL}
     volumes:
       - .:/app
       - node_modules:/app/node_modules
