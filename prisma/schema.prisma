@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+enum Role {
+  Student
+  Alumni
+  Admin
+  Company
+}
+
+enum JobStatus {
+  Pending
+  Accepted
+  Rejected
+}
+enum JobType {
+  FullTime
+  PartTime
+  Internship
+  Contract
+}
+
+enum Position {
+  Backend_Developer
+  Frontend_Developer
+  Fullstack_Developer
+}
+
+enum NotificationStatus {
+  Pending
+  Accepted
+  Rejected
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DOCKER_DATABASE_URL")
+}
+
+
+model User {
+  id      Int @id @default(autoincrement())
+  first_name   String @db.VarChar(255)
+  last_name    String @db.VarChar(255)
+  user_name    String? @db.VarChar(255) @unique
+  email        String @unique @db.VarChar(255)
+  password_hash String?  @db.VarChar(255)
+  roles        Role   @default(Admin)
+  verified     Boolean @default(false)
+  profile_image String? @db.VarChar(255)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  professorProfile professorProfile? @relation(name: "UserProfessor")
+  employeeProfile employeeProfile? @relation(name: "UserEmployee")
+
+  links     Link[]
+}
+
+model professorProfile {
+  id          Int   @id @default(autoincrement())
+  user_id     Int   @unique
+  department  String @db.VarChar(255)
+  faculty     String @db.VarChar(255)
+  user        User @relation(name: "UserProfessor",fields: [user_id], references: [id])
+  annoucements Announcement[]
+}
+
+model employeeProfile {
+  id          Int   @id @default(autoincrement())
+  user_id     Int   @unique
+  education   String @db.VarChar(255)
+  summary     String @db.VarChar(255)
+  skills      String @db.VarChar(255)
+  experience  String @db.VarChar(255)
+  contactInfo String @db.VarChar(255)
+  languages   String @db.VarChar(255)
+  user        User @relation(name: "UserEmployee", fields: [user_id], references: [id])
+  resumes     Resume[]
+  jobBatches jobApplicationBatch[]
+  notifications Notification[]
+}
+
+model Link {
+  id        Int     @id @default(autoincrement())
+  user_id   Int     
+  link_name String  @db.VarChar(255)
+  url       String  @db.VarChar(255)
+  user      User    @relation(fields: [user_id], references: [id])
+}
+
+model Resume{
+  id            Int     @id @default(autoincrement())
+  employee_id   Int     
+  file_url      String  @db.VarChar(255)
+  is_main       Boolean @default(false)
+  employeeProfile     employeeProfile    @relation(fields: [employee_id], references: [id])
+  jobBatches jobApplicationBatch[]
+}
+
+model companyProfile {
+  id          Int   @id @default(autoincrement())
+  user_id     Int   @unique
+  company_name  String @db.VarChar(255)
+  description   String @db.VarChar(255)
+  industry      String @db.VarChar(255)
+  jobPosts  jobPost[] 
+  notifications Notification[]
+}
+
+
+model jobApplicationBatch {
+  id      Int   @id @default(autoincrement())
+  employee_id Int   
+  resume_id Int
+  submitted_at DateTime @default(now())
+  user employeeProfile  @relation(fields: [employee_id], references: [id])
+  resume Resume @relation(fields: [resume_id], references: [id])
+  applications jobApplication[]
+}
+
+model jobApplication {
+  id        Int     @id @default(autoincrement())
+  batch_id  Int
+  job_id    Int
+  status    String  @db.VarChar(255) @default("pending")
+  applied_at DateTime @default(now())
+  jobBatch  jobApplicationBatch @relation(fields: [batch_id], references: [id])
+  job_post       jobPost @relation(fields: [job_id], references: [id])
+  notifications Notification[]
+}
+
+model jobPost {
+  id          Int     @id @default(autoincrement())
+  company_id  Int
+  description String  @db.VarChar(255)
+  jobType     JobType 
+  position    Position
+  available_postion Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  company companyProfile @relation(fields: [company_id], references: [id])
+  applications jobApplication[]
+  reposts Announcement[]
+}
+
+model Announcement {
+  id        Int     @id @default(autoincrement())
+  professor_id Int
+  job_id    Int?
+  content   String @db.VarChar(255)
+  is_connection Boolean @default(false)
+  created_at DateTime @default(now())
+
+  professor professorProfile @relation(fields: [professor_id], references: [id])
+  job_post      jobPost? @relation(fields: [job_id], references: [id])
+
+}
+
+model Notification {
+  id        Int     @id @default(autoincrement())
+  employee_id   Int
+  company_id Int
+  applicaition_id Int?
+  message   String?  @db.VarChar(255)
+  notification_status NotificationStatus @default(Pending)
+  created_at DateTime @default(now())
+
+
+  employee employeeProfile @relation(fields: [employee_id], references: [id])
+  company companyProfile @relation(fields: [company_id], references: [id])
+  application jobApplication? @relation(fields: [applicaition_id], references: [id])
+}
