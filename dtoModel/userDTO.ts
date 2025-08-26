@@ -8,3 +8,12 @@ export interface UserDTO{
     verified: boolean;
     profile_image: string | null;
 }
+
+export interface LoginResponse{
+    access_token: string;
+    refresh_token: string;
+}
+
+export interface RefreshTokenRequest {
+    token: string
+}
