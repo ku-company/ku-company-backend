@@ -25,7 +25,7 @@ services:
       - .env
     restart: always
     ports:
-      - 3000:3000 # Expose Express app port
+      - 8000:8000 # Expose Express app port
       - 5555:5555 # Expose Prisma port
     depends_on:
       - postgres # Ensure PostgreSQL is started before the Express app
