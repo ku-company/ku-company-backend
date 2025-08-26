@@ -1,5 +1,6 @@
 import express from "express";
 import mockRouter  from "./router/mockRoutes.js";
+import userRouter from "./router/userRoutes.js"
 import cors from "cors";
 import type { Express , Request, Response }  from "express";
 import dotenv from "dotenv";
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/mock", mockRouter);
+app.use("/api/user", userRouter)
 
 
 app.get("/", (req, res) => {

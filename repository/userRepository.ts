@@ -1,0 +1,47 @@
+import type { PrismaClient } from "@prisma/client";
+import { PrismaDB } from "../helper/prismaSingleton.js";
+import type { UserDB } from "../model/userModel.js";
+import { Role } from "../utils/enums.js";
+import bcrypt from "bcryptjs";
+
+export class UserRepository {
+
+    private prisma: PrismaClient
+
+    constructor() {
+        this.prisma = PrismaDB.getInstance();
+    }
+
+    async create_user(input: UserDB): Promise<UserDB>{
+        return await this.prisma.user.create({
+            data: {
+                first_name: input.first_name,
+                last_name: input.last_name,
+                user_name: input?.user_name,
+                email: input.email,
+                password_hash: input.password_hash,
+                roles: input.roles as Role,
+                verified: input.verified,
+                profile_image: input.profile_image,
+            }
+        })
+    }
+
+    async is_valid_user(user_name: string, pwd: string){
+        const user = await this.prisma.user.findFirst({
+            where: {
+                user_name,
+            },
+        });
+        console.log(user);
+        if(!user || !user.password_hash){
+            return false
+        }
+
+        const is_valid = await bcrypt.compare(pwd, user.password_hash);
+        console.log(is_valid);
+        return is_valid ? true : false;
+    }
+
+
+}

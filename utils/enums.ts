@@ -1,0 +1,31 @@
+export enum Role {
+  Student = "Student",
+  Alumni = "Alumni",
+  Admin = "Admin",
+  Company = "Company"
+}
+
+export enum JobStatus {
+  Pending = "Pending",
+  Accepted = "Accepted",
+  Rejected = "Rejected"
+}
+
+export enum JobType {
+  FullTime = "FullTime",
+  PartTime = "PartTime",
+  Internship = "Internship",
+  Contract = "Contract"
+}
+
+export enum Position {
+  Backend_Developer = "Backend_Developer",
+  Frontend_Developer = "Frontend_Developer",
+  Fullstack_Developer = "Fullstack_Developer"
+}
+
+export enum NotificationStatus {
+  Pending = "Pending",
+  Accepted = "Accepted",
+  Rejected = "Rejected"
+}
