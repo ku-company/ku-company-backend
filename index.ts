@@ -45,7 +45,7 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-app.get("/test-auth", (req, res) => {
+app.get("/google/sign-in", (req, res) => {
   // console.log(req.session);
   // console.log(req.session.id);
   res.send("<a href=\"/auth/google\">Authenticate with Google</a>");
@@ -54,8 +54,9 @@ app.get("/test-auth", (req, res) => {
 
 
 app.get("/protected", isLoggedIn, (req, res) => {
-  if (req.user && typeof req.user === "object" && "displayName" in req.user) {
-    res.send(`protect hi ${(req.user as any).displayName}`);
+  if (req.user) {
+    console.log("user protected:", req.user);
+    res.send(`protected hi ${(req.user as any).user_name}`);
   } else {
     res.send("User information not available");
   }
