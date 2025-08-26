@@ -15,7 +15,7 @@ export class AuthController {
         passport.authenticate("google", { failureRedirect: "/auth/failure" })(
         req,
         res,
-        async (err) => {
+        async (err: Error) => {
             if (err) return next(err);
             // After successful login, do business logic
             // await authService.createOrUpdateUser(req.user);
