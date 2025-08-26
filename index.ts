@@ -17,9 +17,10 @@ const app: Express = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(session(
   {
-    secret: "helpme", // change later do not expose
+    secret: process.env.SECRET || "default_secret",
     saveUninitialized: false,
     resave:false,
     cookie:
@@ -38,82 +39,25 @@ function isLoggedIn(req: Request, res: Response, next: Function) {
 
 app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
-
-app.use("/api/auth", authRoutes);
-app.use(cookieParser());
-// app.get("/", (req, res) => {
-//   res.send("Server is running ok!");
-// });
+app.use("/auth", authRoutes);
 
 app.get("/", (req, res) => {
+  res.send("Server is running");
+});
+
+app.get("/test-auth", (req, res) => {
   // console.log(req.session);
   // console.log(req.session.id);
   res.send("<a href=\"/auth/google\">Authenticate with Google</a>");
 
 });
 
-app.get("/auth/google",
-  passport.authenticate("google", { scope: ["email", "profile"] })
-);
-
-app.get("/auth/google/callback",
-  passport.authenticate("google", {
-    successRedirect: "/protected",
-    failureRedirect: "/auth/failure"
-  })
-);
-
-app.get("/auth/failure", (req: Request, res: Response) => {
-  res.send("Authentication failed");
-});
 
 app.get("/protected", isLoggedIn, (req, res) => {
   if (req.user && typeof req.user === "object" && "displayName" in req.user) {
     res.send(`protect hi ${(req.user as any).displayName}`);
   } else {
     res.send("User information not available");
-  }
-});
-
-// app.get("/success", (req: Request, res: Response) => {
-//   // Initiate Google OAuth2 authentication
-//   try {
-//     res.send("Session successfully set");
-//   } catch (error) {
-//     res.json({ error: error.message });
-//   }
-// });
-
-// app.get("/user", async (req, res) => {
-//   try{
-//     const sessionCookie = req.cookies.session || "";
-//     if (!sessionCookie) throw new Error("Unauthorized go log in");
-//     return res.json({ message: "You are authenticated", sessionCookie });
-//   }catch(error){
-//     return res.json({ error: error.message });
-//   }
-// });
-
-
-
-
-app.post("/test-db", async (req, res) => {
-  try {
-    await pool.query("CREATE TABLE test (id SERIAL PRIMARY KEY, name VARCHAR(100))");
-    res.send("Test table created");
-  } catch (err) {
-    console.error("Test query error:", err);
-    res.status(500).send("Test query failed");
-  }
-});
-
-app.get("/test-db", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM test");
-    res.send(result.rows);
-  } catch (err) {
-    console.error("Test query error:", err);
-    res.status(500).send("Test query failed");
   }
 });
 
