@@ -70,19 +70,21 @@ export class UserService {
 
         const response: LoginResponse = {
             "access_token": access_token,
-            "refresh_token": refresh_token
+            "refresh_token": refresh_token,
+            "user_name": user.user_name || "",
+            "roles": user.roles,
+            "email": user.email
         }
-
         return response
     }
 
-    async refresh_token(token: RefreshTokenRequest){
+    async refresh_token(token: string){
         const REFRESH_KEY = process.env.REFRESH_KEY;
         if(!REFRESH_KEY){
             throw new Error("Missing REFRESH_KEY")
         }
         try{
-            const decoded = jwt.verify(token.token, REFRESH_KEY) as jwt.JwtPayload;
+            const decoded = jwt.verify(token, REFRESH_KEY) as jwt.JwtPayload;
             const payload = {
                 id: decoded.id,
                 user_name: decoded.user_name,

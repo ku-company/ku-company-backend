@@ -13,5 +13,8 @@ router.post("/sign-up", async (req, res) => {
 router.post("/login", async (req,res) => {
     userController.login(req,res)
 })
+router.get("/logout", async (req, res) => {
+    userController.logout(req, res)
+})
 
 export default router
