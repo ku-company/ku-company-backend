@@ -6,6 +6,7 @@ import type { Express , Request, Response }  from "express";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
 import { expressjwt } from "express-jwt";
+import cookieParser from "cookie-parser"
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -24,6 +25,7 @@ const jwtMiddleware = expressjwt({
 
 
 app.use(jwtMiddleware);
+app.use(cookieParser());
 app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
 
