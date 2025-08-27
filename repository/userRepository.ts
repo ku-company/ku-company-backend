@@ -43,5 +43,17 @@ export class UserRepository {
         return is_valid ? true : false;
     }
 
+    async get_user_by_userName(user_name: string){
+        const user = await this.prisma.user.findFirst({
+            where: {
+                user_name: user_name
+            }
+        })
+        if(!user){
+            throw new Error("User not found")
+        }
+        return user;
+    }
+
 
 }
