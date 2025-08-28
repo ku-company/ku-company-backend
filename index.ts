@@ -10,6 +10,8 @@ import passport from "passport";
 import cookieParser from "cookie-parser";
 import "./utils/auth.js"; 
 import jwt from "jsonwebtoken";
+import { expressjwt } from "express-jwt";
+
 dotenv.config();
 const port = process.env.PORT || 8000;
 const app: Express = express();
@@ -33,6 +35,17 @@ function verifyJwt(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+const jwtMiddleware = expressjwt({
+  secret: process.env.SECRET_KEY!,
+  algorithms: ["HS256"],
+  requestProperty: "user",
+}).unless({
+  path: ["/api/user/sign-up", "/api/user/login", "/api/user/refresh-token"]
+});
+
+
+app.use(jwtMiddleware);
+app.use(cookieParser());
 app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
 app.use("/auth", authRoutes);

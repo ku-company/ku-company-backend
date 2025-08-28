@@ -21,7 +21,7 @@ export interface sign_up_input {
 
 export interface Login {
     user_name: string;
-    last_name: string
+    password: string;
 }
 
 export interface UserOauth {
