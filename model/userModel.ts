@@ -23,3 +23,17 @@ export interface Login {
     user_name: string;
     last_name: string
 }
+
+export interface UserOauth {
+  id: number;
+  first_name: string;
+  last_name: string;
+  user_name: string;
+  email: string;
+  password_hash: string | null;
+  roles: string;
+  verified: boolean;
+  profile_image: string;
+  created_at: Date;
+  updated_at: Date;
+}

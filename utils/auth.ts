@@ -22,9 +22,11 @@ passport.use(
     ) => {
       try {
         // call a service to create/fetch the user from DB
+        const email = profile.emails?.[0]?.value;
+        if (!email) return done(new Error("No email in Google profile"), null);
         const user = await prisma.user.findFirst({
             where: {
-                email: Array.isArray(profile.emails) && profile.emails.length > 0 && profile.emails[0]?.value ? profile.emails[0].value : undefined,
+                email: email,
             },
         });
         
@@ -35,15 +37,15 @@ passport.use(
 
         // create new user
         const newUser = await userRepository.create_user({
-        email: profile.emails?.[0]?.value,
-        name: profile.displayName,
-        first_name: profile.name?.givenName || profile.displayName || "Unknown",
-        last_name: profile.name?.familyName || "",
-        user_name: profile.displayName || null,
-        verified: false,
-        profile_image: profile.photos?.[0]?.value,
+          first_name: profile.name?.givenName || profile.displayName || "Unknown",
+          last_name: profile.name?.familyName || "",
+          user_name: profile.displayName || null,
+          email: email,
+          verified: false,
+          profile_image: profile.photos?.[0]?.value || null,
+          password_hash: null,
+          roles: "Admin"
         });
-
 
         return done(null, newUser);
       } catch (err) {
@@ -52,11 +54,3 @@ passport.use(
     }
   )
 );
-
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-
-passport.deserializeUser((user: any, done) => {
-  done(null, user);
-});

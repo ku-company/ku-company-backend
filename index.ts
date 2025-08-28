@@ -2,15 +2,14 @@ import express from "express";
 import mockRouter  from "./router/mockRoutes.js";
 import userRouter from "./router/userRoutes.js"
 import cors from "cors";
-import type { Express , Request, Response }  from "express";
+import type { Express , NextFunction, Request, Response }  from "express";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
 import authRoutes from "./router/auth.js";
 import passport from "passport";
-
-import session from "express-session";
 import cookieParser from "cookie-parser";
 import "./utils/auth.js"; 
+import jwt from "jsonwebtoken";
 dotenv.config();
 const port = process.env.PORT || 8000;
 const app: Express = express();
@@ -18,23 +17,20 @@ const app: Express = express();
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
-app.use(session(
-  {
-    secret: process.env.SECRET || "default_secret",
-    saveUninitialized: false,
-    resave:false,
-    cookie:
-    {maxAge: 60000 * 60} // 1 hour
-  }
-));
 app.use(passport.initialize());
-app.use(passport.session());
 
-function isLoggedIn(req: Request, res: Response, next: Function) {
-  if (req.user) {
-    return next();
+
+function verifyJwt(req: Request, res: Response, next: NextFunction) {
+  const token = req.headers.authorization?.split(" ")[1] || req.cookies?.access_token;
+  if (!token) return res.sendStatus(401);
+
+  try {
+    const payload = jwt.verify(token, process.env.SECRET_KEY!);
+    req.user = payload;
+    next();
+  } catch {
+    res.sendStatus(401);
   }
-  res.sendStatus(401);
 }
 
 app.use("/api/mock", mockRouter);
@@ -46,14 +42,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/google/sign-in", (req, res) => {
-  // console.log(req.session);
-  // console.log(req.session.id);
   res.send("<a href=\"/auth/google\">Authenticate with Google</a>");
 
 });
 
 
-app.get("/protected", isLoggedIn, (req, res) => {
+app.get("/protected", verifyJwt, (req, res) => {
   if (req.user) {
     console.log("user protected:", req.user);
     res.send(`protected hi ${(req.user as any).user_name}`);
