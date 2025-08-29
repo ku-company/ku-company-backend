@@ -5,11 +5,10 @@ import cors from "cors";
 import type { Express , NextFunction, Request, Response }  from "express";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
-import authRoutes from "./router/auth.js";
+import authRouter from "./router/authRoutes.js";
 import passport from "passport";
 import cookieParser from "cookie-parser";
 import "./utils/auth.js"; 
-import jwt from "jsonwebtoken";
 import { expressjwt } from "express-jwt";
 
 dotenv.config();
@@ -22,45 +21,43 @@ app.use(cookieParser());
 app.use(passport.initialize());
 
 
-function verifyJwt(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers.authorization?.split(" ")[1] || req.cookies?.access_token;
-  if (!token) return res.sendStatus(401);
-
-  try {
-    const payload = jwt.verify(token, process.env.SECRET_KEY!);
-    req.user = payload;
-    next();
-  } catch {
-    res.sendStatus(401);
-  }
-}
-
 const jwtMiddleware = expressjwt({
   secret: process.env.SECRET_KEY!,
   algorithms: ["HS256"],
   requestProperty: "user",
+  getToken: (req) => {
+    // Check cookie first
+    if (req.cookies && req.cookies.access_token) {
+      return req.cookies.access_token;
+    }
+    // Fallback to Authorization header
+    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+      return req.headers.authorization.split(" ")[1];
+    }
+    return null;
+  }
 }).unless({
-  path: ["/api/user/sign-up", "/api/user/login", "/api/user/refresh-token"]
+  path: ["/api/user/sign-up", "/api/user/login", "/api/user/refresh-token", "/google/sign-up"
+    ,"/api/auth/google","/api/auth/google/callback"]
 });
 
-
-app.use(jwtMiddleware);
 app.use(cookieParser());
+app.use(jwtMiddleware);
 app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRouter);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-app.get("/google/sign-in", (req, res) => {
-  res.send("<a href=\"/auth/google\">Authenticate with Google</a>");
+app.get("/google/sign-up", (req, res) => {
+  res.send("<a href=\"/api/auth/google\">Authenticate with Google</a>");
 
 });
 
 
-app.get("/protected", verifyJwt, (req, res) => {
+app.get("/protected", (req, res) => {
   if (req.user) {
     console.log("user protected:", req.user);
     res.send(`protected hi ${(req.user as any).user_name}`);

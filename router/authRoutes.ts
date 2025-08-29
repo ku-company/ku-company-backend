@@ -53,7 +53,7 @@ router.get(
   },
 );
 
-router.get("/auth/failure", (req: Request, res: Response) => {
+router.get("/failure", (req: Request, res: Response) => {
   res.send("Authentication failed");
 });
 
