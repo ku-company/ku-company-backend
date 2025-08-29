@@ -12,9 +12,12 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,  
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!, 
-      callbackURL: process.env.GOOGLE_REDIRECT_URL ! 
+      callbackURL: process.env.GOOGLE_REDIRECT_URL!,
+      passReqToCallback: true
+
     },
     async (
+      req: any, 
       accessToken: string,
       refreshToken: string,
       profile: Profile,
@@ -29,6 +32,9 @@ passport.use(
                 email: email,
             },
         });
+        const state = req.query.state ? JSON.parse(req.query.state as string) : {};
+        const role = state.role || "Admin";
+
         
         if(user) {
             console.log("User found:", user);
@@ -44,7 +50,7 @@ passport.use(
           verified: false,
           profile_image: profile.photos?.[0]?.value || null,
           password_hash: null,
-          roles: "Admin"
+          roles: role
         });
 
         return done(null, newUser);

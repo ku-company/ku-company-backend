@@ -13,12 +13,14 @@ if (!secretKey || !refreshKey || !clientUrl) {
   throw new Error("Missing required environment variables: SECRET_KEY, REFRESH_KEY, or CLIENT_URL_DEV");
 }
 
-router.get(
-  '/google',
+router.get('/google', (req, res, next) => {
+  const role = req.query.role || "Admin";
   passport.authenticate('google', {
     scope: ['profile', 'email'],
-  }),
-);
+    state: JSON.stringify({ role })
+  })(req, res, next);
+});
+
 
 router.get(
   '/google/callback',
@@ -29,12 +31,14 @@ router.get(
   (req: Request, res: Response) => {
     console.log(3333,req.user)
     // issue JWT 
+    const state = req.query.state ? JSON.parse(req.query.state as string) : {};
+    const role = state.role || "User";
     const user = req.user as UserOauth;
     const payload = {
       id: user.id,
       user_name: user.user_name || "",
       email: user.email,
-      roles: user.roles
+      roles: role // from frontend
     }
     console.log("JWT Payload:", payload);
 

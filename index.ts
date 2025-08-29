@@ -2,7 +2,7 @@ import express from "express";
 import mockRouter  from "./router/mockRoutes.js";
 import userRouter from "./router/userRoutes.js"
 import cors from "cors";
-import type { Express , NextFunction, Request, Response }  from "express";
+import type { Express }  from "express";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
 import authRouter from "./router/authRoutes.js";
@@ -52,7 +52,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/google/sign-up", (req, res) => {
-  res.send("<a href=\"/api/auth/google\">Authenticate with Google</a>");
+  res.send("<a href=\"/api/auth/google?role=Student\">Authenticate with Google</a>");
 
 });
 
