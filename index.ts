@@ -52,7 +52,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/google/sign-up", (req, res) => {
-  res.send("<a href=\"/api/auth/google?role=Student\">Authenticate with Google</a>");
+  res.send("<a href=\"/api/auth/google\">Authenticate with Google</a>");
+  // simulate with role
+  // res.send("<a href=\"/api/auth/google?role=Student\">Authenticate with Google</a>");
 
 });
 
