@@ -2,11 +2,14 @@ import express from "express";
 import mockRouter  from "./router/mockRoutes.js";
 import userRouter from "./router/userRoutes.js"
 import cors from "cors";
-import type { Express , Request, Response }  from "express";
+import type { Express }  from "express";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
+import authRouter from "./router/authRoutes.js";
+import passport from "passport";
+import cookieParser from "cookie-parser";
+import "./utils/auth.js"; 
 import { expressjwt } from "express-jwt";
-import cookieParser from "cookie-parser"
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -14,43 +17,54 @@ const app: Express = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+app.use(passport.initialize());
+
 
 const jwtMiddleware = expressjwt({
   secret: process.env.SECRET_KEY!,
   algorithms: ["HS256"],
   requestProperty: "user",
+  getToken: (req) => {
+    // Check cookie first
+    if (req.cookies && req.cookies.access_token) {
+      return req.cookies.access_token;
+    }
+    // Fallback to Authorization header
+    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+      return req.headers.authorization.split(" ")[1];
+    }
+    return null;
+  }
 }).unless({
-  path: ["/api/user/sign-up", "/api/user/login", "/api/user/refresh-token", "/",]
+  path: ["/api/user/sign-up", "/api/user/login", "/api/user/refresh-token", "/google/sign-up"
+    ,"/api/auth/google","/api/auth/google/callback", "/",]
 });
 
-
-app.use(jwtMiddleware);
 app.use(cookieParser());
+app.use(jwtMiddleware);
 app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
-
+app.use("/api/auth", authRouter);
 
 app.get("/", (req, res) => {
-  res.send("Server is running ok!");
+  res.send("Server is running");
 });
 
-app.post("/test-db", async (req, res) => {
-  try {
-    await pool.query("CREATE TABLE test (id SERIAL PRIMARY KEY, name VARCHAR(100))");
-    res.send("Test table created");
-  } catch (err) {
-    console.error("Test query error:", err);
-    res.status(500).send("Test query failed");
-  }
+app.get("/google/sign-up", (req, res) => {
+  res.send("<a href=\"/api/auth/google\">Authenticate with Google</a>");
+  // simulate with role
+  // res.send("<a href=\"/api/auth/google?role=Student\">Authenticate with Google</a>");
+
 });
 
-app.get("/test-db", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM test");
-    res.send(result.rows);
-  } catch (err) {
-    console.error("Test query error:", err);
-    res.status(500).send("Test query failed");
+
+app.get("/protected", (req, res) => {
+  if (req.user) {
+    console.log("user protected:", req.user);
+    res.send(`protected hi ${(req.user as any).user_name}`);
+  } else {
+    res.send("User information not available");
   }
 });
 
