@@ -47,8 +47,9 @@ datasource db {
 
 model User {
   id      Int @id @default(autoincrement())
-  first_name   String @db.VarChar(255)
-  last_name    String @db.VarChar(255)
+  first_name   String? @db.VarChar(255)
+  last_name    String? @db.VarChar(255)
+  company_name String? @db.VarChar(255) @unique
   user_name    String? @db.VarChar(255) @unique
   email        String @unique @db.VarChar(255)
   password_hash String?  @db.VarChar(255)
@@ -60,6 +61,7 @@ model User {
 
   professorProfile professorProfile? @relation(name: "UserProfessor")
   employeeProfile employeeProfile? @relation(name: "UserEmployee")
+  companyProfile  companyProfile? @relation(name: "UserCompany")
 
   links     Link[]
 }
@@ -113,6 +115,8 @@ model companyProfile {
   industry      String @db.VarChar(255)
   jobPosts  jobPost[] 
   notifications Notification[]
+
+  user        User @relation(name: "UserCompany", fields: [user_id], references: [id])
 }
 
 

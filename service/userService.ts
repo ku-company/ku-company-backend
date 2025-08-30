@@ -1,8 +1,9 @@
 import { UserRepository } from "../repository/userRepository.js"
-import type { sign_up_input, UserDB, Login } from "../model/userModel.js";
-import type { UserDTO, LoginResponse, RefreshTokenRequest } from "../dtoModel/userDTO.js";
+import type { sign_up_input, UserDB, Login, sign_up_company_input } from "../model/userModel.js";
+import type { UserDTO, LoginResponse, RefreshTokenRequest, UserCompanyDTO } from "../dtoModel/userDTO.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
+import { SignUpStrategyFactory, SignUpStrategy } from "../helper/signupStrategy.js";
 
 
 export class UserService {
@@ -20,29 +21,12 @@ export class UserService {
         if(input.email.length < 5 || !input.email.includes("@")){
             throw new Error("Invalid email")
         }
-
-        const userData: UserDB = await this.userRepository.create_user({
-            first_name: input.first_name,
-            last_name: input.last_name,
-            user_name: input.user_name || null,
-            email: input.email,
-            password_hash: await bcrypt.hash(input.password, 10),
-            roles: input.role,
-            verified: false,
-            profile_image: null,
-        })
-
-        const response_user: UserDTO = {
-            first_name: userData.first_name,
-            last_name: userData.last_name,
-            full_name: `${userData.first_name} ${userData.last_name}`,
-            email: userData.email,
-            roles: userData.roles ,
-            verified: userData.verified,
-            profile_image: userData.profile_image
+        if(await this.userRepository.is_valid_create_user(input.user_name, input.email, input.company_name)){
+            let strategy: SignUpStrategy = SignUpStrategyFactory.setStrategy(input.role);
+            const userData: UserDB = await strategy.create_user(this.userRepository, input);
+            const response = await strategy.sign_up(userData);
+            return response
         }
-
-        return response_user
     }
 
     async login(input: Login){

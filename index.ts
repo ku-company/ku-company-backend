@@ -20,7 +20,7 @@ const jwtMiddleware = expressjwt({
   algorithms: ["HS256"],
   requestProperty: "user",
 }).unless({
-  path: ["/api/user/sign-up", "/api/user/login", "/api/user/refresh-token"]
+  path: ["/api/user/sign-up", "/api/user/login", "/api/user/refresh-token", "/",]
 });
 
 
