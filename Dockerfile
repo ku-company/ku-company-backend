@@ -1,5 +1,4 @@
 FROM node:23
-#-alpine
 
 # Working Directory of Docker Container
 WORKDIR /app
