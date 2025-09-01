@@ -1,4 +1,5 @@
-FROM node:23-alpine
+FROM node:23
+#-alpine
 
 # Working Directory of Docker Container
 WORKDIR /app
@@ -10,6 +11,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3000
+EXPOSE 8000
 
 CMD ["npm", "run", "dev"]
