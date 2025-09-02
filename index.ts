@@ -38,7 +38,7 @@ const jwtMiddleware = expressjwt({
   }
 }).unless({
   path: ["/api/user/sign-up", "/api/user/login", "/api/user/refresh-token", "/google/sign-up"
-    ,"/api/auth/google","/api/auth/google/callback"]
+    ,"/api/auth/google","/api/auth/google/callback", "/",]
 });
 
 app.use(cookieParser());
