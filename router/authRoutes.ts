@@ -32,7 +32,7 @@ router.get(
     console.log(3333,req.user)
     // issue JWT 
     const state = req.query.state ? JSON.parse(req.query.state as string) : {};
-    const role = state.role || "User";
+    const role = state.role || "Admin"; 
     const user = req.user as UserOauth;
     const payload = {
       id: user.id,
