@@ -17,9 +17,9 @@ router.get("/admin", authorizeRole("Admin"), (req, res) => {
     })
 })
 
-router.get("/student", authorizeRole("Student"), (req, res) => {
+router.get("/student", authorizeRole("Student", "Company"), (req, res) => {
     res.status(200).json({
-        "message": "Student Route"
+        "message": "Student or Company Route"
     })
 })
 

@@ -30,6 +30,9 @@ export class UserService {
     }
 
     async login(input: Login){
+        if(!input.user_name || !input.password){
+            throw new Error("Missing username or password")
+        }
         const is_valid = await this.userRepository.is_valid_user(input.user_name, input.password);
         if(!is_valid){
             throw new Error("Invalid username or password")
