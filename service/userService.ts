@@ -42,7 +42,7 @@ export class UserService {
             id: user.id,
             user_name: user.user_name,
             email: user.email,
-            roles: user.roles
+            role: user.role
         }
         const SECRET_KEY= process.env.SECRET_KEY;
         const REFRESH_KEY = process.env.REFRESH_KEY;
@@ -59,7 +59,7 @@ export class UserService {
             "access_token": access_token,
             "refresh_token": refresh_token,
             "user_name": user.user_name || "",
-            "roles": user.roles,
+            "role": user.role,
             "email": user.email
         }
         return response

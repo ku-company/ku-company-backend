@@ -5,7 +5,7 @@ export interface UserDB{
     user_name: string | null;
     email: string;
     password_hash: string | null;
-    roles: string
+    role: string
     verified: boolean;
     profile_image: string | null;
 }
