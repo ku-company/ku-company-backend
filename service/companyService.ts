@@ -23,6 +23,10 @@ export class CompanyService {
 
     }
 
+    async get_profile(user_id: number): Promise<CompanyProfileDB | null>{
+        return this.companyRepository.find_profile_by_user_id(user_id);
+    }
+
 
 
 

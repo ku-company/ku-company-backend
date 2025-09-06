@@ -31,4 +31,23 @@ export class CompanyController {
         }
         
     }
+    async get_profile(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const result = await this.companyService.get_profile(user.id);
+            if (!result) {
+                return res.status(404).json({
+                    message: "Company Profile not found"
+                });
+            }
+            res.status(200).json({
+                message: "Company Profile retrieved successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
 }
