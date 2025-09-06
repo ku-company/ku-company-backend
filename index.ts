@@ -10,6 +10,7 @@ import passport from "passport";
 import cookieParser from "cookie-parser";
 import "./utils/auth.js"; 
 import jwtMiddleware from "./middlewares/jwtMiddleware.js";
+import companyRouter from "./router/companyRoutes.js";
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -26,6 +27,7 @@ app.use(jwtMiddleware);
 app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter);
+app.use("/api/company", companyRouter);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
