@@ -51,7 +51,7 @@ passport.use(
           verified: false,
           profile_image: profile.photos?.[0]?.value || null,
           password_hash: null,
-          roles: role
+          role: role
         });
 
         return done(null, newUser);
