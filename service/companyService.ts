@@ -27,7 +27,15 @@ export class CompanyService {
         return this.companyRepository.find_profile_by_user_id(user_id);
     }
 
-
-
+    async update_profile(user_id: number, input: CompanyProfileDTO): Promise<CompanyProfileDB | null> {
+        const existingProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!existingProfile) {
+            throw new Error("Company profile not found");
+        }
+        input.company_name = input.company_name ? input.company_name : existingProfile.company_name;
+        input.description = input.description ? input.description : existingProfile.description;
+        input.industry = input.industry ? input.industry : existingProfile.industry;
+        return this.companyRepository.update_company_profile(user_id, input);
+    }
 
 }

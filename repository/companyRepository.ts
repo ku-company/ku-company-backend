@@ -31,4 +31,17 @@ export class CompanyRepository {
         });
     }
 
+    async update_company_profile(user_id: number, input: CompanyProfileDTO): Promise<CompanyProfileDB | null> {
+        return this.prisma.companyProfile.update({
+            where: {
+                user_id: user_id
+            },
+            data: {
+                company_name : input.company_name,
+                description  : input.description,
+                industry     : input.industry,
+            }
+        });
+    }
+
 }

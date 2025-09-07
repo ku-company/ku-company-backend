@@ -15,11 +15,16 @@ export class CompanyController {
         const input: CompanyProfileDTO = {
             user_id: user.id,
             company_name: req.body.company_name,
-            description: req.body.description,
-            industry: req.body.industry,
+            description: req.body.description || "",
+            industry: req.body.industry || "",
         };
         const result = await this.companyService.create_profile(input);
         console.log("User info: ", user);
+        if (!result) {
+            return res.status(400).json({
+                message: "Failed to create company profile"
+            });
+        }
         res.status(201).json({
             message: "Company Profile created successfully",
             data: result
@@ -49,5 +54,32 @@ export class CompanyController {
                 message: error.message
             });
         }
+    }
+
+    async update_profile(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const input: CompanyProfileDTO = {
+                user_id: user.id,
+                company_name: req.body.company_name,
+                description: req.body.description,
+                industry: req.body.industry,
+            };
+            const result = await this.companyService.update_profile(user.id, input);
+            if (!result) {
+                return res.status(404).json({
+                    message: "Company Profile not found"
+                });
+            }
+            res.status(200).json({
+                message: "Company Profile updated successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+
     }
 }
