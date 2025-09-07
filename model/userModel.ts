@@ -42,7 +42,7 @@ export interface UserOauth {
   user_name: string;
   email: string;
   password_hash: string | null;
-  roles: string;
+  role: string;
   verified: boolean;
   profile_image: string;
   created_at: Date;
