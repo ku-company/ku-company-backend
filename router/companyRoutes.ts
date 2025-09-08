@@ -1,20 +1,29 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { CompanyController } from "../controller/companyController.js";
-import { body, validationResult } from "express-validator";
+import {body} from "express-validator";
+import { profileValidation } from "../middlewares/profileValidation.js";
 
 const router = Router();
 const companyController = new CompanyController();
 
-router.post("/profile",  [
-    body("company_name").notEmpty().withMessage("Company name is required"),
-    body("description").optional().isString(),
-    body("industry").optional().isString(),
-  ], async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+const createCompanyValidation = [
+  body("company_name").optional().isString().withMessage("Company name must be a string"),
+  body("description").notEmpty().isString().withMessage("Description is required"),
+  body("industry").notEmpty().isString().withMessage("Industry is required"),
+  body("tel").notEmpty().isString().withMessage("Tel is required"),
+  body("location").notEmpty().isString().withMessage("Location is required"),
+];
+
+const updateCompanyValidation = [
+  body("company_name").optional().isString().withMessage("Company name must be a string"),
+  body("description").optional().isString().withMessage("Description must be a string"),
+  body("industry").optional().isString().withMessage("Industry must be a string"),
+  body("tel").optional().isString().withMessage("Tel must be a string"),
+  body("location").optional().isString().withMessage("Location must be a string"),
+];
+
+router.post("/profile",  createCompanyValidation, profileValidation, async (req: Request, res: Response) => {
     // create company profile
     companyController.create_profile(req, res);
 });
@@ -23,7 +32,7 @@ router.get("/profile", async (req: Request, res: Response) => {
     companyController.get_profile(req, res);
 });
 
-router.put("/profile", async (req: Request, res: Response) => {
+router.patch("/profile",  updateCompanyValidation, profileValidation, async (req: Request, res: Response) => {
     // update company profile
     companyController.update_profile(req, res);
 });
