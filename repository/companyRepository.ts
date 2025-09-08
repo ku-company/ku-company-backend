@@ -18,9 +18,11 @@ export class CompanyRepository {
                 company_name : input.company_name,
                 description  : input.description,
                 industry     : input.industry,
+                tel          : input.tel,
+                location     : input.location
             }
         });
-
+        await this.update_company_name(input.user_id, input.company_name);
         return companyProfile;
     }
     async find_profile_by_user_id(user_id: number): Promise<CompanyProfileDB | null> {
@@ -31,7 +33,19 @@ export class CompanyRepository {
         });
     }
 
+    async update_company_name(user_id: number, company_name: string | null): Promise<void> {
+        await this.prisma.user.update({
+            where: {
+                id: user_id
+            },
+            data: {
+                company_name: company_name
+            }
+        });
+    }
+
     async update_company_profile(user_id: number, input: CompanyProfileDTO): Promise<CompanyProfileDB | null> {
+        await this.update_company_name(user_id, input.company_name);
         return this.prisma.companyProfile.update({
             where: {
                 user_id: user_id
@@ -40,6 +54,8 @@ export class CompanyRepository {
                 company_name : input.company_name,
                 description  : input.description,
                 industry     : input.industry,
+                tel          : input.tel,
+                location     : input.location
             }
         });
     }

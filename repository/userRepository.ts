@@ -99,6 +99,18 @@ export class UserRepository {
         }
         return user;
     }
+    
+    async get_user_by_id(id: number){
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: id
+            }
+        })
+        if(!user){
+            throw new Error("User not found")
+        }
+        return user;
+    }
 
 
 }

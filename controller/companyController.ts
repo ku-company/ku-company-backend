@@ -15,9 +15,13 @@ export class CompanyController {
         const input: CompanyProfileDTO = {
             user_id: user.id,
             company_name: req.body.company_name,
-            description: req.body.description || "",
-            industry: req.body.industry || "",
+            description: req.body.description,
+            industry: req.body.industry,
+            tel: req.body.tel,
+            location: req.body.location
+            // profile_image: req.body.profile_image || null
         };
+        
         const result = await this.companyService.create_profile(input);
         console.log("User info: ", user);
         if (!result) {
@@ -64,8 +68,10 @@ export class CompanyController {
                 company_name: req.body.company_name,
                 description: req.body.description,
                 industry: req.body.industry,
+                tel: req.body.tel,
+                location: req.body.location
             };
-            const result = await this.companyService.update_profile(user.id, input);
+            const result = await this.companyService.update_profile(input);
             if (!result) {
                 return res.status(404).json({
                     message: "Company Profile not found"

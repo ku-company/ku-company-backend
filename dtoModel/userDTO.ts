@@ -34,5 +34,7 @@ export interface CompanyProfileDTO {
     company_name: string;
     description: string;
     industry: string;
+    tel: string;
+    location: string;
     
 }

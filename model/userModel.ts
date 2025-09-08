@@ -55,5 +55,7 @@ export interface CompanyProfileDB {
     company_name: string;
     description: string;
     industry: string;
+    tel: string;
+    location: string;
 
 }
