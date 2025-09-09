@@ -193,6 +193,26 @@ export class CompanyController {
                 message: error.message
             });
         }
-    }   
+    }
+    
+    async get_all_job_postings(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const result = await this.companyService.get_all_job_postings(user.id);
+            if (!result) {
+                return res.status(404).json({
+                    message: "No job postings found"
+                });
+            }
+            res.status(200).json({
+                message: "Job postings retrieved successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
 
 }
