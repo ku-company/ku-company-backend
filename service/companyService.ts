@@ -116,4 +116,12 @@ export class CompanyService {
         const company_id = companyProfile.id;
         return this.companyRepository.find_all_job_postings_by_company_id(company_id);
     }
+
+    async delete_job_posting(post_id: number) {
+        const existingPost = await this.companyRepository.find_job_posting_by_id(post_id);
+        if (!existingPost) {
+            throw new Error("Job posting not found");
+        }
+        return this.companyRepository.delete_job_posting(post_id);
+    }
 }

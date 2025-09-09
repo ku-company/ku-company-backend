@@ -141,4 +141,12 @@ export class CompanyRepository {
             }
         });
     }
+
+    async delete_job_posting(id: number) {
+        return this.prisma.jobPost.delete({
+            where: {
+                id: id
+            }
+        });
+    }
 }

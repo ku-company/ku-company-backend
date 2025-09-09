@@ -29,6 +29,9 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // delete job posting
+router.delete("/:id", async (req: Request, res: Response) => {
+  companyController.delete_job_posting(req, res);
+});
 
 
 
