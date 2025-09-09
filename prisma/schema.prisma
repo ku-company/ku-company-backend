@@ -157,7 +157,7 @@ model jobPost {
   description String  @db.VarChar(255)
   jobType     JobType 
   position    Position
-  available_postion Int
+  available_position Int
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

@@ -2,6 +2,7 @@ import { CompanyRepository } from "../repository/companyRepository.js";
 import { UserRepository } from "../repository/userRepository.js";
 import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
 import type { CompanyProfileDB } from "../model/userModel.js";
+import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/companyDTO.js";
 
 
 export class CompanyService {
@@ -61,5 +62,66 @@ export class CompanyService {
 
     async get_profile_image(user_id: number): Promise<string | null> {
         return await this.companyRepository.find_profile_image_by_user_id(user_id);
+    }
+
+    async create_job_posting(user_id: number, input: CompanyJobPostingDTO) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // start of today
+
+        // Count job postings created today by this company
+        const postingsToday = await this.companyRepository.find_today_job_postings(companyProfile.id, today);
+
+        const user = await this.userRepository.get_user_by_id(companyProfile.user_id);
+        if (user?.verified === false && postingsToday.length >= 5) {
+            throw new Error("Maximum job postings for today reached");
+        }
+
+        const repoInput = {
+            company_id: companyProfile.id,
+            description: input.description,
+            jobType: input.jobType,
+            position: input.position,
+            available_position: input.available_position
+        };
+
+        return this.companyRepository.create_job_posting(repoInput);
+    }
+
+    async update_job_posting(post_id: number, input: CompanyJobPostingDTO) {
+        const existingPost = await this.companyRepository.find_job_posting_by_id(post_id);
+        if (!existingPost) {
+            throw new Error("Job posting not found");
+        }
+        input.description = input.description ? input.description : existingPost.description;
+        input.jobType = input.jobType ? input.jobType : JobType[existingPost.jobType as keyof typeof JobType];
+        input.position = input.position ? input.position : Position[existingPost.position as keyof typeof Position];
+
+        input.available_position = input.available_position ? input.available_position : existingPost.available_position;
+        return this.companyRepository.update_job_posting(post_id, input);
+    }
+
+    async get_job_posting(post_id: number) {
+        return this.companyRepository.find_job_posting_by_id(post_id);
+    }
+
+    async get_all_job_postings(user_id: number) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        const company_id = companyProfile.id;
+        return this.companyRepository.find_all_job_postings_by_company_id(company_id);
+    }
+
+    async delete_job_posting(post_id: number) {
+        const existingPost = await this.companyRepository.find_job_posting_by_id(post_id);
+        if (!existingPost) {
+            throw new Error("Job posting not found");
+        }
+        return this.companyRepository.delete_job_posting(post_id);
     }
 }
