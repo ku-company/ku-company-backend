@@ -3,19 +3,7 @@ import type { Request, Response } from "express";
 import { CompanyController } from "../controller/companyController.js";
 import {body} from "express-validator";
 import { profileValidation } from "../middlewares/profileValidation.js";
-import multer from "multer";
-import path from "path";
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'Images')
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now()  + path.extname(file.originalname))
-    }
-});
-
-const upload = multer({ storage: storage });
+import { upload } from "../middlewares/uploadMiddleware.js";
 
 const router = Router();
 const companyController = new CompanyController();

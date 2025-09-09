@@ -91,9 +91,6 @@ export class CompanyController {
     async upload_profile_image(req: Request, res: Response){
         if (!req.file) return res.status(400).json({ message: "No file uploaded" });
         const user = req.user as { id: number };
-        // create URL for frontend
-        // const imageUrl =`${req.protocol}://${req.get("host")}/Images/${req.file.filename}`;
-
        const imageUrl = await this.companyService.upload_profile_image(user.id, req.file.filename);
 
         res.json({ message: "Image uploaded successfully", imageUrl });
