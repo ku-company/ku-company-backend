@@ -49,4 +49,20 @@ router.get("/profile/image", async (req: Request, res: Response) => {
   companyController.get_profile_image(req, res);
 });
 
+//delete profile
+
+router.post("/job-posting", async (req: Request, res: Response) => {
+  // create job posting
+  companyController.create_job_posting(req, res);
+});
+
+
+// delete job posting
+
+// update job posting
+
+// get job posting
+
+// get all job postings for a company
+
 export default router;

@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { CompanyService } from "../service/companyService.js";
 import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
+import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
 
 export class CompanyController {
     private companyService: CompanyService;
@@ -116,4 +117,30 @@ export class CompanyController {
             });
         }
     }
+
+    async create_job_posting(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const input: CompanyJobPostingDTO = {
+                description: req.body.description,
+                jobType: req.body.jobType,
+                position: req.body.position,
+                available_position: req.body.available_position
+            };
+            const result = await this.companyService.create_job_posting(user.id, input);
+            if (!result) {
+                return res.status(400).json({
+                    message: "Failed to create job posting"
+                });
+            }
+            res.status(201).json({
+                message: "Job posting created successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+}
 }

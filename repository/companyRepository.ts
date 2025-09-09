@@ -2,6 +2,7 @@ import type { PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { CompanyProfileDB } from "../model/userModel.js";
 import type {CompanyProfileDTO} from "../dtoModel/userDTO.js";
+import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
 
 export class CompanyRepository {
 
@@ -83,5 +84,27 @@ export class CompanyRepository {
         return user ? user.profile_image : null;
     }
 
+    async create_job_posting(input: CompanyJobPostingDTO & { company_id: number }) {
+        return this.prisma.jobPost.create({
+            data: {
+                description: input.description,
+                jobType: input.jobType,
+                position: input.position,
+                available_position: input.available_position,
+                company_id: input.company_id
+            }
+        });
+    }
 
+    async find_today_job_postings(company_id: number, today: Date) {
+        return this.prisma.jobPost.findMany({
+            where: {
+                company_id: company_id, // company profile id
+                created_at: {
+                    gte: today,
+                    lt: new Date(today.getTime() + 24 * 60 * 60 * 1000) // end of today
+                }
+            }
+        });
+    }
 }
