@@ -171,4 +171,28 @@ export class CompanyController {
             });
         }
     }
+
+    async get_job_posting(req: Request, res: Response){
+        if (!req.params.id) {
+            return res.status(400).json({ message: "Job posting ID is required" });
+        }
+        try{
+            const job_posting_id = parseInt(req.params.id);
+            const result = await this.companyService.get_job_posting(job_posting_id);
+            if (!result) {
+                return res.status(404).json({
+                    message: "Job posting not found"
+                });
+            }
+            res.status(200).json({
+                message: "Job posting retrieved successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }   
+
 }

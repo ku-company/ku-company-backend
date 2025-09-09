@@ -103,4 +103,8 @@ export class CompanyService {
         input.available_position = input.available_position ? input.available_position : existingPost.available_position;
         return this.companyRepository.update_job_posting(post_id, input);
     }
+
+    async get_job_posting(post_id: number) {
+        return this.companyRepository.find_job_posting_by_id(post_id);
+    }
 }
