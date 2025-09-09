@@ -29,6 +29,7 @@ app.use(jwtMiddleware);
 app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/company", authorizeRole("Company"), companyRouter);
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,7 +37,6 @@ const __dirname = path.dirname(__filename);
 
 // Serve Images folder
 app.use("/Images", express.static(path.join(__dirname, "../Images")));
-app.use("/api/admin", adminRouter);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
