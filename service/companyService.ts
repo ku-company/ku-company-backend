@@ -59,4 +59,7 @@ export class CompanyService {
         return imageUrl;
     }
 
+    async get_profile_image(user_id: number): Promise<string | null> {
+        return await this.companyRepository.find_profile_image_by_user_id(user_id);
+    }
 }

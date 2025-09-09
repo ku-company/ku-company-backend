@@ -71,5 +71,17 @@ export class CompanyRepository {
         });
     }
 
+    async find_profile_image_by_user_id(user_id: number): Promise<string | null> {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: user_id
+            },
+            select: {
+                profile_image: true
+            }
+        });
+        return user ? user.profile_image : null;
+    }
+
 
 }

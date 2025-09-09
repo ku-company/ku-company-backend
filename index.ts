@@ -78,7 +78,7 @@ app.get("/image", (req, res) => {
       </head>
       <body>
         <h1>Upload an Image</h1>
-        <form action="/api/company/profile/upload-image" method="POST" enctype="multipart/form-data">
+        <form action="/api/company/profile/image" method="POST" enctype="multipart/form-data">
           <input type="file" name="profile_image" accept="image/*" required />
           <button type="submit">Upload</button>
         </form>

@@ -38,12 +38,15 @@ router.patch("/profile",  updateCompanyValidation, profileValidation, async (req
     companyController.update_profile(req, res);
 });
 
-router.post("/profile/upload-image",
+router.post("/profile/image",
   upload.single("profile_image"), // frontend should send key "profile_image"
   async (req: Request, res: Response) => {
     companyController.upload_profile_image(req, res);
   }
 );
 
+router.get("/profile/image", async (req: Request, res: Response) => {
+  companyController.get_profile_image(req, res);
+});
 
 export default router;
