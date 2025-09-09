@@ -96,5 +96,24 @@ export class CompanyController {
         res.json({ message: "Image uploaded successfully", imageUrl });
     }
 
-    
+    async get_profile_image(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const profile_image = await this.companyService.get_profile_image(user.id);
+
+            if (!profile_image) {
+                return res.status(404).json({
+                    message: "Profile image not found"
+                });
+            }
+            res.status(200).json({
+                message: "Profile image retrieved successfully",
+                data: profile_image
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
 }
