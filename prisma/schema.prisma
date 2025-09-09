@@ -121,6 +121,8 @@ model companyProfile {
   company_name  String @db.VarChar(255)
   description   String @db.VarChar(255)
   industry      String @db.VarChar(255)
+  tel           String @db.VarChar(20)
+  location      String @db.VarChar(255)
   jobPosts  jobPost[] 
   notifications Notification[]
 
