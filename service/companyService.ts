@@ -107,4 +107,13 @@ export class CompanyService {
     async get_job_posting(post_id: number) {
         return this.companyRepository.find_job_posting_by_id(post_id);
     }
+
+    async get_all_job_postings(user_id: number) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        const company_id = companyProfile.id;
+        return this.companyRepository.find_all_job_postings_by_company_id(company_id);
+    }
 }
