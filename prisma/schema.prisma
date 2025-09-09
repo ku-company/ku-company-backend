@@ -23,6 +23,12 @@ enum JobType {
   Contract
 }
 
+enum VerifiedStatus {
+  Pending
+  Approved
+  Rejected
+}
+
 enum Position {
   Backend_Developer
   Frontend_Developer
@@ -54,8 +60,9 @@ model User {
   user_name    String? @db.VarChar(255) @unique
   email        String @unique @db.VarChar(255)
   password_hash String?  @db.VarChar(255)
-  roles        Role   @default(Admin)
+  role       Role   @default(Admin)
   verified     Boolean @default(false)
+  status       VerifiedStatus @default(Pending)
   profile_image String? @db.VarChar(255)
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt

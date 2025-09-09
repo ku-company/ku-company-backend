@@ -15,7 +15,7 @@ export abstract class SignUpStrategy{
                 user_name: input.user_name || null,
                 email: input.email,
                 password_hash: await bcrypt.hash(input.password, 10),
-                roles: input.role,
+                role: input.role,
                 verified: false,
                 profile_image: null,
             })
@@ -34,7 +34,7 @@ class EmployeeSignUpStrategy extends SignUpStrategy{
                 last_name: userData.last_name!,
                 full_name: `${userData.first_name} ${userData.last_name}`,
                 email: userData.email,
-                roles: userData.roles ,
+                role: userData.role ,
                 verified: userData.verified,
                 profile_image: userData.profile_image
             }
@@ -47,7 +47,7 @@ class EmployerSignUpStrategy extends SignUpStrategy{
         let response_user: UserCompanyDTO = {
                 company_name: userData.company_name!,
                 email: userData.email,
-                roles: userData.roles ,
+                role: userData.role ,
                 verified: userData.verified,
                 profile_image: userData.profile_image
             }

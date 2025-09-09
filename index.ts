@@ -10,6 +10,7 @@ import passport from "passport";
 import cookieParser from "cookie-parser";
 import "./utils/auth.js"; 
 import jwtMiddleware from "./middlewares/jwtMiddleware.js";
+import adminRouter from "./router/adminRoutes.js";
 import companyRouter from "./router/companyRoutes.js";
 import authorizeRole from "./middlewares/rolebasedMiddleware.js";
 import path from "path";
@@ -35,6 +36,7 @@ const __dirname = path.dirname(__filename);
 
 // Serve Images folder
 app.use("/Images", express.static(path.join(__dirname, "../Images")));
+app.use("/api/admin", adminRouter);
 
 app.get("/", (req, res) => {
   res.send("Server is running");

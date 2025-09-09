@@ -4,7 +4,7 @@ export interface UserDTO{
     last_name: string;
     full_name: string;
     email: string;
-    roles: string;
+    role: string;
     verified: boolean;
     profile_image: string | null;
 }
@@ -12,7 +12,7 @@ export interface UserDTO{
 export interface UserCompanyDTO {
     company_name: string;
     email: string;
-    roles: string;
+    role: string;
     verified: boolean;
     profile_image: string | null;
 }
@@ -21,7 +21,7 @@ export interface LoginResponse{
     access_token: string;
     refresh_token: string;
     user_name: string;
-    roles: string;
+    role: string;
     email: string;
 }
 

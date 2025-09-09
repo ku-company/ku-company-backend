@@ -21,7 +21,7 @@ export class UserRepository {
                 user_name: input?.user_name,
                 email: input.email,
                 password_hash: input.password_hash,
-                roles: input.roles as Role,
+                role: input.role as Role,
                 verified: input.verified,
                 profile_image: input.profile_image,
             }
