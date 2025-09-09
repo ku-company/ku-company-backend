@@ -2,6 +2,7 @@ import { CompanyRepository } from "../repository/companyRepository.js";
 import { UserRepository } from "../repository/userRepository.js";
 import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
 import type { CompanyProfileDB } from "../model/userModel.js";
+import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
 
 
 export class CompanyService {
@@ -61,5 +62,32 @@ export class CompanyService {
 
     async get_profile_image(user_id: number): Promise<string | null> {
         return await this.companyRepository.find_profile_image_by_user_id(user_id);
+    }
+
+    async create_job_posting(user_id: number, input: CompanyJobPostingDTO) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // start of today
+
+        // Count job postings created today by this company
+        const postingsToday = await this.companyRepository.find_today_job_postings(companyProfile.id, today);
+
+        const user = await this.userRepository.get_user_by_id(companyProfile.user_id);
+        if (user?.verified === false && postingsToday.length >= 5) {
+            throw new Error("Maximum job postings for today reached");
+        }
+
+        const repoInput = {
+            company_id: companyProfile.id,
+            description: input.description,
+            jobType: input.jobType,
+            position: input.position,
+            available_position: input.available_position
+        };
+
+        return this.companyRepository.create_job_posting(repoInput);
     }
 }
