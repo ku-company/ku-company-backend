@@ -57,12 +57,20 @@ router.post("/job-posting", async (req: Request, res: Response) => {
 });
 
 
-// delete job posting
-
 // update job posting
+router.patch("/job-posting/:id", async (req: Request, res: Response) => {
+  companyController.update_job_posting(req, res);
+});
 
 // get job posting
+// router.get("/job-posting/:id", async (req: Request, res: Response) => {
+//   companyController.get_job_posting(req, res);
+// });
 
 // get all job postings for a company
+
+// delete job posting
+
+
 
 export default router;

@@ -2,7 +2,7 @@ import { CompanyRepository } from "../repository/companyRepository.js";
 import { UserRepository } from "../repository/userRepository.js";
 import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
 import type { CompanyProfileDB } from "../model/userModel.js";
-import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
+import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/companyDTO.js";
 
 
 export class CompanyService {
@@ -89,5 +89,18 @@ export class CompanyService {
         };
 
         return this.companyRepository.create_job_posting(repoInput);
+    }
+
+    async update_job_posting(post_id: number, input: CompanyJobPostingDTO) {
+        const existingPost = await this.companyRepository.find_job_posting_by_id(post_id);
+        if (!existingPost) {
+            throw new Error("Job posting not found");
+        }
+        input.description = input.description ? input.description : existingPost.description;
+        input.jobType = input.jobType ? input.jobType : JobType[existingPost.jobType as keyof typeof JobType];
+        input.position = input.position ? input.position : Position[existingPost.position as keyof typeof Position];
+
+        input.available_position = input.available_position ? input.available_position : existingPost.available_position;
+        return this.companyRepository.update_job_posting(post_id, input);
     }
 }

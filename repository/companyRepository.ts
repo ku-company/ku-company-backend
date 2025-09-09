@@ -107,4 +107,26 @@ export class CompanyRepository {
             }
         });
     }
+
+    async find_job_posting_by_id(id: number) {
+        return this.prisma.jobPost.findUnique({
+            where: {
+                id: id
+            }
+        });
+    }
+
+    async update_job_posting(id: number, input: CompanyJobPostingDTO) {
+        return this.prisma.jobPost.update({
+            where: {
+                id: id
+            },
+            data: {
+                description: input.description,
+                jobType: input.jobType,
+                position: input.position,
+                available_position: input.available_position
+            }
+        });
+    }
 }

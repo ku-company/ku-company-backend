@@ -23,7 +23,6 @@ export class CompanyController {
         };
         
         const result = await this.companyService.create_profile(input);
-        console.log("User info: ", user);
         if (!result) {
             return res.status(400).json({
                 message: "Failed to create company profile"
@@ -142,5 +141,34 @@ export class CompanyController {
                 message: error.message
             });
         }
-}
+    }
+    
+    async update_job_posting(req: Request, res: Response){
+        if (!req.params.id) {
+        return res.status(400).json({ message: "Job posting ID is required" });
+    }
+        try{
+            const job_posting_id = parseInt(req.params.id);
+            const input: CompanyJobPostingDTO = {
+                description: req.body.description,
+                jobType: req.body.jobType,
+                position: req.body.position,
+                available_position: req.body.available_position
+            };
+            const result = await this.companyService.update_job_posting(job_posting_id, input);
+            if (!result) {
+                return res.status(404).json({
+                    message: "Job posting not found"
+                });
+            }
+            res.status(200).json({
+                message: "Job posting updated successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
 }
