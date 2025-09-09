@@ -51,4 +51,12 @@ export class CompanyService {
         return this.companyRepository.update_company_profile(input.user_id, input);
     }
 
+    async upload_profile_image(user_id: number, filename: string): Promise<string> {
+        const BASE_URL = "http://localhost:8000";
+        // create URL for frontend
+        const imageUrl =`${BASE_URL}/Images/${filename}`;
+        await this.companyRepository.upload_profile_image(user_id, { profile_image: imageUrl });
+        return imageUrl;
+    }
+
 }

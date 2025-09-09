@@ -3,6 +3,19 @@ import type { Request, Response } from "express";
 import { CompanyController } from "../controller/companyController.js";
 import {body} from "express-validator";
 import { profileValidation } from "../middlewares/profileValidation.js";
+import multer from "multer";
+import path from "path";
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'Images')
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now()  + path.extname(file.originalname))
+    }
+});
+
+const upload = multer({ storage: storage });
 
 const router = Router();
 const companyController = new CompanyController();
@@ -36,5 +49,13 @@ router.patch("/profile",  updateCompanyValidation, profileValidation, async (req
     // update company profile
     companyController.update_profile(req, res);
 });
+
+router.post("/profile/upload-image",
+  upload.single("profile_image"), // frontend should send key "profile_image"
+  async (req: Request, res: Response) => {
+    companyController.upload_profile_image(req, res);
+  }
+);
+
 
 export default router;

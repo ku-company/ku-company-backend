@@ -12,6 +12,8 @@ import "./utils/auth.js";
 import jwtMiddleware from "./middlewares/jwtMiddleware.js";
 import companyRouter from "./router/companyRoutes.js";
 import authorizeRole from "./middlewares/rolebasedMiddleware.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -27,6 +29,12 @@ app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter);
 app.use("/api/company", authorizeRole("Company"), companyRouter);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve Images folder
+app.use("/Images", express.static(path.join(__dirname, "../Images")));
 
 app.get("/", (req, res) => {
   res.send("Server is running");
@@ -61,6 +69,23 @@ app.get("/setup", async (req, res) => {
   }
 });
 
+app.get("/image", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Upload Image</title>
+      </head>
+      <body>
+        <h1>Upload an Image</h1>
+        <form action="/api/company/profile/upload-image" method="POST" enctype="multipart/form-data">
+          <input type="file" name="profile_image" accept="image/*" required />
+          <button type="submit">Upload</button>
+        </form>
+      </body>
+    </html>
+  `);
+});
 
 // Start server
 app.listen(port, () => {
