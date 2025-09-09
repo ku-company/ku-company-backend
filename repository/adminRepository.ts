@@ -71,7 +71,8 @@ export class AdminRepository{
             },
             data: {
                 ...input,
-                role: input.role as Role
+                role: input.role as Role,
+                updated_at: new Date()
             }
         })
         return updated_user
