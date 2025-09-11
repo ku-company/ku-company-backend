@@ -42,22 +42,6 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-app.get("/google/sign-up", (req, res) => {
-  res.send("<a href=\"/api/auth/google\">Authenticate with Google</a>");
-  // simulate with role
-  // res.send("<a href=\"/api/auth/google?role=Student\">Authenticate with Google</a>");
-
-});
-
-
-app.get("/protected", (req, res) => {
-  if (req.user) {
-    console.log("user protected:", req.user);
-    res.send(`protected hi ${(req.user as any).user_name}`);
-  } else {
-    res.send("User information not available");
-  }
-});
 
 // test connecting to db
 app.get("/setup", async (req, res) => {
