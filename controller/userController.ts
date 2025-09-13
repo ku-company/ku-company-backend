@@ -64,5 +64,33 @@ export class UserController {
         })
     }
 
+    async upload_profile_image(req: Request, res: Response){
+        if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+        try {
+            const user = req.user as { id: number, role: string };
+            const imageUrl = await this.userService.upload_profile_image(req.file, user);
+            res.json({ message: "Image uploaded successfully", imageUrl });
+        } catch (error: unknown) {
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
+    async get_profile_image(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const imageUrl = await this.userService.get_profile_image(user.id);
+            res.json({ profile_image: imageUrl });
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
+
+    
+
+    
+
 
 }

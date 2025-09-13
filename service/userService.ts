@@ -1,17 +1,20 @@
 import { UserRepository } from "../repository/userRepository.js"
-import type { sign_up_input, UserDB, Login, sign_up_company_input } from "../model/userModel.js";
+import type { sign_up_input, UserDB, Login, sign_up_company_input, IUserRequest } from "../model/userModel.js";
 import type { UserDTO, LoginResponse, RefreshTokenRequest, UserCompanyDTO } from "../dtoModel/userDTO.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
 import { SignUpStrategyFactory, SignUpStrategy } from "../helper/signupStrategy.js";
+import { S3Service } from "../service/s3Services.js";
 
 
 export class UserService {
     
     private userRepository: UserRepository;
+    private s3Service: S3Service;
 
     constructor() {
         this.userRepository = new UserRepository()
+        this.s3Service = new S3Service();
     }
     
     async sign_up(input: sign_up_input){
@@ -91,5 +94,26 @@ export class UserService {
             throw new Error("Invalid refresh token")
         }
     }
+
+    async upload_profile_image(file: Express.Multer.File, user: IUserRequest){
+        try{
+            const { key} = await this.s3Service.uploadImageFile(file, `user-${user.role}`);
+            console.log("Uploaded image path:", key);
+            await this.userRepository.upload_profile_image(user.id, { profile_image: key });
+            return key;
+        }catch(err){
+            throw new Error("Failed to upload image");
+        }
+    }
+
+    async get_profile_image(user_id: number){
+        const user = await this.userRepository.get_user_by_id(user_id);
+        if(!user.profile_image){
+            throw new Error("No profile image found");
+        }
+        const imageUrl = await this.s3Service.getImageUrl(user.profile_image);
+        return imageUrl;
+    }
+
 
 }
