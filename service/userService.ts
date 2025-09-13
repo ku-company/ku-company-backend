@@ -115,5 +115,19 @@ export class UserService {
         return imageUrl;
     }
 
+    async delete_profile_image(user_id: number){
+        const user = await this.userRepository.get_user_by_id(user_id);
+        if(!user.profile_image){
+            throw new Error("No profile image found");
+        }
+        try{
+            await this.s3Service.deleteImageFile(user.profile_image);
+            await this.userRepository.delete_profile_image(user_id);
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            throw new Error("Failed to delete profile image");
+        }
+    }
+
 
 }

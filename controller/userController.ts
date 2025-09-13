@@ -87,6 +87,16 @@ export class UserController {
         }
     }
 
+    async delete_profile_image(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            await this.userService.delete_profile_image(user.id);
+            res.json({ message: "Profile image deleted successfully" });
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
 
     
 

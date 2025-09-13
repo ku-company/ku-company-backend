@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand} from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const BUCKET_NAME = process.env.BUCKET_NAME || "";
@@ -25,10 +25,6 @@ export class S3Service {
       };
         const command = new PutObjectCommand(params);
         await s3Client.send(command);
-
-        // Return the **public URL**
-        // const imageUrl = `https://${BUCKET_NAME}.s3.${BUCKET_REGION}.amazonaws.com/${key}`;
-        // const imageUrl = await this.getImageUrl(key);
         return { key };
     }
 
@@ -40,6 +36,15 @@ export class S3Service {
         const command = new GetObjectCommand(params);
         const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // URL valid for 1 hour
         return url;
+    }
+
+    async deleteImageFile(key: string) {
+        const params = {
+            Bucket: BUCKET_NAME,
+            Key: key,
+        };
+        const command = new DeleteObjectCommand(params);
+        await s3Client.send(command);
     }
 
 
