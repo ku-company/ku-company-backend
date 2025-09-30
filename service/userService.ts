@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
 import { SignUpStrategyFactory, SignUpStrategy } from "../helper/signupStrategy.js";
 import { S3Service } from "../service/s3Services.js";
+import { validateImageBuffer } from "../helper/image.js";
 
 
 export class UserService {
@@ -95,9 +96,29 @@ export class UserService {
         }
     }
 
+    async has_profile_image(user: IUserRequest){
+        const u = await this.userRepository.get_user_by_id(user.id);
+        return !!u.profile_image;
+    }
+
+    async create_profile_image(file: Express.Multer.File, user: IUserRequest) {
+        if (await this.has_profile_image(user)) {
+                throw new Error("Profile image already exists, please use update instead");
+        }
+        return this.upload_profile_image(file, user); // returns key
+    }
+
     async upload_profile_image(file: Express.Multer.File, user: IUserRequest){
         try{
-            const { key} = await this.s3Service.uploadImageFile(file, `user-${user.role}`);
+            // Real validation from bytes
+            const { mime } = await validateImageBuffer(file.buffer);
+            const { key} = await this.s3Service.uploadImageFile({
+                buffer: file.buffer,
+                mimetype: mime,
+                originalname: file.originalname,
+                },
+                `user-${user.role}`
+            );
             console.log("Uploaded image path:", key);
             await this.userRepository.upload_profile_image(user.id, { profile_image: key });
             return key;
@@ -112,6 +133,7 @@ export class UserService {
         if(!oldProfileImage){
             throw new Error("Old profile image not found, please use upload instead");
         }
+        const newKey = await this.upload_profile_image(file, user);
         try{
             //delete old image from s3
             await this.s3Service.deleteImageFile(oldProfileImage);
@@ -119,7 +141,7 @@ export class UserService {
             console.error((error as Error).message);
             throw new Error("Failed to delete old profile image");
         }
-        await this.upload_profile_image(file, user);       
+        return newKey;    
     }
 
     async get_profile_image(user_id: number){

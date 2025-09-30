@@ -15,13 +15,13 @@ const s3Client = new S3Client({
 });
 
 export class S3Service {
-    async uploadImageFile(file: Express.Multer.File, folder?: string) {
+    async uploadImageFile(file: { buffer: Buffer; mimetype: string; originalname: string }, folder?: string) {
         const key = folder ? `${folder}/${Date.now()}-${file.originalname}` : `${Date.now()}-${file.originalname}`;
         const params = {
         Bucket: BUCKET_NAME,
         Key: key,
         Body: file.buffer,
-        ContentType: file.mimetype,
+        ContentType: file.mimetype, // validated mime
       };
         const command = new PutObjectCommand(params);
         await s3Client.send(command);
