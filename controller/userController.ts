@@ -68,7 +68,7 @@ export class UserController {
         if (!req.file) return res.status(400).json({ message: "No file uploaded" });
         try {
             const user = req.user as { id: number, role: string };
-            const imageUrl = await this.userService.upload_profile_image(req.file, user);
+            const imageUrl = await this.userService.create_profile_image(req.file, user);
             res.json({ message: "Image uploaded successfully", imageUrl });
         } catch (error: unknown) {
             console.error((error as Error).message);
