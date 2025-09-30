@@ -7,6 +7,8 @@ export interface UserDTO{
     role: string;
     verified: boolean;
     profile_image: string | null;
+    employee_profile?: object | null;
+    company_profile?: object | null;
 }
 
 export interface UserCompanyDTO {
@@ -15,6 +17,7 @@ export interface UserCompanyDTO {
     role: string;
     verified: boolean;
     profile_image: string | null;
+    company_profile?: object | null;
 }
 
 export interface LoginResponse{

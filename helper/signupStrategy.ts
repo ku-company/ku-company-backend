@@ -36,7 +36,8 @@ class EmployeeSignUpStrategy extends SignUpStrategy{
                 email: userData.email,
                 role: userData.role ,
                 verified: userData.verified,
-                profile_image: userData.profile_image
+                profile_image: userData.profile_image,
+                employee_profile: userData.employeeProfile ?? null,
             }
         return response_user
     }
@@ -49,7 +50,8 @@ class EmployerSignUpStrategy extends SignUpStrategy{
                 email: userData.email,
                 role: userData.role ,
                 verified: userData.verified,
-                profile_image: userData.profile_image
+                profile_image: userData.profile_image,
+                company_profile: userData.companyProfile ?? null,
             }
         return response_user
     }

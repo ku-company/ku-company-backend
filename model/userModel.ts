@@ -8,6 +8,8 @@ export interface UserDB{
     role: string
     verified: boolean;
     profile_image: string | null;
+    employeeProfile?: object | null;
+    companyProfile?: object | null;
 }
 
 export interface sign_up_input {
