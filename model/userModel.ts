@@ -59,3 +59,8 @@ export interface CompanyProfileDB {
     location: string;
 
 }
+
+export interface IUserRequest {
+    id: number;
+    role: string;
+}

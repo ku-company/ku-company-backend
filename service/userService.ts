@@ -1,17 +1,21 @@
 import { UserRepository } from "../repository/userRepository.js"
-import type { sign_up_input, UserDB, Login, sign_up_company_input } from "../model/userModel.js";
+import type { sign_up_input, UserDB, Login, sign_up_company_input, IUserRequest } from "../model/userModel.js";
 import type { UserDTO, LoginResponse, RefreshTokenRequest, UserCompanyDTO } from "../dtoModel/userDTO.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
 import { SignUpStrategyFactory, SignUpStrategy } from "../helper/signupStrategy.js";
+import { S3Service } from "../service/s3Services.js";
+import { validateImageBuffer } from "../helper/image.js";
 
 
 export class UserService {
     
     private userRepository: UserRepository;
+    private s3Service: S3Service;
 
     constructor() {
         this.userRepository = new UserRepository()
+        this.s3Service = new S3Service();
     }
     
     async sign_up(input: sign_up_input){
@@ -91,5 +95,77 @@ export class UserService {
             throw new Error("Invalid refresh token")
         }
     }
+
+    async has_profile_image(user: IUserRequest){
+        const u = await this.userRepository.get_user_by_id(user.id);
+        return !!u.profile_image;
+    }
+
+    async create_profile_image(file: Express.Multer.File, user: IUserRequest) {
+        if (await this.has_profile_image(user)) {
+                throw new Error("Profile image already exists, please use update instead");
+        }
+        return this.upload_profile_image(file, user); // returns key
+    }
+
+    async upload_profile_image(file: Express.Multer.File, user: IUserRequest){
+        try{
+            // Real validation from bytes
+            const { mime } = await validateImageBuffer(file.buffer);
+            const { key} = await this.s3Service.uploadImageFile({
+                buffer: file.buffer,
+                mimetype: mime,
+                originalname: file.originalname,
+                },
+                `user-${user.role}`
+            );
+            console.log("Uploaded image path:", key);
+            await this.userRepository.upload_profile_image(user.id, { profile_image: key });
+            return key;
+        }catch(err){
+            throw new Error("Failed to upload image");
+        }
+    }
+
+    async update_profile_image(file: Express.Multer.File, user: IUserRequest){
+        const existingUser = await this.userRepository.get_user_by_id(user.id);
+        const oldProfileImage = existingUser.profile_image;
+        if(!oldProfileImage){
+            throw new Error("Old profile image not found, please use upload instead");
+        }
+        const newKey = await this.upload_profile_image(file, user);
+        try{
+            //delete old image from s3
+            await this.s3Service.deleteImageFile(oldProfileImage);
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            throw new Error("Failed to delete old profile image");
+        }
+        return newKey;    
+    }
+
+    async get_profile_image(user_id: number){
+        const user = await this.userRepository.get_user_by_id(user_id);
+        if(!user.profile_image){
+            throw new Error("No profile image found");
+        }
+        const imageUrl = await this.s3Service.getImageUrl(user.profile_image);
+        return imageUrl;
+    }
+
+    async delete_profile_image(user_id: number){
+        const user = await this.userRepository.get_user_by_id(user_id);
+        if(!user.profile_image){
+            throw new Error("No profile image found");
+        }
+        try{
+            await this.s3Service.deleteImageFile(user.profile_image);
+            await this.userRepository.delete_profile_image(user_id);
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            throw new Error("Failed to delete profile image");
+        }
+    }
+
 
 }

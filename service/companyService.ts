@@ -52,18 +52,6 @@ export class CompanyService {
         return this.companyRepository.update_company_profile(input.user_id, input);
     }
 
-    async upload_profile_image(user_id: number, filename: string): Promise<string> {
-        const BASE_URL = "http://localhost:8000";
-        // create URL for frontend
-        const imageUrl =`${BASE_URL}/Images/${filename}`;
-        await this.companyRepository.upload_profile_image(user_id, { profile_image: imageUrl });
-        return imageUrl;
-    }
-
-    async get_profile_image(user_id: number): Promise<string | null> {
-        return await this.companyRepository.find_profile_image_by_user_id(user_id);
-    }
-
     async create_job_posting(user_id: number, input: CompanyJobPostingDTO) {
         const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
         if (!companyProfile) {

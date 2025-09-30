@@ -88,35 +88,6 @@ export class CompanyController {
 
     }
 
-    async upload_profile_image(req: Request, res: Response){
-        if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-        const user = req.user as { id: number };
-       const imageUrl = await this.companyService.upload_profile_image(user.id, req.file.filename);
-
-        res.json({ message: "Image uploaded successfully", imageUrl });
-    }
-
-    async get_profile_image(req: Request, res: Response){
-        try{
-            const user = req.user as { id: number };
-            const profile_image = await this.companyService.get_profile_image(user.id);
-
-            if (!profile_image) {
-                return res.status(404).json({
-                    message: "Profile image not found"
-                });
-            }
-            res.status(200).json({
-                message: "Profile image retrieved successfully",
-                data: profile_image
-            });
-        } catch (error: any){
-            return res.status(400).json({
-                message: error.message
-            });
-        }
-    }
-
     async create_job_posting(req: Request, res: Response){
         try{
             const user = req.user as { id: number };
