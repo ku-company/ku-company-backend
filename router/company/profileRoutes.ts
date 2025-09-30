@@ -1,12 +1,14 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { CompanyController } from "../../controller/companyController.js";
+import { UserController } from "../../controller/userController.js";
 import {body} from "express-validator";
 import { profileValidation } from "../../middlewares/profileValidation.js";
 import { upload } from "../../middlewares/uploadMiddleware.js";
 
 const router = Router();
 const companyController = new CompanyController();
+const userController = new UserController();
 
 const createCompanyValidation = [
   body("company_name").optional().isString().withMessage("Company name must be a string"),
@@ -38,18 +40,26 @@ router.patch("/",  updateCompanyValidation, profileValidation, async (req: Reque
     companyController.update_profile(req, res);
 });
 
-router.post("/image",
-  upload.single("profile_image"), // frontend should send key "profile_image"
+router.post(
+  "/image",
+  upload.single("profile_image"),
   async (req: Request, res: Response) => {
-    companyController.upload_profile_image(req, res);
-  }
-);
-
-router.get("/image", async (req: Request, res: Response) => {
-  companyController.get_profile_image(req, res);
+    userController.upload_profile_image(req, res);
 });
 
-//delete profile
+router.get("/image", async (req: Request, res: Response) => {
+  userController.get_profile_image(req, res);
+});
+
+router.patch("/image", upload.single("profile_image"), async (req: Request, res: Response) => {
+  //update profile image
+  userController.update_profile_image(req, res);
+});
+
+router.delete("/image", async (req: Request, res: Response) => {
+  //delete profile image
+  userController.delete_profile_image(req, res);
+});
 
 
 export default router;
