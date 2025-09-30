@@ -61,29 +61,6 @@ export class CompanyRepository {
         });
     }
 
-    async upload_profile_image(user_id: number, data: { profile_image: string }): Promise<void> {
-        await this.prisma.user.update({
-            where: {
-                id: user_id
-            },
-            data: {
-                profile_image: data.profile_image
-            }
-        });
-    }
-
-    async find_profile_image_by_user_id(user_id: number): Promise<string | null> {
-        const user = await this.prisma.user.findUnique({
-            where: {
-                id: user_id
-            },
-            select: {
-                profile_image: true
-            }
-        });
-        return user ? user.profile_image : null;
-    }
-
     async create_job_posting(input: CompanyJobPostingDTO & { company_id: number }) {
         return this.prisma.jobPost.create({
             data: {

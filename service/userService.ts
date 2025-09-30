@@ -106,6 +106,22 @@ export class UserService {
         }
     }
 
+    async update_profile_image(file: Express.Multer.File, user: IUserRequest){
+        const existingUser = await this.userRepository.get_user_by_id(user.id);
+        const oldProfileImage = existingUser.profile_image;
+        if(!oldProfileImage){
+            throw new Error("Old profile image not found, please use upload instead");
+        }
+        try{
+            //delete old image from s3
+            await this.s3Service.deleteImageFile(oldProfileImage);
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            throw new Error("Failed to delete old profile image");
+        }
+        await this.upload_profile_image(file, user);       
+    }
+
     async get_profile_image(user_id: number){
         const user = await this.userRepository.get_user_by_id(user_id);
         if(!user.profile_image){

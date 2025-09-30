@@ -76,6 +76,18 @@ export class UserController {
         }
     }
 
+    async update_profile_image(req: Request, res: Response){
+        if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+        try {
+            const user = req.user as { id: number, role: string };
+            const imageUrl = await this.userService.update_profile_image(req.file, user);
+            res.json({ message: "Profile image updated successfully", imageUrl });
+        } catch (error: unknown) {
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
     async get_profile_image(req: Request, res: Response){
         try{
             const user = req.user as { id: number };
