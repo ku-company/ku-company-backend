@@ -23,7 +23,7 @@ export class UserRepository {
                     email: input.email,
                     password_hash: input.password_hash,
                     role: input.role as Role,
-                    verified: input.verified,
+                    verified: false,
                     status: "Pending",
                     profile_image: input.profile_image,
                     employeeProfile: {
