@@ -7,6 +7,7 @@ export interface UserDB{
     password_hash: string | null;
     role: string
     verified: boolean;
+    status: string;
     profile_image: string | null;
     employeeProfile?: object | null;
     companyProfile?: object | null;

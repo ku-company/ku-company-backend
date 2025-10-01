@@ -6,6 +6,7 @@ export interface UserDTO{
     email: string;
     role: string;
     verified: boolean;
+    status: string;
     profile_image: string | null;
     employee_profile?: object | null;
     company_profile?: object | null;

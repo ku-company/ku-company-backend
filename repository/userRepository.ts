@@ -24,6 +24,7 @@ export class UserRepository {
                     password_hash: input.password_hash,
                     role: input.role as Role,
                     verified: input.verified,
+                    status: "Pending",
                     profile_image: input.profile_image,
                     employeeProfile: {
                         create: {}
@@ -31,6 +32,22 @@ export class UserRepository {
                 }, 
                 include: {
                     employeeProfile: true,
+                }
+            })
+        }
+        if(input.role === Role.Admin){
+            return await this.prisma.user.create({
+                data: {
+                    first_name: input.first_name,
+                    last_name: input.last_name,
+                    company_name: input.company_name,
+                    user_name: input?.user_name,
+                    email: input.email,
+                    password_hash: input.password_hash,
+                    role: input.role as Role,
+                    verified: true,
+                    status: "Approved",
+                    profile_image: input.profile_image,
                 }
             })
         }
@@ -44,6 +61,7 @@ export class UserRepository {
                 password_hash: input.password_hash,
                 role: input.role as Role,
                 verified: input.verified,
+                status: "Pending",
                 profile_image: input.profile_image,
             }
         })

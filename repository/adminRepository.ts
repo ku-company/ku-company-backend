@@ -118,6 +118,7 @@ export class AdminRepository{
                 password_hash: input.password_hash,
                 role: input.role as Role,
                 verified: input.verified,
+                status: "Pending",
                 profile_image: input.profile_image,
             }
         })
