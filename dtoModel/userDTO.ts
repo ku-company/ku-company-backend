@@ -17,6 +17,7 @@ export interface UserCompanyDTO {
     email: string;
     role: string;
     verified: boolean;
+    status: string;
     profile_image: string | null;
     company_profile?: object | null;
 }
