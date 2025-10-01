@@ -70,6 +70,7 @@ class EmployerSignUpStrategy extends SignUpStrategy{
                 role: userData.role ,
                 verified: userData.verified,
                 profile_image: userData.profile_image,
+                status: "Pending",
                 company_profile: userData.companyProfile ?? null,
             }
         return response_user
