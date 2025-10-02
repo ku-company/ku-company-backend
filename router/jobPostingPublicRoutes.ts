@@ -11,4 +11,10 @@ router.get("/", (req, res) => {
     jobPostingPublicController.get_all_job_postings(req, res);
 })
 
+// /api/job-postings/:id
+router.get("/:id", (req, res) => {
+    // return job posting by id
+    jobPostingPublicController.get_job_posting_by_id(req, res);
+})
+
 export default router;

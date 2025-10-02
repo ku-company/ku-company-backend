@@ -60,5 +60,20 @@ export class JobPostingPublicRepository {
         });
     }
 
+    async get_job_posting_by_id(id: number) {
+        return this.prisma.jobPost.findUnique({
+            where: { id },
+            include: {
+                company: {
+                    select: {
+                    company_name: true,
+                    location: true,
+                    tel: true,
+                    user_id: true
+                    }
+                }
+            }
+        });
+    }
 
 }

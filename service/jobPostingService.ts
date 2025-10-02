@@ -1,5 +1,7 @@
 import { JobPostingPublicRepository } from "../repository/jobPostingRepository.js";
 import { UserService } from "./userService.js";
+import type { JobPostingFeedDTO, JobPostWithCompany } from "../dtoModel/jobPostingDTO.js";
+
 
 export class JobPostingService {
 
@@ -18,27 +20,33 @@ export class JobPostingService {
         return `${days} days ago`;
     }
 
-    async get_all_job_postings(keyword?: string, category?: string) {
-        const item = await this.jobPostingRepository.get_all_job_postings(keyword, category);
-        const jobPostings = await Promise.all(
-        item.map(async (job) => ({
-            id: job.id,
-            position: job.position,
-            description: job.description,
-            jobType: job.jobType,
-            available_position: job.available_position,
-            company_id: job.company.user_id,
-            company_name: job.company.company_name,
-            company_profile_image: await this.userService.get_profile_image(job.company.user_id),
-            company_location: job.company.location,
-            company_tel: job.company.tel,
-            created_at: job.created_at,
-            updated_at: job.updated_at,
-            posted_ago: this.postedAgo(job.created_at) // use dto or model?
-        }))
-        );
-
-        return jobPostings;
-        
+    private async toFeedDTO(job: JobPostWithCompany): Promise<JobPostingFeedDTO> {
+        return {
+        id: job.id,
+        position: job.position,
+        description: job.description,
+        jobType: job.jobType,
+        available_position: job.available_position,
+        company_name: job.company.company_name,
+        company_profile_image: await this.userService.get_profile_image(job.company.user_id),
+        company_location: job.company.location,
+        company_tel: job.company.tel,
+        created_at: job.created_at,
+        updated_at: job.updated_at,
+        posted_ago: this.postedAgo(job.created_at),
+        };
     }
+
+    async get_all_job_postings(keyword?: string, category?: string): Promise<JobPostingFeedDTO[]> {
+        const items = await this.jobPostingRepository.get_all_job_postings(keyword, category);
+        return Promise.all(items.map((job) => this.toFeedDTO(job)));
+    }
+
+    async get_job_posting_by_id(id: number): Promise<JobPostingFeedDTO | null> {
+        const item = await this.jobPostingRepository.get_job_posting_by_id(id);
+        if (!item) return null;
+        return this.toFeedDTO(item);
+    }
+
+
 }

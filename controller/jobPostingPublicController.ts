@@ -22,6 +22,20 @@ export class JobPostingPublicController {
         }
     }
 
+    async get_job_posting_by_id(req: Request, res: Response){
+        try{
+            const { id } = req.params;
+            const jobPosting = await this.JobPostingService.get_job_posting_by_id(Number(id));
+            if (!jobPosting) {
+                return res.status(404).json({ message: "Job posting not found" });
+            }
+            res.json({ job_posting: jobPosting });
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
 
     
 
