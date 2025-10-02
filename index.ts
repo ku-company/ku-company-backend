@@ -13,6 +13,7 @@ import jwtMiddleware from "./middlewares/jwtMiddleware.js";
 import adminRouter from "./router/adminRoutes.js";
 import companyRouter from "./router/companyRoutes.js";
 import authorizeRole from "./middlewares/rolebasedMiddleware.js";
+import companyJobPostingRouter from "./router/jobPostingPublicRoutes.js";
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -29,6 +30,7 @@ app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/company", authorizeRole("Company"), companyRouter);
+app.use("/api/job-postings", companyJobPostingRouter); // feed job postings
 
 
 app.get("/", (req, res) => {
