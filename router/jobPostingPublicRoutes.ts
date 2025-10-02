@@ -5,9 +5,9 @@ import { JobPostingPublicController} from "../controller/jobPostingPublicControl
 const router = Router();
 const jobPostingPublicController = new JobPostingPublicController();
 
-// /api/job-postings?keyword=part time&category=Backend_Developer
+// /api/job-postings?keyword=Emily Company&category=Backend_Developer&jobType=PartTime
 router.get("/", (req, res) => {
-    // return all job postings
+    // return all job postings with optional filters: keyword, category, jobType
     jobPostingPublicController.get_all_job_postings(req, res);
 })
 

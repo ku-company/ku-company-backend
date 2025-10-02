@@ -10,22 +10,8 @@ export class JobPostingPublicRepository {
         this.prisma = PrismaDB.getInstance();
     }
 
-    private normalizeEnum(val: string): JobType | undefined {
-        // normalize input: lowercase, remove spaces, underscores, etc.
-        const normalizedInput = val.toLowerCase().replace(/[\s_]/g, "");
 
-        for (const enumVal of Object.values(JobType)) {
-            const normalizedEnum = enumVal.toLowerCase().replace(/[\s_]/g, "");
-            if (normalizedEnum === normalizedInput) {
-            return enumVal as JobType;
-            }
-        }
-
-        return undefined;
-    }
-
-    async get_all_job_postings(keyword?: string, category?: string) {
-        const jobTypeEnum = keyword ? this.normalizeEnum(keyword) : undefined;
+    async get_all_job_postings(keyword?: string, category?: string, jobType?: string) {
         return this.prisma.jobPost.findMany({
             where: {
                 available_position: {
@@ -36,12 +22,13 @@ export class JobPostingPublicRepository {
                     { description: { contains: keyword, mode: "insensitive" } },
                     { company: { company_name: { contains: keyword, mode: "insensitive" } } },
                     { company: { location: { contains: keyword, mode: "insensitive" } } },
-                    ...(jobTypeEnum ? [{ jobType: jobTypeEnum }] : [])
                     
                     ],
                 }),
                 // category = exact match with Position enum
-                ...(category && { position: category as any })
+                // jobType = exact match with JobType enum
+                ...(category && { position: category as any }),
+                ...(jobType && { jobType: jobType as JobType })
                 
             },
             orderBy: {
