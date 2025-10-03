@@ -11,6 +11,20 @@ router.get("/", (req, res) => {
     jobPostingPublicController.get_all_job_postings(req, res);
 })
 
+// /api/job-postings/category
+router.get("/category", (req, res) => {
+    // for dropdown
+    // return all job categories (Position enum values)
+    jobPostingPublicController.get_all_job_categories(req, res);
+})
+
+// /api/job-postings/job-type
+router.get("/job-type", (req, res) => {
+    // for dropdown
+    // return all job types (JobType enum values)
+    jobPostingPublicController.get_all_job_types(req, res);
+})
+
 // /api/job-postings/:id
 router.get("/:id", (req, res) => {
     // return job posting by id

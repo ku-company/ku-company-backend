@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import { JobPostingService } from "../service/jobPostingService.js";
 import {isJobType, isPosition} from "../utils/validatorEnum.js";
-import type { JobType, Position } from "../utils/enums.js";
+import { JobType, Position } from "../utils/enums.js";
+import { enumToDropdown } from "../utils/enumToDropdown.js";
 
 export class JobPostingPublicController {
 
@@ -11,6 +12,16 @@ export class JobPostingPublicController {
         this.JobPostingService = new JobPostingService();
     }
 
+    async get_all_job_categories(req: Request, res: Response) {
+        const categories = enumToDropdown(Position);
+        res.json({ categories });
+    }
+
+    async get_all_job_types(req: Request, res: Response) {
+        console.log("Getting all job types");
+        const jobTypes = enumToDropdown(JobType);
+        res.json({ jobTypes });
+    }
 
     async get_all_job_postings(req: Request, res: Response){
         try{
