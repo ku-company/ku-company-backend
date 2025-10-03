@@ -97,14 +97,17 @@ export class AdminRepository{
             data.companyProfile = { update: input.companyProfile };
         }
 
+        if(input.professorProfile){
+            data.professorProfile = { update: input.professorProfile };
+        }
+        
         const updated_user = await this.prisma.user.update({
             where: { id:user_id },
+            include: { employeeProfile: true, companyProfile: true, professorProfile: true},
             data,
         });
         return updated_user;
     }
-
-
 
 
     async add_user(input: UserDB){
