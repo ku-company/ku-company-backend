@@ -17,6 +17,10 @@ export class EmployeeService{
     }
 
     async create_profile(req: any){
+        const user = await this.employeeRepository.get_profile(req.user.id)
+        if(user){
+            throw new Error("Profile already exists");
+        }
         return await this.employeeRepository.create_profile(req) 
       }
 
