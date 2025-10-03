@@ -147,7 +147,7 @@ export class UserService {
     async get_profile_image(user_id: number){
         const user = await this.userRepository.get_user_by_id(user_id);
         if(!user.profile_image){
-            throw new Error("No profile image found");
+            return null;
         }
         const imageUrl = await this.s3Service.getImageUrl(user.profile_image);
         return imageUrl;
