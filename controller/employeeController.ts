@@ -24,7 +24,7 @@ export class EmployeeController{
 
     async create_profile(req: any, res: any){
         try{
-            const result = await this.employeeService.create_profile(req.body, req.user.id);
+            const result = await this.employeeService.create_profile(req);
             res.status(201).json({
                 message: "Profile created successfully",
                 data: result

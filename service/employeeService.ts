@@ -16,11 +16,9 @@ export class EmployeeService{
         return true;
     }
 
-    async create_profile(input: InputEmployeeProfile, user_id: number){
-        input.user_id = user_id
-        return await this.employeeRepository.create_profile(input)
-
-    }
+    async create_profile(req: any){
+        return await this.employeeRepository.create_profile(req) 
+      }
 
     async get_profile(req: any){
         const req_id = Number(req.params.id)

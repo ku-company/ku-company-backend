@@ -7,7 +7,7 @@ import authorizeRole from "../middlewares/rolebasedMiddleware.js";
 const router = Router();
 const employeeController = new EmployeeController();
 router.use(verifiedMiddleware);
-router.use(authorizeRole("Student", "Alumni","Admin"));
+router.use(authorizeRole("Student", "Alumni", "Admin"));
 
 router.get("/profile/:id", async (req , res) =>{
     employeeController.get_employee_profile(req, res)

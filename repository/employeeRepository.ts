@@ -11,19 +11,16 @@ export class EmployeeRepository{
         this.prisma = PrismaDB.getInstance();
     }
 
-    async create_profile(input: InputEmployeeProfile){
+    async create_profile(req: any){
+        const data = req.body
         return await this.prisma.employeeProfile.create({
+
             data: {
-                education: input.education,
-                summary: input.summary,
-                skills: input.skills,
-                experience: input.experience,
-                contactInfo: input.contactInfo,
-                languages: input.languages,
+                ...data,
                 updated_at: new Date(),
                 user: {
                     connect: {
-                        id: input.user_id
+                        id: req.user.id
                     }
                 }
             }
