@@ -14,7 +14,6 @@ export class EmployeeRepository{
     async create_profile(req: any){
         const data = req.body
         return await this.prisma.employeeProfile.create({
-
             data: {
                 ...data,
                 updated_at: new Date(),
