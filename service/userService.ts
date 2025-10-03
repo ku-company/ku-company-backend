@@ -62,7 +62,8 @@ export class UserService {
             "refresh_token": refresh_token,
             "user_name": user.user_name || "",
             "role": user.role,
-            "email": user.email
+            "email": user.email,
+            "verified": user.verified
         }
         return response
     }

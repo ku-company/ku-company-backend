@@ -31,6 +31,7 @@ export interface LoginResponse{
     user_name: string;
     role: string;
     email: string;
+    verified: boolean;
 }
 
 export interface RefreshTokenRequest {
