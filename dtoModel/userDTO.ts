@@ -1,5 +1,6 @@
 
 export interface UserDTO{
+    id: number;
     first_name: string;
     last_name: string;
     full_name: string;
@@ -13,6 +14,7 @@ export interface UserDTO{
 }
 
 export interface UserCompanyDTO {
+    id: number;
     company_name: string;
     email: string;
     role: string;
@@ -23,6 +25,7 @@ export interface UserCompanyDTO {
 }
 
 export interface LoginResponse{
+    id: number;
     access_token: string;
     refresh_token: string;
     user_name: string;

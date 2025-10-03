@@ -42,7 +42,8 @@ export class UserService {
             id: user.id,
             user_name: user.user_name,
             email: user.email,
-            role: user.role
+            role: user.role,
+            verified: user.verified
         }
         const SECRET_KEY= process.env.SECRET_KEY;
         const REFRESH_KEY = process.env.REFRESH_KEY;
@@ -56,6 +57,7 @@ export class UserService {
         const refresh_token = jwt.sign(payload, REFRESH_KEY, {expiresIn: "7d"});
 
         const response: LoginResponse = {
+            "id": user.id,
             "access_token": access_token,
             "refresh_token": refresh_token,
             "user_name": user.user_name || "",
@@ -76,7 +78,8 @@ export class UserService {
                 id: decoded.id,
                 user_name: decoded.user_name,
                 email: decoded.email,
-                roles: decoded.roles
+                role: decoded.role,
+                verified: decoded.verified
             }
             const SECRET_KEY= process.env.SECRET_KEY;
             if(!SECRET_KEY){

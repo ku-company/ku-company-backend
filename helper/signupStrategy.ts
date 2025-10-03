@@ -28,8 +28,9 @@ export abstract class SignUpStrategy{
 
 
 class EmployeeSignUpStrategy extends SignUpStrategy{
-    async sign_up(userData :UserDB) {
+    async sign_up(userData :any) {
         let response_user: UserDTO = {
+                id: userData.id,
                 first_name: userData.first_name!,
                 last_name: userData.last_name!,
                 full_name: `${userData.first_name} ${userData.last_name}`,
@@ -40,13 +41,14 @@ class EmployeeSignUpStrategy extends SignUpStrategy{
                 profile_image: userData.profile_image,
                 employee_profile: userData.employeeProfile ?? null,
             }
-        return response_user
+            return response_user
     }
 }
 
 class AdminSignUpStrategy extends SignUpStrategy{
-    async sign_up(userData :UserDB) {
+    async sign_up(userData :any) {
         let response_user: UserDTO = {
+                id: userData.id,
                 first_name: userData.first_name!,
                 last_name: userData.last_name!,
                 full_name: `${userData.first_name} ${userData.last_name}`,
@@ -63,8 +65,9 @@ class AdminSignUpStrategy extends SignUpStrategy{
 }
 
 class EmployerSignUpStrategy extends SignUpStrategy{
-    async sign_up(userData :UserDB) {
+    async sign_up(userData :any) {
         let response_user: UserCompanyDTO = {
+                id: userData.id,
                 company_name: userData.company_name!,
                 email: userData.email,
                 role: userData.role ,
