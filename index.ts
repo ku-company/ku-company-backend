@@ -12,6 +12,7 @@ import "./utils/auth.js";
 import jwtMiddleware from "./middlewares/jwtMiddleware.js";
 import adminRouter from "./router/adminRoutes.js";
 import companyRouter from "./router/companyRoutes.js";
+import employeeRouter from "./router/employeeRoutes.js";
 import authorizeRole from "./middlewares/rolebasedMiddleware.js";
 import companyJobPostingRouter from "./router/jobPostingPublicRoutes.js";
 
@@ -29,6 +30,7 @@ app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/employee", authorizeRole("Student", "Alumni"), employeeRouter );
 app.use("/api/company", authorizeRole("Company"), companyRouter);
 app.use("/api/job-postings", companyJobPostingRouter); // feed job postings
 

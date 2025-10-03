@@ -2,6 +2,7 @@ import type { PrismaClient, VerifiedStatus } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { UserDB } from "../model/userModel.js";
 import { Role } from "../utils/enums.js";
+import { Prisma } from "@prisma/client";
 
 export class AdminRepository{
     private prisma: PrismaClient
@@ -63,19 +64,49 @@ export class AdminRepository{
         return deleted_user
     }
 
-    async edit_user(id: number, input: UserDB){
-        const user_id = await this.find_user(id)
+    async edit_user(id: number, input: UserDB) {
+        const user_id = Number(id);
+        const user = await this.prisma.user.findUnique({
+                where: { id: user_id },
+                include: { employeeProfile: true }
+            });
+
+        if (!user) throw new Error("User not found");
+
+        const data: Prisma.UserUpdateInput = {
+                    first_name: input.first_name,
+                    last_name: input.last_name,
+                    company_name: input.company_name,
+                    user_name: input.user_name,
+                    email: input.email,
+                    password_hash: input.password_hash,
+                    role: input.role as Role,
+                    verified: input.verified,
+                    profile_image: input.profile_image,
+                    updated_at: new Date(),
+                    };
+
+
+        if (input.employeeProfile) {
+        data.employeeProfile = user.employeeProfile
+            ? { update: input.employeeProfile }
+            : {};
+        }
+
+        if (input.companyProfile) {
+            data.companyProfile = { update: input.companyProfile };
+        }
+
+        if(input.professorProfile){
+            data.professorProfile = { update: input.professorProfile };
+        }
+        
         const updated_user = await this.prisma.user.update({
-            where: {
-                id : user_id
-            },
-            data: {
-                ...input,
-                role: input.role as Role,
-                updated_at: new Date()
-            }
-        })
-        return updated_user
+            where: { id:user_id },
+            include: { employeeProfile: true, companyProfile: true, professorProfile: true},
+            data,
+        });
+        return updated_user;
     }
 
 
@@ -90,6 +121,7 @@ export class AdminRepository{
                 password_hash: input.password_hash,
                 role: input.role as Role,
                 verified: input.verified,
+                status: "Pending",
                 profile_image: input.profile_image,
             }
         })

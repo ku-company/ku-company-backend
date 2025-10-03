@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "public"."employeeProfile" ALTER COLUMN "education" DROP NOT NULL,
+ALTER COLUMN "summary" DROP NOT NULL,
+ALTER COLUMN "skills" DROP NOT NULL,
+ALTER COLUMN "experience" DROP NOT NULL,
+ALTER COLUMN "contactInfo" DROP NOT NULL,
+ALTER COLUMN "languages" DROP NOT NULL;

@@ -86,12 +86,14 @@ model professorProfile {
 model employeeProfile {
   id          Int   @id @default(autoincrement())
   user_id     Int   @unique
-  education   String @db.VarChar(255)
-  summary     String @db.VarChar(255)
-  skills      String @db.VarChar(255)
-  experience  String @db.VarChar(255)
-  contactInfo String @db.VarChar(255)
-  languages   String @db.VarChar(255)
+  education   String? @db.VarChar(255)
+  birthDate   DateTime?
+  summary     String? @db.VarChar(255)
+  skills      String? @db.VarChar(255)
+  experience  String? @db.VarChar(255)
+  contactInfo String? @db.VarChar(255)
+  languages   String? @db.VarChar(255)
+  updated_at  DateTime @updatedAt
   user        User @relation(name: "UserEmployee", fields: [user_id], references: [id])
   resumes     Resume[]
   jobBatches jobApplicationBatch[]
