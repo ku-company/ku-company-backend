@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import type { InputEmployeeProfile } from "../model/employeeModel.js";
+import type { EditEmployeeProfile, InputEmployeeProfile } from "../model/employeeModel.js";
 import { profile } from "console";
 
 export class EmployeeRepository{
@@ -30,15 +30,16 @@ export class EmployeeRepository{
         })
     };
 
-    async get_profile(profile_id: number){
-        return await this.prisma.employeeProfile.findUnique({
+    async get_profile(user_id: number){
+        const result = await this.prisma.employeeProfile.findUnique({
             where: {
-                id: profile_id
+                user_id: user_id
             },
             include: {
                 user: true
             }
         })
+        return result
     };
 
     async delete_profile(user_id: number){
@@ -49,8 +50,20 @@ export class EmployeeRepository{
         })
     };
 
-    async edit_profile(user_id: number){
-
+    async edit_profile(user_id: number, input: EditEmployeeProfile){
+        try{
+            return await this.prisma.employeeProfile.update({
+            where: {
+                user_id: user_id
+            },
+            data: {
+                ...input,
+                updated_at: new Date()
+            }
+        })
+        }catch(e){
+            throw new Error("Profile not found");
+        }
     };
     
 }
