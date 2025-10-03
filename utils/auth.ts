@@ -49,6 +49,7 @@ passport.use(
           company_name: null,
           email: email,
           verified: false,
+          status: "Pending",
           profile_image: profile.photos?.[0]?.value || null,
           password_hash: null,
           role: role
