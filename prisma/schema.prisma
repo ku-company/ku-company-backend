@@ -9,6 +9,7 @@ enum Role {
   Alumni
   Admin
   Company
+  Unknown
 }
 
 enum JobStatus {

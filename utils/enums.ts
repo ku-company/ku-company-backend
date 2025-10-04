@@ -2,7 +2,8 @@ export enum Role {
   Student = "Student",
   Alumni = "Alumni",
   Admin = "Admin",
-  Company = "Company"
+  Company = "Company",
+  Unknown = "Unknown"
 }
 
 export enum JobStatus {
