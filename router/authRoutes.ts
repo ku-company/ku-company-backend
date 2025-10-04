@@ -61,10 +61,7 @@ router.get(
     if (!SECRET_KEY || !REFRESH_KEY || !clientUrl) {
       throw new Error("Missing required environment variables");
     }
-    console.log("✅ Using SECRET_KEY to sign:", process.env.SECRET_KEY);
-    console.log("✅ Using REFRESH_KEY to sign:", process.env.REFRESH_KEY);
     const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m" });
-    console.log("accessToken:AAAAAA", accessToken);
     const refreshToken = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d" });
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
