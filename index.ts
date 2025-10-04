@@ -21,7 +21,7 @@ dotenv.config();
 const port = process.env.PORT || 8000;
 const app: Express = express();
 
-app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_URL_DEV, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());

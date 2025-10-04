@@ -3,11 +3,15 @@ import passport from 'passport';
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import type { UserOauth } from "../model/userModel.js";
+import { AuthController } from '../controller/authController.js';
 
 const router = Router();
 const secretKey = process.env.SECRET_KEY;
 const refreshKey = process.env.REFRESH_KEY;
 const clientUrl = process.env.CLIENT_URL_DEV;
+
+const authController = new AuthController();
+
 
 if (!secretKey || !refreshKey || !clientUrl) {
   throw new Error("Missing required environment variables: SECRET_KEY, REFRESH_KEY, or CLIENT_URL_DEV");
@@ -52,8 +56,16 @@ router.get(
     }
     console.log("JWT Payload:", payload);
 
-    const accessToken = jwt.sign(payload, process.env.SECRET_KEY!, { expiresIn: "15m" });
-    const refreshToken = jwt.sign(payload, process.env.REFRESH_KEY!, { expiresIn: "7d" });
+    const SECRET_KEY = process.env.SECRET_KEY;
+    const REFRESH_KEY = process.env.REFRESH_KEY;
+    if (!SECRET_KEY || !REFRESH_KEY || !clientUrl) {
+      throw new Error("Missing required environment variables");
+    }
+    console.log("✅ Using SECRET_KEY to sign:", process.env.SECRET_KEY);
+    console.log("✅ Using REFRESH_KEY to sign:", process.env.REFRESH_KEY);
+    const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m" });
+    console.log("accessToken:AAAAAA", accessToken);
+    const refreshToken = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d" });
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -70,6 +82,11 @@ router.get(
 router.get("/failure", (req: Request, res: Response) => {
   res.send("Authentication failed");
 });
+
+router.get("/me", (req: Request, res: Response) => {
+  authController.getCurrentUser(req, res);
+}
+);
 
 export default router;
 

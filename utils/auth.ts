@@ -42,12 +42,14 @@ passport.use(
         
         // signup flow
         // Extract role from state (for new signup)
+        let role: string
         const state = req.query.state ? JSON.parse(req.query.state as string) : {};
-        if (!state.role || !validRoles.includes(state.role)) {
-          return done(new Error("Missing or invalid role for signup"), null);
+        if (!state.role || !validRoles.includes(state.role)) {        
+          role = "Unknown";
+        } else {
+          role = state.role; // attach role from state
         }
 
-        const role: string = state.role;
         
         // create new user
         const newUser = await userRepository.create_user({
