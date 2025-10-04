@@ -4,7 +4,7 @@ import { CompanyController } from "../../controller/companyController.js";
 import { UserController } from "../../controller/userController.js";
 import {body} from "express-validator";
 import { profileValidation } from "../../middlewares/profileValidation.js";
-import { upload } from "../../middlewares/uploadMiddleware.js";
+import { upload } from "../../middlewares/uploadImageMiddleware.js";
 
 const router = Router();
 const companyController = new CompanyController();
