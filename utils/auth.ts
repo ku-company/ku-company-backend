@@ -5,7 +5,8 @@ import { PrismaDB } from "../helper/prismaSingleton.js";
 import { UserRepository } from "../repository/userRepository.js";
 
 const prisma = PrismaDB.getInstance();
-const userRepository = new UserRepository();    
+const userRepository = new UserRepository();  
+const validRoles = ["Alumni", "Professor", "Company", "Student"];  
 
 passport.use(
   new GoogleStrategy(
@@ -32,15 +33,22 @@ passport.use(
                 email: email,
             },
         });
-        const state = req.query.state ? JSON.parse(req.query.state as string) : {};
-        const role = state.role || "Admin";
 
-        
+        // login flow
         if(user) {
-            console.log("User found:", user);
-            return done(null, user);
+            console.log("User found:", user); // login
+            return done(null, user); // finishes the authentication
+        }
+        
+        // signup flow
+        // Extract role from state (for new signup)
+        const state = req.query.state ? JSON.parse(req.query.state as string) : {};
+        if (!state.role || !validRoles.includes(state.role)) {
+          return done(new Error("Missing or invalid role for signup"), null);
         }
 
+        const role: string = state.role;
+        
         // create new user
         const newUser = await userRepository.create_user({
           first_name: profile.name?.givenName || profile.displayName || "Unknown",
@@ -55,7 +63,7 @@ passport.use(
           role: role
         });
 
-        return done(null, newUser);
+        return done(null, newUser); // finishes the authentication
       } catch (err) {
         return done(err, null);
       }
