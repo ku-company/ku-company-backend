@@ -17,4 +17,8 @@ router.get("/logout", async (req, res) => {
     userController.logout(req, res)
 })
 
+router.patch("/role", async (req, res) => {
+    userController.update_role(req, res)
+})
+
 export default router

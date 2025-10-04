@@ -110,7 +110,22 @@ export class UserController {
         }
     }
 
-    
+    async update_role(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number, role: string };
+            const role = req.body.role as string;
+            const result = await this.userService.update_role(user.id, role);
+            res.status(200).json({
+                message: "User role updated successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+
+    }
 
     
 

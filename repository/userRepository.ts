@@ -1,6 +1,7 @@
 import type { PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import type { UserDB } from "../model/userModel.js";
+import type { UserDB} from "../model/userModel.js";
+import type { UserSummaryDTO } from "../dtoModel/userDTO.js";
 import { Role } from "../utils/enums.js";
 import bcrypt from "bcryptjs";
 
@@ -173,5 +174,19 @@ export class UserRepository {
         });
     }
 
+    async update_role(user_id: number, new_role: Role): Promise<UserSummaryDTO> {
+        const updatedUser = await this.prisma.user.update({
+            where: {
+                id: user_id
+            },
+            data: {
+                role: new_role as Role
+            }
+        });
+        if(!updatedUser){
+            throw new Error("User not found");
+        }
+        return updatedUser;
+    }
 
 }

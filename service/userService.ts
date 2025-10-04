@@ -7,6 +7,8 @@ import { SignUpStrategyFactory, SignUpStrategy } from "../helper/signupStrategy.
 import { S3Service } from "../service/s3Services.js";
 import { validateImageBuffer } from "../helper/image.js";
 import { ImageKeyStrategy } from "../helper/s3KeyStrategy.js"
+import { Role } from "../utils/enums.js";
+
 
 export class UserService {
     
@@ -175,5 +177,23 @@ export class UserService {
         }
     }
 
+    async update_role(user_id: number, new_role: string){
+        const validRoles = Object.values(Role).filter(r => r !== Role.Admin) as Role[];
+        if (!validRoles.includes(new_role as Role)) {
+        throw new Error("Invalid role");
+        }
+        try{
+            const updatedUser = await this.userRepository.update_role(user_id, new_role as Role);
+            return {
+                id: updatedUser.id,
+                user_name: updatedUser.user_name || "",
+                email: updatedUser.email,
+                role: updatedUser.role,
+                verified: updatedUser.verified
+            };
+        }catch(err){
+            throw new Error("Failed to update role");
+        }
+    }
 
 }
