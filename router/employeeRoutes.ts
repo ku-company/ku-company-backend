@@ -50,9 +50,8 @@ router.delete("/profile/delete/:id", async (req , res) => {
 
 router.post("/profile/upload-resume", uploadPdf.array("resume", 3), async (req, res) => {
     // can upload max 3 resume files
-    // To be implemented
     console.log(req.files);
-    res.status(200).json({message: "Resume uploaded successfully"})
+    employeeController.upload_resumes(req, res);
 })
 
 export default router;

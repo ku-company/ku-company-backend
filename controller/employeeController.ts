@@ -1,4 +1,5 @@
 import { EmployeeService } from "../service/employeeService.js";
+import type { Request, Response } from "express";
 
 export class EmployeeController{
 
@@ -63,4 +64,20 @@ export class EmployeeController{
             })
         }
     }
+
+    async upload_resumes(req: Request, res: Response){
+        if (!req.files || !(req.files as Express.Multer.File[]).length) {
+        return res.status(400).json({ message: "No file uploaded" });
+        }
+        try {
+            const user = req.user as { id: number, role: string };
+            const imageUrl = await this.employeeService.upload_resumes(req, user);
+            res.json({ message: "Resume uploaded successfully", imageUrl });
+        } catch (error: unknown) {
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
+
 }

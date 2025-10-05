@@ -61,5 +61,15 @@ export class EmployeeRepository{
             throw new Error("Profile not found");
         }
     };
-    
+
+    async upload_resume(employee_id: number, file_url: string, is_main = false): Promise<void> {
+        await this.prisma.resume.create({
+            data: {
+            employee_id: employee_id, // profile id
+            file_url: file_url,
+            is_main: is_main
+            }
+        });
+    }
+
 }
