@@ -2,7 +2,7 @@ import multer from "multer";
 
 const storage = multer.memoryStorage();
 
-export const upload = multer({ 
+export const uploadImage = multer({ 
     storage: storage ,
     limits: {files: 1, fileSize: 5 * 1024 * 1024 }, // 5 MB cap 
     fileFilter: (_req, file, cb) => {
