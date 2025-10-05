@@ -154,6 +154,9 @@ export class UserService {
         if(!user.profile_image){
             return null;
         }
+        if(user.profile_image.startsWith("http")){
+            return user.profile_image; // already a URL from google OAuth
+        }
         const imageUrl = await this.s3Service.getFileUrl(user.profile_image);
         return imageUrl;
     }

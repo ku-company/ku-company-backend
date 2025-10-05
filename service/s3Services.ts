@@ -21,7 +21,6 @@ export class S3Service {
   }
 
     async uploadFile(file: { buffer: Buffer; mimetype: string; originalname: string }, context?: Record<string, any>) {
-        // const key = folder ? `${folder}/${Date.now()}-${file.originalname}` : `${Date.now()}-${file.originalname}`;
         const key = this.keyStrategy.generateKey(file.originalname, context);
 
         const params = {
