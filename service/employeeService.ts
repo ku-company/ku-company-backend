@@ -25,6 +25,12 @@ export class EmployeeService{
         return true;
     }
 
+    async has_profile(user_id: number){
+        const profile = await this.employeeRepository.get_profile(user_id);
+        if (!profile) throw new Error("Profile not found");
+        return profile;
+    }
+
     async create_profile(req: any){
         const user = await this.employeeRepository.get_profile(req.user.id)
         if(user){
@@ -63,11 +69,7 @@ export class EmployeeService{
 
     async upload_resumes(req: any, user: IUserRequest) {
         const req_id = req.user.id;
-        const is_valid = this.is_valid_profile(req_id, req.user.id, req);
-        if (!is_valid) throw new Error("Invalid profile access");
-
-        const profile = await this.employeeRepository.get_profile(user.id);
-        if (!profile) throw new Error("Profile not found");
+        const profile = await this.has_profile(req_id);
 
         const files = req.files as Express.Multer.File[];
         if (!files?.length) throw new Error("No resume files uploaded");
@@ -113,9 +115,8 @@ export class EmployeeService{
         return uploadedResults;
     }
 
-    async get_resumes(user_id: number){
-        const profile = await this.employeeRepository.get_profile(user_id);
-        if (!profile) throw new Error("Profile not found");
+    async get_all_resumes(user_id: number){
+        const profile = await this.has_profile(user_id);
 
         const resumes = await this.employeeRepository.get_resumes(profile.id);
         if (!resumes.length) return [];
@@ -135,8 +136,7 @@ export class EmployeeService{
     }
 
     async get_resume(resume_id: number, user_id: number){
-        const profile = await this.employeeRepository.get_profile(user_id);
-        if (!profile) throw new Error("Profile not found");
+        const profile = await this.has_profile(user_id);
 
         const resume = await this.employeeRepository.get_resume_by_id(resume_id, profile.id);
         if (!resume) throw new Error("Resume not found");
@@ -144,6 +144,34 @@ export class EmployeeService{
         return resume;
     }
 
+    async delete_resume(resume_id: number, user_id: number){
+        const profile = await this.has_profile(user_id);
 
+        const resume = await this.employeeRepository.get_resume_by_id(resume_id, profile.id);
+        if (!resume) throw new Error("Resume not found");
+
+        // Delete from S3
+        await this.s3Service.deleteFile(resume.file_url);
+
+        // Delete from DB
+        await this.employeeRepository.delete_resume_by_id(resume_id, profile.id);
+
+        return { message: "Resume deleted successfully" };
+    }
+
+    async delete_all_resumes(user_id: number){
+        const profile = await this.has_profile(user_id);
+
+        const resumes = await this.employeeRepository.get_resumes(profile.id);
+        if (!resumes.length) throw new Error("No resumes to delete");
+
+        // Delete from S3
+        await Promise.all(resumes.map(resume => this.s3Service.deleteFile(resume.file_url)));
+
+        // Delete from DB
+        await this.employeeRepository.delete_resumes_by_profile_id(profile.id);
+
+        return { message: "All resumes deleted successfully" };
+    }
 
 }

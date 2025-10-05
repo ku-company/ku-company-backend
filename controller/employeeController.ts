@@ -82,7 +82,7 @@ export class EmployeeController{
     async get_resumes(req: Request, res: Response){
         try{
             const user = req.user as { id: number };
-            const resumes = await this.employeeService.get_resumes(user.id);
+            const resumes = await this.employeeService.get_all_resumes(user.id);
             res.json({ resumes: resumes });
         }catch(error: unknown){
             console.error((error as Error).message);
@@ -99,6 +99,28 @@ export class EmployeeController{
             console.error((error as Error).message);
             res.status(500).json({ message: (error as Error).message });
         }
-    }    
+    } 
     
+    async delete_resume(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            await this.employeeService.delete_resume(Number(req.params.id), user.id);
+            res.json({ message: "Resume deleted successfully"});
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    
+    }
+
+    async delete_all_resumes(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            await this.employeeService.delete_all_resumes(user.id);
+            res.json({ message: "All resumes deleted successfully"});
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
 }

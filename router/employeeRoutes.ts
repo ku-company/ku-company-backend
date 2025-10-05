@@ -46,16 +46,24 @@ router.get("/profile/resume/:id", (req, res) => {
 
 router.delete("/profile/resume/:id", (req, res) => {
     // delete specific resume by id
-    // employeeController.delete_resume(req, res);
+    employeeController.delete_resume(req, res);
 });
 
 router.delete("/profile/resumes", (req, res) => {
     // delete all resumes
-    // employeeController.delete_all_resumes(req, res);
+    employeeController.delete_all_resumes(req, res);
 });
 
 
+router.post("/profile/resume/:id/remove-main", (req, res) => {
+    // remove main resume
+    // employeeController.remove_main_resume(req, res);
+});
 
+router.post("/profile/resume/main/:id",(req,res) =>{
+    // set main resume
+    // employeeController.set_main_resume(req, res);
+});
 
 router.get("/profile/:id", async (req , res) =>{
     employeeController.get_employee_profile(req, res)
