@@ -6,16 +6,17 @@ import jwt from "jsonwebtoken"
 import { SignUpStrategyFactory, SignUpStrategy } from "../helper/signupStrategy.js";
 import { S3Service } from "../service/s3Services.js";
 import { validateImageBuffer } from "../helper/image.js";
-
+import { ImageKeyStrategy } from "../helper/s3KeyStrategy.js"
 
 export class UserService {
     
     private userRepository: UserRepository;
     private s3Service: S3Service;
+    private BUCKET_NAME = process.env.BUCKET_NAME || "";
 
     constructor() {
         this.userRepository = new UserRepository()
-        this.s3Service = new S3Service();
+        this.s3Service = new S3Service(this.BUCKET_NAME, new ImageKeyStrategy());
     }
     
     async sign_up(input: sign_up_input){
@@ -116,12 +117,12 @@ export class UserService {
         try{
             // Real validation from bytes
             const { mime } = await validateImageBuffer(file.buffer);
-            const { key} = await this.s3Service.uploadImageFile({
+            const { key} = await this.s3Service.uploadFile({
                 buffer: file.buffer,
                 mimetype: mime,
                 originalname: file.originalname,
                 },
-                `user-${user.role}`
+                {role: user.role}
             );
             console.log("Uploaded image path:", key);
             await this.userRepository.upload_profile_image(user.id, { profile_image: key });
@@ -140,7 +141,7 @@ export class UserService {
         const newKey = await this.upload_profile_image(file, user);
         try{
             //delete old image from s3
-            await this.s3Service.deleteImageFile(oldProfileImage);
+            await this.s3Service.deleteFile(oldProfileImage);
         }catch(error: unknown){
             console.error((error as Error).message);
             throw new Error("Failed to delete old profile image");
@@ -153,7 +154,7 @@ export class UserService {
         if(!user.profile_image){
             return null;
         }
-        const imageUrl = await this.s3Service.getImageUrl(user.profile_image);
+        const imageUrl = await this.s3Service.getFileUrl(user.profile_image);
         return imageUrl;
     }
 
@@ -163,7 +164,7 @@ export class UserService {
             throw new Error("No profile image found");
         }
         try{
-            await this.s3Service.deleteImageFile(user.profile_image);
+            await this.s3Service.deleteFile(user.profile_image);
             await this.userRepository.delete_profile_image(user_id);
         }catch(error: unknown){
             console.error((error as Error).message);

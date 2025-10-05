@@ -1,7 +1,7 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import type { S3KeyStrategy } from "../helper/s3KeyStrategy.js";
 
-const BUCKET_NAME = process.env.BUCKET_NAME || "";
 const BUCKET_REGION = process.env.BUCKET_REGION || "";
 const ACCESS_KEY = process.env.ACCESS_KEY || "";
 const SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY || "";
@@ -15,10 +15,17 @@ const s3Client = new S3Client({
 });
 
 export class S3Service {
-    async uploadImageFile(file: { buffer: Buffer; mimetype: string; originalname: string }, folder?: string) {
-        const key = folder ? `${folder}/${Date.now()}-${file.originalname}` : `${Date.now()}-${file.originalname}`;
+  constructor(private bucketName: string, private keyStrategy: S3KeyStrategy) {
+    this.bucketName = bucketName;
+    this.keyStrategy = keyStrategy;
+  }
+
+    async uploadFile(file: { buffer: Buffer; mimetype: string; originalname: string }, context?: Record<string, any>) {
+        // const key = folder ? `${folder}/${Date.now()}-${file.originalname}` : `${Date.now()}-${file.originalname}`;
+        const key = this.keyStrategy.generateKey(file.originalname, context);
+
         const params = {
-        Bucket: BUCKET_NAME,
+        Bucket: this.bucketName,
         Key: key,
         Body: file.buffer,
         ContentType: file.mimetype, // validated mime
@@ -28,9 +35,9 @@ export class S3Service {
         return { key };
     }
 
-    async getImageUrl(key: string) {
+    async getFileUrl(key: string) {
         const params = {
-            Bucket: BUCKET_NAME,
+            Bucket: this.bucketName,
             Key: key,
         };
         const command = new GetObjectCommand(params);
@@ -38,9 +45,9 @@ export class S3Service {
         return url;
     }
 
-    async deleteImageFile(key: string) {
+    async deleteFile(key: string) {
         const params = {
-            Bucket: BUCKET_NAME,
+            Bucket: this.bucketName,
             Key: key,
         };
         const command = new DeleteObjectCommand(params);
