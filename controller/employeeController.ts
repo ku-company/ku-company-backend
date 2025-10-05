@@ -89,4 +89,16 @@ export class EmployeeController{
             res.status(500).json({ message: (error as Error).message });
         }
     }
+
+    async get_resume(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const resume = await this.employeeService.get_resume(Number(req.params.id), user.id);
+            res.json({ resume: resume });
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }    
+    
 }

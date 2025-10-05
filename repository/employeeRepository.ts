@@ -89,4 +89,13 @@ export class EmployeeRepository{
         });
         return count;
     }
+
+    async get_resume_by_id(resume_id: number, employee_id: number) {
+        return await this.prisma.resume.findUnique({
+            where: {
+                id: resume_id,
+                employee_id: employee_id
+            }
+        });
+    }
 }

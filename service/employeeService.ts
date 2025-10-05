@@ -134,4 +134,16 @@ export class EmployeeService{
         return signedResumes;
     }
 
+    async get_resume(resume_id: number, user_id: number){
+        const profile = await this.employeeRepository.get_profile(user_id);
+        if (!profile) throw new Error("Profile not found");
+
+        const resume = await this.employeeRepository.get_resume_by_id(resume_id, profile.id);
+        if (!resume) throw new Error("Resume not found");
+        resume.file_url = await this.s3Service.getFileUrl(resume.file_url);
+        return resume;
+    }
+
+
+
 }
