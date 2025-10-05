@@ -72,4 +72,21 @@ export class EmployeeRepository{
         });
     }
 
+    async get_resumes(employee_id: number)  {
+        const resumes = await this.prisma.resume.findMany({
+            where: {
+                employee_id: employee_id
+            },
+        });
+        return resumes;
+        }
+
+    async resume_count(employee_id: number): Promise<number> {
+        const count = await this.prisma.resume.count({
+            where: {
+                employee_id: employee_id
+            }
+        });
+        return count;
+    }
 }

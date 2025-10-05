@@ -18,7 +18,6 @@ const errorHandler = (err: any, req: Request, res: Response, next: NextFunction)
         return res.status(400).json({ error: err.message });
     }    
     if (err.message) {
-    // You can make it more specific by checking text or creating custom error classes later
     return res.status(400).json({ error: err.message });
     }
     // Handle other errors

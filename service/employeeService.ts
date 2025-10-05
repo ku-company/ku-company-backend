@@ -5,6 +5,8 @@ import { S3Service } from "./s3Services.js";
 import { validatePdfBuffer } from "../helper/pdf.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
 import type { IUserRequest } from "../model/userModel.js";
+import type { Resume } from "@prisma/client";
+
 export class EmployeeService{
 
     private employeeRepository: EmployeeRepository
@@ -62,43 +64,74 @@ export class EmployeeService{
     async upload_resumes(req: any, user: IUserRequest) {
         const req_id = req.user.id;
         const is_valid = this.is_valid_profile(req_id, req.user.id, req);
-
         if (!is_valid) throw new Error("Invalid profile access");
 
-        // find if alr have profile
         const profile = await this.employeeRepository.get_profile(user.id);
         if (!profile) throw new Error("Profile not found");
 
-        // Upload resumes to S3
         const files = req.files as Express.Multer.File[];
         if (!files?.length) throw new Error("No resume files uploaded");
 
-        const uploadedKeys: string[] = [];
-
-        for (const file of files) {
+        const existingResumeCount = await this.employeeRepository.resume_count(profile.id);
+        const resumeLimit = 3;
+        if (existingResumeCount + files.length > resumeLimit) {
+            const remaining = resumeLimit - existingResumeCount;
+            throw new Error(
+                remaining > 0
+                ? `You already have ${existingResumeCount} resumes. You can upload only ${remaining} more.`
+                : `You already have the maximum of ${resumeLimit} resumes. Please delete one before uploading.`
+            );
+        }
+        // Run all uploads in parallel
+        const uploadedResults = await Promise.all(
+            files.map(async (file) => {
             try {
-            // Validate each file's bytes
-            const { mime } = await validatePdfBuffer(file.buffer);
+                // Validate
+                const { mime } = await validatePdfBuffer(file.buffer);
 
-            const { key } = await this.s3Service.uploadFile(
+                // Upload to S3
+                const { key } = await this.s3Service.uploadFile(
                 {
-                buffer: file.buffer,
-                mimetype: mime,
-                originalname: file.originalname,
+                    buffer: file.buffer,
+                    mimetype: mime,
+                    originalname: file.originalname,
                 },
                 { role: user.role, employeeId: user.id }
-            );
+                );
 
-            console.log("Uploaded resume path:", key);
-            uploadedKeys.push(key);
-            await this.employeeRepository.upload_resume(profile.id, key);
+                // Save to DB
+                await this.employeeRepository.upload_resume(profile.id, key);
+
+                return key;
             } catch (err) {
-            console.error("Failed to upload file:", file.originalname, err);
-            throw new Error(`Failed to upload file: ${file.originalname}`);
+                console.error("Failed to upload file:", file.originalname, err);
+                throw new Error(`Failed to upload file: ${file.originalname}`);
             }
-        }
+            })
+        );
 
-        return uploadedKeys;
-        }
+        return uploadedResults;
+    }
+
+    async get_resumes(user_id: number){
+        const profile = await this.employeeRepository.get_profile(user_id);
+        if (!profile) throw new Error("Profile not found");
+
+        const resumes = await this.employeeRepository.get_resumes(profile.id);
+        if (!resumes.length) return [];
+
+        const resumeCount = await this.employeeRepository.resume_count(profile.id);
+            console.log(`Total resumes found: ${resumeCount}`);
+        // Attach signed S3 URLs to each resume record
+        const signedResumes = await Promise.all(
+            resumes.map(async (r: Resume) => ({
+            ...r,
+            file_url: await this.s3Service.getFileUrl(r.file_url),
+
+            }))
+        );
+
+        return signedResumes;
+    }
 
 }
