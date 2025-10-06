@@ -115,10 +115,13 @@ export class UserController {
             const user = req.user as { id: number, role: string };
             const role = req.body.role as string;
             const result = await this.userService.update_role(user.id, role);
+            res.cookie("access_token", result.access_token, { httpOnly: true, maxAge: 15*60*1000 });
+            res.cookie("refresh_token", result.refresh_token, { httpOnly: true, maxAge: 7*24*60*60*1000 });
             res.status(200).json({
-                message: "User role updated successfully",
+                message: "Role updated successfully",
                 data: result
-            })
+            });
+
         }catch(error: any){
             res.status(400).json({
                 message: error.message

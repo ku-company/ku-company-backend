@@ -182,15 +182,40 @@ export class UserService {
         if (!validRoles.includes(new_role as Role)) {
         throw new Error("Invalid role");
         }
+
         try{
             const updatedUser = await this.userRepository.update_role(user_id, new_role as Role);
-            return {
+            const payload = {
                 id: updatedUser.id,
-                user_name: updatedUser.user_name || "",
+                user_name: updatedUser.user_name,
                 email: updatedUser.email,
                 role: updatedUser.role,
                 verified: updatedUser.verified
-            };
+            }
+
+            const SECRET_KEY= process.env.SECRET_KEY;
+            const REFRESH_KEY = process.env.REFRESH_KEY;
+            if(!SECRET_KEY){
+                throw new Error("Missing SECRET_KEY")
+            }
+            if(!REFRESH_KEY){
+                throw new Error("Missing REFRESH_KEY")
+            }
+            
+            const access_token = jwt.sign(payload, SECRET_KEY, {expiresIn: "15m"});
+            const refresh_token = jwt.sign(payload, REFRESH_KEY, {expiresIn: "7d"});
+            const response: LoginResponse = {
+                "id": updatedUser.id,
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user_name": updatedUser.user_name || "",
+                "role": updatedUser.role,
+                "email": updatedUser.email,
+                "verified": updatedUser.verified
+
+            }
+            return response;
+
         }catch(err){
             throw new Error("Failed to update role");
         }
