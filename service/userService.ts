@@ -180,7 +180,6 @@ export class UserService {
 
     async update_role(user_id: number, new_role: string){
         const validRoles = getValidRoles();
-        // const validRoles = Object.values(Role).filter(r => r !== Role.Admin) as Role[];
         if (!validRoles.includes(new_role as Role)) {
         throw new Error("Invalid role");
         }
