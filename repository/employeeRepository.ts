@@ -2,6 +2,7 @@ import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { EditEmployeeProfile, InputEmployeeProfile } from "../model/employeeModel.js";
 import { profile } from "console";
+import type { Resume } from "@prisma/client";
 
 export class EmployeeRepository{
 
@@ -61,5 +62,95 @@ export class EmployeeRepository{
             throw new Error("Profile not found");
         }
     };
+
+    async upload_resume(employee_id: number, file_url: string, is_main = false): Promise<void> {
+        await this.prisma.resume.create({
+            data: {
+            employee_id: employee_id, // profile id
+            file_url: file_url,
+            is_main: is_main
+            }
+        });
+    }
+
+    async get_resumes(employee_id: number): Promise<Resume[]> {
+        const resumes = await this.prisma.resume.findMany({
+            where: {
+                employee_id: employee_id
+            },
+        });
+        return resumes;
+        }
+
+    async resume_count(employee_id: number): Promise<number> {
+        const count = await this.prisma.resume.count({
+            where: {
+                employee_id: employee_id
+            }
+        });
+        return count;
+    }
+
+    async get_resume_by_id(resume_id: number, employee_id: number):Promise<Resume | null> {
+        return await this.prisma.resume.findUnique({
+            where: {
+                id: resume_id,
+                employee_id: employee_id
+            }
+        });
+    }
+
+    async delete_resume_by_id(resume_id: number, employee_id: number): Promise<void> {
+        await this.prisma.resume.delete({
+            where: {
+                id: resume_id,
+                employee_id: employee_id
+            }
+        });
+    }
+
+    async delete_resumes_by_profile_id(employee_id: number): Promise<void> {
+        await this.prisma.resume.deleteMany({
+            where: {
+                employee_id: employee_id
+            }
+        });
+    }
+
+   async find_main_resume(employee_id: number): Promise<Resume | null> {
+        return await this.prisma.resume.findFirst({
+            where: {
+                employee_id: employee_id,
+                is_main: true
+            }
+        });
+    } 
+
+    async set_main_resume(resume_id: number, employee_id: number): Promise<Resume> {
+        return await this.prisma.resume.update({
+            where: {
+                employee_id: employee_id,
+                id: resume_id
+            },
+            data: {
+                is_main: true
+            }
+        });
+
+    }
+
+    async unset_main_resume(resume_id: number, employee_id: number): Promise<Resume> {
+        return await this.prisma.resume.update({
+            where: {
+                employee_id: employee_id,
+                id: resume_id
+            },
+            data: {
+                is_main: false
+            }
+        });
+
+    }
+
     
 }

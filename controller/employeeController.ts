@@ -1,4 +1,5 @@
 import { EmployeeService } from "../service/employeeService.js";
+import type { Request, Response } from "express";
 
 export class EmployeeController{
 
@@ -63,4 +64,86 @@ export class EmployeeController{
             })
         }
     }
+
+    async upload_resumes(req: Request, res: Response){
+        if (!req.files || !(req.files as Express.Multer.File[]).length) {
+        return res.status(400).json({ message: "No file uploaded" });
+        }
+        try {
+            const user = req.user as { id: number, role: string };
+            const imageUrl = await this.employeeService.upload_resumes(req, user);
+            res.json({ message: "Resume uploaded successfully", imageUrl });
+        } catch (error: unknown) {
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
+    async get_resumes(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const resumes = await this.employeeService.get_all_resumes(user.id);
+            res.json({ resumes: resumes });
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
+    async get_resume(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const resume = await this.employeeService.get_resume(Number(req.params.id), user.id);
+            res.json({ resume: resume });
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    } 
+    
+    async delete_resume(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            await this.employeeService.delete_resume(Number(req.params.id), user.id);
+            res.json({ message: "Resume deleted successfully"});
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    
+    }
+
+    async delete_all_resumes(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            await this.employeeService.delete_all_resumes(user.id);
+            res.json({ message: "All resumes deleted successfully"});
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
+    async set_main_resume(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            await this.employeeService.set_main_resume(Number(req.params.id), user.id);
+            res.json({ message: "Resume set as main successfully"});
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
+    async get_main_resume(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const resume = await this.employeeService.get_main_resume(user.id);
+            res.json({ resume: resume });
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
 }

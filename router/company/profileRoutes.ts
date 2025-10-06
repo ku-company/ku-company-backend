@@ -4,7 +4,7 @@ import { CompanyController } from "../../controller/companyController.js";
 import { UserController } from "../../controller/userController.js";
 import {body} from "express-validator";
 import { profileValidation } from "../../middlewares/profileValidation.js";
-import { upload } from "../../middlewares/uploadMiddleware.js";
+import { uploadImage } from "../../middlewares/uploadImageMiddleware.js";
 
 const router = Router();
 const companyController = new CompanyController();
@@ -42,7 +42,7 @@ router.patch("/",  updateCompanyValidation, profileValidation, async (req: Reque
 
 router.post(
   "/image",
-  upload.single("profile_image"),
+  uploadImage.single("profile_image"),
   async (req: Request, res: Response) => {
     userController.upload_profile_image(req, res);
 });
@@ -51,7 +51,7 @@ router.get("/image", async (req: Request, res: Response) => {
   userController.get_profile_image(req, res);
 });
 
-router.patch("/image", upload.single("profile_image"), async (req: Request, res: Response) => {
+router.patch("/image", uploadImage.single("profile_image"), async (req: Request, res: Response) => {
   //update profile image
   userController.update_profile_image(req, res);
 });
