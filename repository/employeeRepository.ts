@@ -117,4 +117,40 @@ export class EmployeeRepository{
         });
     }
 
+   async find_main_resume(employee_id: number): Promise<Resume | null> {
+        return await this.prisma.resume.findFirst({
+            where: {
+                employee_id: employee_id,
+                is_main: true
+            }
+        });
+    } 
+
+    async set_main_resume(resume_id: number, employee_id: number): Promise<Resume> {
+        return await this.prisma.resume.update({
+            where: {
+                employee_id: employee_id,
+                id: resume_id
+            },
+            data: {
+                is_main: true
+            }
+        });
+
+    }
+
+    async unset_main_resume(resume_id: number, employee_id: number): Promise<Resume> {
+        return await this.prisma.resume.update({
+            where: {
+                employee_id: employee_id,
+                id: resume_id
+            },
+            data: {
+                is_main: false
+            }
+        });
+
+    }
+
+    
 }

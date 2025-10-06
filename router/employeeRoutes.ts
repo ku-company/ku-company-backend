@@ -54,15 +54,9 @@ router.delete("/profile/resumes", (req, res) => {
     employeeController.delete_all_resumes(req, res);
 });
 
-
-router.post("/profile/resume/:id/remove-main", (req, res) => {
-    // remove main resume
-    // employeeController.remove_main_resume(req, res);
-});
-
-router.post("/profile/resume/main/:id",(req,res) =>{
-    // set main resume
-    // employeeController.set_main_resume(req, res);
+router.patch("/profile/resume/:id/set-main", (req, res) => {
+    // set specific resume as main
+  employeeController.set_main_resume(req, res);
 });
 
 router.get("/profile/:id", async (req , res) =>{
@@ -81,7 +75,6 @@ router.delete("/profile/delete/:id", async (req , res) => {
 
 router.post("/profile/upload-resumes", uploadPdf.array("resume", 3), async (req, res) => {
     // can upload max 3 resume files
-    console.log(req.files);
     employeeController.upload_resumes(req, res);
 })
 

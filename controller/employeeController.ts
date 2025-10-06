@@ -123,4 +123,16 @@ export class EmployeeController{
             res.status(500).json({ message: (error as Error).message });
         }
     }
+
+    async set_main_resume(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            await this.employeeService.set_main_resume(Number(req.params.id), user.id);
+            res.json({ message: "Resume set as main successfully"});
+        }catch(error: unknown){
+            console.error((error as Error).message);
+            res.status(500).json({ message: (error as Error).message });
+        }
+    }
+
 }

@@ -174,4 +174,21 @@ export class EmployeeService{
         return { message: "All resumes deleted successfully" };
     }
 
-}
+    async set_main_resume(resume_id: number, user_id: number){
+        const profile = await this.has_profile(user_id);
+
+        const resume = await this.employeeRepository.get_resume_by_id(resume_id, profile.id);
+        if (!resume) throw new Error("Resume not found");
+
+        // Unset existing main resume
+        const existingMain = await this.employeeRepository.find_main_resume(profile.id);
+        if (existingMain && existingMain.id !== resume.id) {
+            await this.employeeRepository.unset_main_resume(existingMain.id, profile.id);
+            
+        }
+        // Set new main resume
+        return await this.employeeRepository.set_main_resume(resume.id, profile.id);
+        }
+
+        
+}        
