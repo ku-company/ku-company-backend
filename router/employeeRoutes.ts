@@ -34,6 +34,11 @@ router.delete("/profile/image", async (req: Request, res: Response) => {
   userController.delete_profile_image(req, res);
 });
 
+router.post("/profile/resumes", uploadPdf.array("resume", 3), async (req, res) => {
+    // can upload max 3 resume files
+    employeeController.upload_resumes(req, res);
+})
+
 router.get("/profile/resumes", (req, res) => {
     // get list of resumes
     employeeController.get_resumes(req, res);
@@ -73,9 +78,5 @@ router.delete("/profile/delete/:id", async (req , res) => {
     employeeController.delete_profile(req,res)
 })
 
-router.post("/profile/upload-resumes", uploadPdf.array("resume", 3), async (req, res) => {
-    // can upload max 3 resume files
-    employeeController.upload_resumes(req, res);
-})
 
 export default router;
