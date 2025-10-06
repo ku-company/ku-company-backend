@@ -13,6 +13,7 @@ const userController = new UserController();
 router.use(verifiedMiddleware);
 router.use(authorizeRole("Student", "Alumni", "Admin"));
 
+// === Profile Image Routes ===
 router.post(
   "/profile/image",
   uploadImage.single("profile_image"),
@@ -34,6 +35,7 @@ router.delete("/profile/image", async (req: Request, res: Response) => {
   userController.delete_profile_image(req, res);
 });
 
+// === Resume Routes ===
 router.post("/profile/resumes", uploadPdf.array("resume", 3), async (req, res) => {
     // can upload max 3 resume files
     employeeController.upload_resumes(req, res);
@@ -44,12 +46,17 @@ router.get("/profile/resumes", (req, res) => {
     employeeController.get_resumes(req, res);
 });
 
-router.get("/profile/resume/:id", (req, res) => {
+router.get("/profile/resumes/main", (req, res) => {
+    // get main resume
+    employeeController.get_main_resume(req, res);
+});
+
+router.get("/profile/resumes/:id", (req, res) => {
     // get specific resume by id
     employeeController.get_resume(req, res);
 });
 
-router.delete("/profile/resume/:id", (req, res) => {
+router.delete("/profile/resumes/:id", (req, res) => {
     // delete specific resume by id
     employeeController.delete_resume(req, res);
 });
@@ -59,11 +66,12 @@ router.delete("/profile/resumes", (req, res) => {
     employeeController.delete_all_resumes(req, res);
 });
 
-router.patch("/profile/resume/:id/set-main", (req, res) => {
+router.patch("/profile/resumes/:id/set-main", (req, res) => {
     // set specific resume as main
   employeeController.set_main_resume(req, res);
 });
 
+// === Employee Profile Routes ===
 router.get("/profile/:id", async (req , res) =>{
     employeeController.get_employee_profile(req, res)
 })

@@ -190,5 +190,13 @@ export class EmployeeService{
         return await this.employeeRepository.set_main_resume(resume.id, profile.id);
         }
 
-        
+        async get_main_resume(user_id: number){
+            const profile = await this.has_profile(user_id);
+
+            const mainResume = await this.employeeRepository.find_main_resume(profile.id);
+            if (!mainResume) throw new Error("No main resume set");
+
+            mainResume.file_url = await this.s3Service.getFileUrl(mainResume.file_url);
+            return mainResume;
+        }
 }        
