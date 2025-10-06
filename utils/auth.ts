@@ -3,10 +3,12 @@ import { Strategy as GoogleStrategy} from "passport-google-oauth20";
 import type { Profile } from "passport-google-oauth20";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import { UserRepository } from "../repository/userRepository.js";
+import { getValidRoles } from "./roleUtils.js";
 
 const prisma = PrismaDB.getInstance();
-const userRepository = new UserRepository();  
-const validRoles = ["Student", "Company", "Professor", "Alumni"]; 
+const userRepository = new UserRepository(); 
+const validRoles = getValidRoles(); 
+// const validRoles = ["Student", "Company", "Professor", "Alumni"]; 
 
 passport.use(
   new GoogleStrategy(

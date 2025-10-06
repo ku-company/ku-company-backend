@@ -8,6 +8,7 @@ import { S3Service } from "../service/s3Services.js";
 import { validateImageBuffer } from "../helper/image.js";
 import { ImageKeyStrategy } from "../helper/s3KeyStrategy.js"
 import { Role } from "../utils/enums.js";
+import { getValidRoles } from "../utils/roleUtils.js";
 
 
 export class UserService {
@@ -178,7 +179,8 @@ export class UserService {
     }
 
     async update_role(user_id: number, new_role: string){
-        const validRoles = Object.values(Role).filter(r => r !== Role.Admin) as Role[];
+        const validRoles = getValidRoles();
+        // const validRoles = Object.values(Role).filter(r => r !== Role.Admin) as Role[];
         if (!validRoles.includes(new_role as Role)) {
         throw new Error("Invalid role");
         }
