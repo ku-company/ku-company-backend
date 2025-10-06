@@ -6,7 +6,7 @@ import { UserRepository } from "../repository/userRepository.js";
 
 const prisma = PrismaDB.getInstance();
 const userRepository = new UserRepository();  
-const validRoles = ["Alumni", "Professor", "Company", "Student"];  
+const validRoles = ["Student", "Company", "Professor", "Alumni"]; 
 
 passport.use(
   new GoogleStrategy(

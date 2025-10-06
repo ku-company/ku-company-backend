@@ -6,16 +6,9 @@ import type { UserOauth } from "../model/userModel.js";
 import { AuthController } from '../controller/authController.js';
 
 const router = Router();
-const secretKey = process.env.SECRET_KEY;
-const refreshKey = process.env.REFRESH_KEY;
 const clientUrl = process.env.CLIENT_URL_DEV;
-
 const authController = new AuthController();
 
-
-if (!secretKey || !refreshKey || !clientUrl) {
-  throw new Error("Missing required environment variables: SECRET_KEY, REFRESH_KEY, or CLIENT_URL_DEV");
-}
 
 router.get('/google', (req, res, next) => {
   const validRoles = ["Student", "Company", "Professor", "Alumni"];
