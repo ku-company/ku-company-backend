@@ -23,6 +23,12 @@ enum JobType {
   Contract
 }
 
+enum JobPostStatus {
+  Active
+  Expired
+  Closed
+}
+
 enum VerifiedStatus {
   Pending
   Approved
@@ -79,7 +85,7 @@ model professorProfile {
   user_id     Int   @unique
   department  String @db.VarChar(255)
   faculty     String @db.VarChar(255)
-  user        User @relation(name: "UserProfessor",fields: [user_id], references: [id])
+  user        User @relation(name: "UserProfessor",fields: [user_id], references: [id], onDelete: Cascade)
   annoucements Announcement[]
 }
 
@@ -94,7 +100,7 @@ model employeeProfile {
   contactInfo String? @db.VarChar(255)
   languages   String? @db.VarChar(255)
   updated_at  DateTime @updatedAt
-  user        User @relation(name: "UserEmployee", fields: [user_id], references: [id])
+  user        User @relation(name: "UserEmployee", fields: [user_id], references: [id], onDelete: Cascade)
   resumes     Resume[]
   jobBatches jobApplicationBatch[]
   jobApplications jobApplication[]
@@ -114,8 +120,9 @@ model Resume{
   employee_id   Int     
   file_url      String  @db.VarChar(255)
   is_main       Boolean @default(false)
-  employeeProfile     employeeProfile    @relation(fields: [employee_id], references: [id])
+  employeeProfile     employeeProfile    @relation(fields: [employee_id], references: [id], onDelete: Cascade)
   jobBatches jobApplicationBatch[]
+  jobApplications jobApplication[]
 }
 
 model companyProfile {
@@ -129,7 +136,7 @@ model companyProfile {
   jobPosts  jobPost[] 
   notifications Notification[]
 
-  user        User @relation(name: "UserCompany", fields: [user_id], references: [id])
+  user        User @relation(name: "UserCompany", fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 
@@ -138,8 +145,8 @@ model jobApplicationBatch {
   employee_id Int   
   resume_id Int
   submitted_at DateTime @default(now())
-  user employeeProfile  @relation(fields: [employee_id], references: [id])
-  resume Resume @relation(fields: [resume_id], references: [id])
+  user employeeProfile  @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resume_id], references: [id], onDelete: Cascade)
   applications jobApplication[]
 }
 
@@ -147,13 +154,16 @@ model jobApplication {
   id        Int     @id @default(autoincrement())
   batch_id  Int?
   employee_id Int?
+  resume_id Int?
   job_id    Int
   status    String  @db.VarChar(255) @default("pending")
   applied_at DateTime @default(now())
-  jobBatch  jobApplicationBatch? @relation(fields: [batch_id], references: [id])
-  employee employeeProfile? @relation(fields: [employee_id], references: [id])
-  job_post       jobPost @relation(fields: [job_id], references: [id])
-  notifications Notification[]
+  jobBatch  jobApplicationBatch? @relation(fields: [batch_id], references: [id], onDelete: SetNull)
+  employee  employeeProfile?     @relation(fields: [employee_id], references: [id], onDelete: SetNull)
+  resume    Resume?              @relation(fields: [resume_id], references: [id], onDelete: SetNull)
+  job_post  jobPost              @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  notifications Notification[]   
+  @@unique([employee_id, job_id])
 }
 
 model jobPost {
@@ -163,10 +173,11 @@ model jobPost {
   jobType     JobType 
   position    Position
   available_position Int
+  status   JobPostStatus @default(Active)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  company companyProfile @relation(fields: [company_id], references: [id])
+  company companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
   applications jobApplication[]
   reposts Announcement[]
 }
@@ -179,7 +190,7 @@ model Announcement {
   is_connection Boolean @default(false)
   created_at DateTime @default(now())
 
-  professor professorProfile @relation(fields: [professor_id], references: [id])
+  professor professorProfile @relation(fields: [professor_id], references: [id], onDelete: Cascade)
   job_post      jobPost? @relation(fields: [job_id], references: [id])
 
 }
@@ -194,7 +205,7 @@ model Notification {
   created_at DateTime @default(now())
 
 
-  employee employeeProfile @relation(fields: [employee_id], references: [id])
-  company companyProfile @relation(fields: [company_id], references: [id])
-  application jobApplication? @relation(fields: [applicaition_id], references: [id])
+  employee employeeProfile @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+  company companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  application jobApplication? @relation(fields: [applicaition_id], references: [id], onDelete: Cascade)
 }
