@@ -31,7 +31,7 @@ app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
-app.use("/api/employee", authorizeRole("Student", "Alumni"), employeeRouter );
+app.use("/api/employee", authorizeRole("Student", "Alumni", "Admin"), employeeRouter );
 app.use("/api/company", authorizeRole("Company"), companyRouter);
 app.use("/api/job-postings", companyJobPostingRouter); // feed job postings
 

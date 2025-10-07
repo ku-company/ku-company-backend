@@ -18,12 +18,6 @@ export class EmployeeService{
         this.s3Service = new S3Service(this.RESUME_BUCKET_NAME, new DocumentKeyStrategy());
     }
 
-    is_valid_profile(req_id: number, params_id: number, req: any){
-        if(req_id !== params_id && req.user.role !== "Admin"){
-            throw new Error("Unauthorized access to profile");
-        }
-        return true;
-    }
 
     async has_profile(user_id: number){
         const profile = await this.employeeRepository.get_profile(user_id);
@@ -40,31 +34,26 @@ export class EmployeeService{
       }
 
     async get_profile(req: any){
-        const req_id = Number(req.params.id)
-        const is_valid = this.is_valid_profile(req_id, req.user.id, req);
-        if(is_valid){
             const result = await this.employeeRepository.get_profile(req.user.id)
             if(!result){
                 throw new Error("Profile not found")
             }
             return result
         }
-    }
+    
 
     async delete_profile(req: any){
-        const req_id = Number(req.params.id)
-        const is_valid = this.is_valid_profile(req_id, req.user.id, req);
-        if(is_valid){
-            return await this.employeeRepository.delete_profile(req.user.id)
-        }
+            const result = await this.employeeRepository.delete_profile(req.user.id)
+            if(!result){
+                throw new Error("Profile not found")
+            }
+            return result
+        
     }
 
     async edit_profile(req: any, input: EditEmployeeProfile){
-        const req_id = Number(req.params.id)
-        const is_valid = this.is_valid_profile(req_id, req.user.id, req);
-        if(is_valid){
-            return await this.employeeRepository.edit_profile(req.user.id, input)
-        }
+        return await this.employeeRepository.edit_profile(req.user.id, input)
+        
     }
 
     async upload_resumes(req: any, user: IUserRequest) {
@@ -199,4 +188,22 @@ export class EmployeeService{
         mainResume.file_url = await this.s3Service.getFileUrl(mainResume.file_url);
         return mainResume;
     }
-}        
+  
+    async apply_to_individual_job(job_id: number, user_id: number, resume_id: number){
+        const job_id_num = Number(job_id)
+        return await this.employeeRepository.apply_to_individual_job(job_id_num, user_id, resume_id)
+    }
+
+    async get_all_resumes(user_id: number){
+        return await this.employeeRepository.list_own_resume(user_id)
+    }
+
+    async cancel_application(user_id: number, application_id: number){
+        const job_id_num = Number(application_id)
+        return await this.employeeRepository.cancel_application(user_id, job_id_num)
+    }
+
+    async list_all_applications(user_id: number){
+        return await this.employeeRepository.list_all_applications(user_id)
+    } 
+}
