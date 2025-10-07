@@ -107,11 +107,23 @@ export class EmployeeRepository{
             if(!resume_id){
                 throw new Error("Resume is required")
             }
+            const resume = await this.prisma.resume.findUnique({
+                where: {
+                    id: resume_id,
+                    employee_id: employee.id
+                }
+            })
+            if(!resume){
+                throw new Error("Resume not found");
+            }
             const result = await this.prisma.jobApplication.create({
                 data: {
                     job_id: job_id,    
                     employee_id: employee.id,
                     resume_id: resume_id
+                },
+                include: {
+                    job_post: true
                 }
             })
             return result
