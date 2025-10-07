@@ -234,6 +234,30 @@ export class CompanyController {
             });
         }
     }
+    
+    async get_job_application(req: Request, res: Response){
+        if (!req.params.id) {
+            return res.status(400).json({ message: "Job application ID is required" });
+        }
+        try{
+            const user = req.user as { id: number };
+            const job_application_id = parseInt(req.params.id);
+            const result = await this.companyService.get_job_application(user.id, job_application_id);
+            if (!result) {
+                return res.status(404).json({
+                    message: "Job application not found"
+                });
+            }
+            res.status(200).json({
+                message: "Job application retrieved successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
 
 
 

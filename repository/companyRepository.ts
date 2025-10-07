@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import type { jobApplication, PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { CompanyProfileDB } from "../model/userModel.js";
 import type {CompanyProfileDTO} from "../dtoModel/userDTO.js";
@@ -127,6 +127,27 @@ export class CompanyRepository {
         });
     }
 
+    private transformJobApplication(app: any) {
+        const employeeUser = app.employee?.user ?? app.jobBatch?.user?.user;
+        const resumeUrl = app.resume?.file_url ?? app.jobBatch?.resume?.file_url ?? null;
+
+        return {
+            id: app.id,
+            batch_id: app.batch_id ?? null,
+            job_id: app.job_id,
+            resume_id: app.resume_id ?? app.jobBatch?.resume?.id ?? null,
+            description: app.job_post.description,
+            jobType: app.job_post.jobType,
+            name: `${employeeUser?.first_name || ""} ${employeeUser?.last_name || ""}`.trim(),
+            email: employeeUser?.email || "",
+            position: app.job_post.position,
+            status: app.status,
+            applied_at: app.applied_at,
+            resume_url: resumeUrl,
+        };
+    }
+
+
     async find_all_job_applications_by_company_id(filters: any, sortField?:string, sortOrder: "asc" | "desc" = "desc") {
         const orderByClause =
             sortField === "position"
@@ -141,30 +162,32 @@ export class CompanyRepository {
             ,
             include: {
                 //individual job-applications
-                job_post: { select: { position: true } },
+                job_post: { select: { position: true, description: true, jobType: true } },
                 employee: {include: { user: { select: { first_name: true, last_name: true, email: true } } } },
                 resume: { select: {id: true, file_url: true } }, 
             },
             // add sort
             orderBy: orderByClause
         });
-
-        return applications.map((app) => { 
-            const employeeUser = app.employee?.user ;
-            const resumeUrl = app.resume?.file_url ;
-            return {
-                id: app.id,
-                batch_id: app.batch_id ?? null,                
-                job_id: app.job_id,                             
-                resume_id: app.resume_id ?? null, 
-                name: `${employeeUser?.first_name || ""} ${employeeUser?.last_name || ""}`.trim(),
-                email: employeeUser?.email || "",
-                position: app.job_post.position,
-                status: app.status,
-                applied_at: app.applied_at,
-                resume_url: resumeUrl,
-            };
-        });
+        return applications.map(this.transformJobApplication);
     }
+
+    async find_job_application_by_id(company_id: number, id: number) {
+        const app = await this.prisma.jobApplication.findFirst({
+            where: {
+            id,
+            job_post: { company_id },
+            },
+            include: {
+            job_post: { select: { position: true, description: true, jobType: true } },
+            employee: { include: { user: { select: { first_name: true, last_name: true, email: true } } } },
+            resume: { select: { id: true, file_url: true } },
+            },
+        });
+
+        if (!app) return null;
+        return this.transformJobApplication(app);
+    }
+
 
 }

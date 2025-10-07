@@ -12,7 +12,7 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.get("/:id", async (req: Request, res: Response) => {
   // get job application by id
-//   companyController.get_job_application(req, res);
+  companyController.get_job_application(req, res);
 });
 
 router.patch("/:id/status", async (req: Request, res: Response) => {

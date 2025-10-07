@@ -149,4 +149,23 @@ export class CompanyService {
         );
         return ApplicationSigned;
     }
+
+    async get_job_application(user_id: number, app_id: number) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        const application = await this.companyRepository.find_job_application_by_id(companyProfile.id, app_id);
+        if (!application) {
+            throw new Error("Job application not found");
+        }
+        // Attach signed S3 URL to the resume record
+        const applicationWithSignedUrl = {
+        ...application,
+        resume_url: await this.s3Service.getFileUrl(application.resume_url as string),
+        };
+        return applicationWithSignedUrl;
+
+    }
+
 }
