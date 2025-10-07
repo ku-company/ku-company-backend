@@ -112,4 +112,14 @@ export class CompanyService {
         }
         return this.companyRepository.delete_job_posting(post_id);
     }
+
+    async get_all_job_applications(user_id: number) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        // need
+        // job_application id,job_id,name(firstname + lastname), email, position, status, applied_at, resume (link)
+        return this.companyRepository.find_all_job_applications_by_company_id(companyProfile.id);
+    }
 }

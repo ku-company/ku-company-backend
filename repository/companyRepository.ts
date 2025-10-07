@@ -126,4 +126,38 @@ export class CompanyRepository {
             }
         });
     }
+
+    async find_all_job_applications_by_company_id(company_id: number) {
+        return this.prisma.jobApplication.findMany({
+            where: {
+                job_post: {
+                    company_id: company_id // company profile id
+                }
+            },
+            include: {
+                jobBatch: {
+                    include: {
+                        user: {
+                            include: {
+                            user: { // this refers to the User model
+                                select: {
+                                first_name: true,
+                                last_name: true,
+                                email: true,
+                                },
+                            },
+                            },
+                        },
+                        resume: {
+                            select: { file_url: true },
+                        },
+                    },
+                },
+            },
+            
+            orderBy: {
+                applied_at: 'desc'
+            }
+        });
+    }
 }
