@@ -3,16 +3,23 @@ import { UserRepository } from "../repository/userRepository.js";
 import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
 import type { CompanyProfileDB } from "../model/userModel.js";
 import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/companyDTO.js";
+import { application } from "express";
+import { S3Service } from "./s3Services.js";
+import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
+
 
 
 export class CompanyService {
 
     private companyRepository: CompanyRepository;
     private userRepository: UserRepository;
+    private s3Service: S3Service;
+    private RESUME_BUCKET_NAME = process.env.RESUME_BUCKET_NAME || "";
 
     constructor(){
         this.companyRepository = new CompanyRepository();
         this.userRepository = new UserRepository();
+        this.s3Service = new S3Service(this.RESUME_BUCKET_NAME, new DocumentKeyStrategy());
     }
 
     
@@ -120,6 +127,17 @@ export class CompanyService {
         }
         // need
         // job_application id,job_id,name(firstname + lastname), email, position, status, applied_at, resume (link)
-        return this.companyRepository.find_all_job_applications_by_company_id(companyProfile.id);
+                
+        const applications = await this.companyRepository.find_all_job_applications_by_company_id(companyProfile.id);
+
+        // Attach signed S3 URLs to each resume record
+        const ApplicationSigned = await Promise.all(
+            applications.map(async (app) => ({
+            ...app,
+            resume_url: await this.s3Service.getFileUrl(app.resume_url),
+
+            }))
+        );
+        return ApplicationSigned;
     }
 }

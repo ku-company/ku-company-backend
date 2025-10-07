@@ -1,7 +1,7 @@
 import { Router } from "express";
 import profileRouter from "./company/profileRoutes.js";
 import jobPostingRouter from "./company/jobPostingRoutes.js";
-import jobApplicationRouter from "./company/jobApplications.js";
+import jobApplicationRouter from "./company/jobApplicationRoutes.js";
 
 const router = Router();
 

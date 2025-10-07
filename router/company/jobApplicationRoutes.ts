@@ -15,4 +15,9 @@ router.get("/:id", async (req: Request, res: Response) => {
 //   companyController.get_job_application(req, res);
 });
 
+router.patch("/:id/status", async (req: Request, res: Response) => {
+  // update job application status by id
+//   companyController.update_job_application_status(req, res);
+});
+
 export default router;
