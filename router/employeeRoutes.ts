@@ -104,4 +104,7 @@ router.get("/my-applications", async(req , res) => {
     employeeController.list_all_applications(req,res)
 })
 
+router.post("/checkout/apply-jobs", async(req , res) => {
+    employeeController.checkout_list_apply_job(req, res)
+})
 export default router;
