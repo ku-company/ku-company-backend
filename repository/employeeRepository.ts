@@ -162,7 +162,7 @@ export class EmployeeRepository{
 
     
 // Apply job
-    async apply_to_individual_job(job_id: number, user_id: number, resume_id: number){
+    async apply_to_individual_job(job_id: number, user_id: number, resume_id: number, batch_id?: number){
         try{
             const employee = await this.prisma.employeeProfile.findUnique({
                 where: {
@@ -211,7 +211,8 @@ export class EmployeeRepository{
                 data: {
                     job_id: job_id,    
                     employee_id: employee.id,
-                    resume_id: resume_id
+                    resume_id: resume_id,
+                    batch_id: batch_id
                 },
                 include: {
                     job_post: true
@@ -278,5 +279,54 @@ export class EmployeeRepository{
             }
         })
         return all_applications
+    }
+
+    async apply_job_checkout_list(user_id: number, resume_id: number, job_ids: number[]){
+        
+        const employee = await this.prisma.employeeProfile.findUnique({
+            where: {
+                user_id: user_id
+            }
+        })
+        if(!employee){
+            throw new Error("Employee profile not found");
+        }
+        const batch = await this.prisma.jobApplicationBatch.create({
+            data: {
+                employee_id: employee.id,
+                resume_id: resume_id,
+            }
+        })
+        const existingApplications = await Promise.all(job_ids.map(async (job_id) => {
+        return await this.prisma.jobApplication.findFirst({
+                where: {
+                    job_id: job_id,
+                    employee_id: employee.id
+                },
+                include: {
+                    job_post: true 
+                }
+            });
+        }));
+
+        const alreadyAppliedApplications = existingApplications.filter(app => app !== null);
+
+        if (alreadyAppliedApplications.length > 0) {
+        const error = new Error(
+            "Already applied to these jobs: " +
+            alreadyAppliedApplications.map(app => app.job_post.description).join(", ")
+        );
+        (error as any).alreadyAppliedApplications = alreadyAppliedApplications;
+        throw error;
+        }
+
+        const application = await Promise.all(job_ids.map(async (job_id) => {
+            const result = await this.apply_to_individual_job(job_id, user_id , resume_id, batch.id)
+            if(!result){
+                throw new Error("Failed to apply to job");
+            }
+            return result
+        }))
+        return application
     }
 }
