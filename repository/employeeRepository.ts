@@ -322,6 +322,9 @@ export class EmployeeRepository{
 
         const application = await Promise.all(job_ids.map(async (job_id) => {
             const result = await this.apply_to_individual_job(job_id, user_id , resume_id, batch.id)
+            if(!result){
+                throw new Error("Failed to apply to job");
+            }
             return result
         }))
         return application
