@@ -76,7 +76,7 @@ router.patch("/profile/resumes/:id/set-main", (req, res) => {
 router.get("/my-profile", async (req , res) =>{
     employeeController.get_employee_profile(req, res)
 })
-router.post("/profile/create", async (req , res) =>{
+router.post("/my-profile/create", async (req , res) =>{
     employeeController.create_profile(req, res)
 })
 router.patch("/my-profile/edit", async (req , res) => {

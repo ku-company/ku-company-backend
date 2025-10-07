@@ -194,7 +194,7 @@ export class EmployeeService{
         return await this.employeeRepository.apply_to_individual_job(job_id_num, user_id, resume_id)
     }
 
-    async get_all_resumes(user_id: number){
+    async list_all_resumes(user_id: number){
         return await this.employeeRepository.list_own_resume(user_id)
     }
 
