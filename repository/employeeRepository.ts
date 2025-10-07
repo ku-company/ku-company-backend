@@ -242,6 +242,15 @@ export class EmployeeRepository{
                 user_id : user_id
             }
         })
+        const application = await this.prisma.jobApplication.findUnique({
+            where: {
+                id: job_application_id,
+                employee_id: owner.id
+            }
+        })
+        if(!application){
+            throw new Error("Application not found")
+        }
         const delete_application = await this.prisma.jobApplication.delete({
             where: {
                 id : job_application_id,
