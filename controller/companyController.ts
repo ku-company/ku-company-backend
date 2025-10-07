@@ -211,7 +211,14 @@ export class CompanyController {
     async get_all_job_applications(req: Request, res: Response){
         try{
             const user = req.user as { id: number };
-            const result = await this.companyService.get_all_job_applications(user.id);
+            const { status, sortField, sortOrder = "desc" } = req.query;
+
+            const result = await this.companyService.get_all_job_applications({
+                user_id: user.id,
+                status: status ? String(status) : "",
+                sortField: sortField ? String(sortField) : "",
+                sortOrder: sortOrder === "asc" ? "asc" : "desc",
+            });
             if (!result) {
                 return res.status(404).json({
                     message: "No job applications found"

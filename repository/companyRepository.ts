@@ -127,53 +127,36 @@ export class CompanyRepository {
         });
     }
 
-    async find_all_job_applications_by_company_id(company_id: number) {
+    async find_all_job_applications_by_company_id(filters: any, sortField?:string, sortOrder: "asc" | "desc" = "desc") {
+        const orderByClause =
+            sortField === "position"
+            ? { job_post: { position: sortOrder } } // nested field
+            : ["applied_at", "status"].includes(sortField || "")
+            ? { [sortField!]: sortOrder }
+            : { applied_at: sortOrder };
+
         const applications = await this.prisma.jobApplication.findMany({
-            where: {
-                job_post: {
-                    company_id: company_id // company profile id
-                }
-            },
+            where: 
+                filters
+            ,
             include: {
                 //individual job-applications
                 job_post: { select: { position: true } },
                 employee: {include: { user: { select: { first_name: true, last_name: true, email: true } } } },
-                resume: { select: {id: true, file_url: true } }, // may or may not exist
-
-                // batch job-applications
-                jobBatch: {
-                    include: {
-                        user: {
-                            include: {
-                            user: { // refers to the User model
-                                select: {
-                                first_name: true,
-                                last_name: true,
-                                email: true,
-                                },
-                            },
-                            },
-                        },
-                        resume: {
-                            select: {id: true, file_url: true },
-                        },
-                    },
-                },
+                resume: { select: {id: true, file_url: true } }, 
             },
             // add sort
-            orderBy: {
-                applied_at: 'desc'
-            }
+            orderBy: orderByClause
         });
 
         return applications.map((app) => { 
-            const employeeUser = app.employee?.user ?? app.jobBatch?.user?.user;
-            const resumeUrl = app.resume?.file_url ?? app.jobBatch?.resume?.file_url ?? null;
+            const employeeUser = app.employee?.user ;
+            const resumeUrl = app.resume?.file_url ;
             return {
                 id: app.id,
                 batch_id: app.batch_id ?? null,                
                 job_id: app.job_id,                             
-                resume_id: app.resume_id ?? app.jobBatch?.resume?.id ?? null, 
+                resume_id: app.resume_id ?? null, 
                 name: `${employeeUser?.first_name || ""} ${employeeUser?.last_name || ""}`.trim(),
                 email: employeeUser?.email || "",
                 position: app.job_post.position,

@@ -3,9 +3,9 @@ import { UserRepository } from "../repository/userRepository.js";
 import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
 import type { CompanyProfileDB } from "../model/userModel.js";
 import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/companyDTO.js";
-import { application } from "express";
 import { S3Service } from "./s3Services.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
+import { JobStatus } from "../utils/enums.js";
 
 
 
@@ -120,15 +120,24 @@ export class CompanyService {
         return this.companyRepository.delete_job_posting(post_id);
     }
 
-    async get_all_job_applications(user_id: number) {
+    private valid_job_application_status(status: string){
+        console.log(Object.values(JobStatus), status);
+        return Object.values(JobStatus).includes(status as JobStatus);
+    }
+
+    async get_all_job_applications({user_id, sortOrder, status, sortField}: {user_id: number, sortOrder: "asc" | "desc", status?: string, sortField?: string}) {
         const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
         if (!companyProfile) {
             throw new Error("Company profile not found");
         }
-        // need
-        // job_application id,job_id,name(firstname + lastname), email, position, status, applied_at, resume (link)
-                
-        const applications = await this.companyRepository.find_all_job_applications_by_company_id(companyProfile.id);
+
+        const filters: any = { job_post: { company_id: companyProfile.id } };
+
+        if (status && this.valid_job_application_status(status)) {
+            filters.status = status;
+        }
+
+        const applications = await this.companyRepository.find_all_job_applications_by_company_id(filters, sortField, sortOrder);
 
         // Attach signed S3 URLs to each resume record
         const ApplicationSigned = await Promise.all(
