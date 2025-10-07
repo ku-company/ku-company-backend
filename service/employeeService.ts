@@ -205,5 +205,9 @@ export class EmployeeService{
 
     async list_all_applications(user_id: number){
         return await this.employeeRepository.list_all_applications(user_id)
-    } 
+    }
+    
+    async checkout_list_apply_jobs(user_id: number, resume_id: number, job_ids: number[]){
+        return await this.employeeRepository.apply_job_checkout_list(user_id, resume_id, job_ids)
+    }
 }

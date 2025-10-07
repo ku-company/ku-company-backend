@@ -203,4 +203,18 @@ export class EmployeeController{
             })
         }
     }
+
+    async checkout_list_apply_job(req: any, res: any){
+        try {
+            const result = await this.employeeService.checkout_list_apply_jobs(req.user.id, req.body.resume_id, req.body.job_id);
+            res.status(200).json({
+                message: "Job applied successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
 }
