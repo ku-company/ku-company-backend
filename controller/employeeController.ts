@@ -146,4 +146,61 @@ export class EmployeeController{
         }
     }
 
+    async apply_to_individual_job(req: any, res: any){
+        try{
+            const result = await this.employeeService.apply_to_individual_job(req.params.id, req.user.id, req.body.resume_id);
+            res.status(200).json({
+                message: "Applied to job successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async get_all_resumes(req: any, res: any){
+        try{
+            const result = await this.employeeService.list_all_resumes(req.user.id)
+            res.status(200).json({
+                message: "Resumes retrieved successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async cancel_application(req: any, res: any){
+        try{
+            const result = await this.employeeService.cancel_application(req.user.id, req.params.id)
+            res.status(200).json({
+                message: "Application cancelled successfully",
+                data: result
+            })
+        }
+        catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async list_all_applications(req: any, res: any){
+        try {
+            const result = await this.employeeService.list_all_applications(req.user.id);
+            res.status(200).json({
+                message: "Applications retrieved successfully",
+                data: result
+            })
+        }
+        catch (error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
 }
