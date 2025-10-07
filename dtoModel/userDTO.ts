@@ -47,3 +47,11 @@ export interface CompanyProfileDTO {
     location: string;
     
 }
+
+export interface UserSummaryDTO {
+    id: number;
+    user_name: string | null;
+    email: string;
+    role: string;
+    verified: boolean;
+}

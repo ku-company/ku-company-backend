@@ -7,6 +7,9 @@ import { SignUpStrategyFactory, SignUpStrategy } from "../helper/signupStrategy.
 import { S3Service } from "../service/s3Services.js";
 import { validateImageBuffer } from "../helper/image.js";
 import { ImageKeyStrategy } from "../helper/s3KeyStrategy.js"
+import { Role } from "../utils/enums.js";
+import { getValidRoles } from "../utils/roleUtils.js";
+
 
 export class UserService {
     
@@ -175,5 +178,48 @@ export class UserService {
         }
     }
 
+    async update_role(user_id: number, new_role: string){
+        const validRoles = getValidRoles();
+        if (!validRoles.includes(new_role as Role)) {
+        throw new Error("Invalid role");
+        }
+
+        try{
+            const updatedUser = await this.userRepository.update_role(user_id, new_role as Role);
+            const payload = {
+                id: updatedUser.id,
+                user_name: updatedUser.user_name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                verified: updatedUser.verified
+            }
+
+            const SECRET_KEY= process.env.SECRET_KEY;
+            const REFRESH_KEY = process.env.REFRESH_KEY;
+            if(!SECRET_KEY){
+                throw new Error("Missing SECRET_KEY")
+            }
+            if(!REFRESH_KEY){
+                throw new Error("Missing REFRESH_KEY")
+            }
+            
+            const access_token = jwt.sign(payload, SECRET_KEY, {expiresIn: "15m"});
+            const refresh_token = jwt.sign(payload, REFRESH_KEY, {expiresIn: "7d"});
+            const response: LoginResponse = {
+                "id": updatedUser.id,
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user_name": updatedUser.user_name || "",
+                "role": updatedUser.role,
+                "email": updatedUser.email,
+                "verified": updatedUser.verified
+
+            }
+            return response;
+
+        }catch(err){
+            throw new Error("Failed to update role");
+        }
+    }
 
 }

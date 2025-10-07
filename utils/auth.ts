@@ -3,9 +3,12 @@ import { Strategy as GoogleStrategy} from "passport-google-oauth20";
 import type { Profile } from "passport-google-oauth20";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import { UserRepository } from "../repository/userRepository.js";
+import { getValidRoles } from "./roleUtils.js";
 
 const prisma = PrismaDB.getInstance();
-const userRepository = new UserRepository();    
+const userRepository = new UserRepository(); 
+const validRoles = getValidRoles(); 
+// const validRoles = ["Student", "Company", "Professor", "Alumni"]; 
 
 passport.use(
   new GoogleStrategy(
@@ -32,15 +35,24 @@ passport.use(
                 email: email,
             },
         });
-        const state = req.query.state ? JSON.parse(req.query.state as string) : {};
-        const role = state.role || "Admin";
 
-        
+        // login flow
         if(user) {
-            console.log("User found:", user);
-            return done(null, user);
+            console.log("User found:", user); // login
+            return done(null, user); // finishes the authentication
+        }
+        
+        // signup flow
+        // Extract role from state (for new signup)
+        let role: string
+        const state = req.query.state ? JSON.parse(req.query.state as string) : {};
+        if (!state.role || !validRoles.includes(state.role)) {        
+          role = "Unknown";
+        } else {
+          role = state.role; // attach role from state
         }
 
+        
         // create new user
         const newUser = await userRepository.create_user({
           first_name: profile.name?.givenName || profile.displayName || "Unknown",
@@ -55,7 +67,7 @@ passport.use(
           role: role
         });
 
-        return done(null, newUser);
+        return done(null, newUser); // finishes the authentication
       } catch (err) {
         return done(err, null);
       }

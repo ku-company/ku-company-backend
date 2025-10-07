@@ -3,21 +3,24 @@ import passport from 'passport';
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import type { UserOauth } from "../model/userModel.js";
+import { AuthController } from '../controller/authController.js';
+import { getValidRoles } from '../utils/roleUtils.js';
+import type { Role } from '../utils/enums.js';
 
 const router = Router();
-const secretKey = process.env.SECRET_KEY;
-const refreshKey = process.env.REFRESH_KEY;
 const clientUrl = process.env.CLIENT_URL_DEV;
+const authController = new AuthController();
 
-if (!secretKey || !refreshKey || !clientUrl) {
-  throw new Error("Missing required environment variables: SECRET_KEY, REFRESH_KEY, or CLIENT_URL_DEV");
-}
 
 router.get('/google', (req, res, next) => {
-  const role = req.query.role || "Admin";
+  const validRoles = getValidRoles();
+  const role = req.query.role;
+  const state = validRoles.includes(role as Role)
+    ? JSON.stringify({ role })
+    : JSON.stringify({});
   passport.authenticate('google', {
     scope: ['profile', 'email'],
-    state: JSON.stringify({ role })
+    state: state
   })(req, res, next);
 });
 
@@ -29,21 +32,34 @@ router.get(
     session: false,
   }),
   (req: Request, res: Response) => {
-    console.log(3333,req.user)
+    console.log("request user:",req.user)
     // issue JWT 
     const state = req.query.state ? JSON.parse(req.query.state as string) : {};
-    const role = state.role || "User";
     const user = req.user as UserOauth;
+    // Use DB role first (for login), fallback to state.role only for signup
+    const role = user.role || state.role;
+
+    if (!role) {
+      console.error("Missing role for user:", user.email);
+      return res.redirect(`${clientUrl}/error?reason=missing-role`);
+    }
+
     const payload = {
       id: user.id,
       user_name: user.user_name || "",
       email: user.email,
-      role: role // from frontend
+      role: role,
+      verified: user.verified
     }
     console.log("JWT Payload:", payload);
 
-    const accessToken = jwt.sign(payload, process.env.SECRET_KEY!, { expiresIn: "15m" });
-    const refreshToken = jwt.sign(payload, process.env.REFRESH_KEY!, { expiresIn: "7d" });
+    const SECRET_KEY = process.env.SECRET_KEY;
+    const REFRESH_KEY = process.env.REFRESH_KEY;
+    if (!SECRET_KEY || !REFRESH_KEY || !clientUrl) {
+      throw new Error("Missing required environment variables");
+    }
+    const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m" });
+    const refreshToken = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d" });
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -60,6 +76,11 @@ router.get(
 router.get("/failure", (req: Request, res: Response) => {
   res.send("Authentication failed");
 });
+
+router.get("/me", (req: Request, res: Response) => {
+  authController.getCurrentUser(req, res);
+}
+);
 
 export default router;
 
