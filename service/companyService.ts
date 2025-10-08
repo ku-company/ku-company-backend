@@ -121,7 +121,6 @@ export class CompanyService {
     }
 
     private valid_job_application_status(status: string){
-        console.log(Object.values(JobStatus), status);
         return Object.values(JobStatus).includes(status as JobStatus);
     }
 
@@ -134,7 +133,7 @@ export class CompanyService {
         const filters: any = { job_post: { company_id: companyProfile.id } };
 
         if (status && this.valid_job_application_status(status)) {
-            filters.status = status;
+            filters.status = { equals: status, mode: "insensitive" };
         }
 
         const applications = await this.companyRepository.find_all_job_applications_by_company_id(filters, sortField, sortOrder);
@@ -165,6 +164,31 @@ export class CompanyService {
         resume_url: await this.s3Service.getFileUrl(application.resume_url as string),
         };
         return applicationWithSignedUrl;
+
+    }
+
+    private capitalizeFirstLetter(str: string) {
+    if (!str) return str;
+    const normalized = str.toLowerCase();
+    const [first = "", ...rest] = Array.from(normalized);
+    return first.toUpperCase() + rest.join("");
+    }
+
+    async update_job_application_status(user_id: number, app_id: number, status: string) {
+
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        const application = await this.companyRepository.find_job_application_by_id(companyProfile.id, app_id);
+        if (!application) {
+            throw new Error("Job application not found");
+        }
+
+        if (application.status === status) {
+            throw new Error(`Job application is already ${status}`);
+        }
+        return this.companyRepository.update_job_application_status(app_id, this.capitalizeFirstLetter(status) as string);
 
     }
 
