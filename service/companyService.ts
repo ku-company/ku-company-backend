@@ -6,6 +6,7 @@ import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/compan
 import { S3Service } from "./s3Services.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
 import { JobStatus } from "../utils/enums.js";
+import { capitalizeFirstLetter } from "../utils/capitalizeFirstLetter.js";
 
 
 
@@ -133,7 +134,7 @@ export class CompanyService {
         const filters: any = { job_post: { company_id: companyProfile.id } };
 
         if (status && this.valid_job_application_status(status)) {
-            filters.status = { equals: status, mode: "insensitive" };
+            filters.status = { contains: status, mode: "insensitive" };
         }
 
         const applications = await this.companyRepository.find_all_job_applications_by_company_id(filters, sortField, sortOrder);
@@ -167,13 +168,6 @@ export class CompanyService {
 
     }
 
-    private capitalizeFirstLetter(str: string) {
-    if (!str) return str;
-    const normalized = str.toLowerCase();
-    const [first = "", ...rest] = Array.from(normalized);
-    return first.toUpperCase() + rest.join("");
-    }
-
     async update_job_application_status(user_id: number, app_id: number, status: string) {
 
         const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
@@ -188,7 +182,7 @@ export class CompanyService {
         if (application.status === status) {
             throw new Error(`Job application is already ${status}`);
         }
-        return this.companyRepository.update_job_application_status(app_id, this.capitalizeFirstLetter(status) as string);
+        return this.companyRepository.update_job_application_status(app_id, capitalizeFirstLetter(status) as string);
 
     }
 
