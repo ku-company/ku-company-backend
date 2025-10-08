@@ -259,6 +259,37 @@ export class CompanyController {
         }
     }
 
+    async update_job_application_status(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const job_application_id = Number(req.params.id);
+            const status = req.body.status;
+            if (!job_application_id || isNaN(job_application_id)) {
+            return res.status(400).json({ message: "Invalid job application ID" });
+            } 
+            if (!status) {
+            return res.status(400).json({ message: "Status is required" });
+            } 
+
+            const result = await this.companyService.update_job_application_status(user.id, job_application_id, status);
+
+            if (!result) {
+                return res.status(404).json({
+                    message: "Job application not found"
+                });
+            }
+            res.status(200).json({
+                message: "Job application status updated successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+
+
 
 
 }

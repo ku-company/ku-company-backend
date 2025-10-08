@@ -189,5 +189,16 @@ export class CompanyRepository {
         return this.transformJobApplication(app);
     }
 
+    async update_job_application_status(id: number, status: string) {
+        return this.prisma.jobApplication.update({
+            where: {
+                id: id
+            },
+            data: {
+                status: status
+            }
+        });
+    }
+
 
 }
