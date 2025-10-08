@@ -158,7 +158,7 @@ model jobApplication {
   employee_id Int?
   resume_id Int?
   job_id    Int
-  status    String  @db.VarChar(255) @default("pending")
+  status    String  @db.VarChar(255) @default("Pending")
   applied_at DateTime @default(now())
   jobBatch  jobApplicationBatch? @relation(fields: [batch_id], references: [id], onDelete: SetNull)
   employee  employeeProfile?     @relation(fields: [employee_id], references: [id], onDelete: SetNull)

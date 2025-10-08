@@ -3,16 +3,23 @@ import { UserRepository } from "../repository/userRepository.js";
 import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
 import type { CompanyProfileDB } from "../model/userModel.js";
 import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/companyDTO.js";
+import { S3Service } from "./s3Services.js";
+import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
+import { JobStatus } from "../utils/enums.js";
+
 
 
 export class CompanyService {
 
     private companyRepository: CompanyRepository;
     private userRepository: UserRepository;
+    private s3Service: S3Service;
+    private RESUME_BUCKET_NAME = process.env.RESUME_BUCKET_NAME || "";
 
     constructor(){
         this.companyRepository = new CompanyRepository();
         this.userRepository = new UserRepository();
+        this.s3Service = new S3Service(this.RESUME_BUCKET_NAME, new DocumentKeyStrategy());
     }
 
     
@@ -112,4 +119,53 @@ export class CompanyService {
         }
         return this.companyRepository.delete_job_posting(post_id);
     }
+
+    private valid_job_application_status(status: string){
+        console.log(Object.values(JobStatus), status);
+        return Object.values(JobStatus).includes(status as JobStatus);
+    }
+
+    async get_all_job_applications({user_id, sortOrder, status, sortField}: {user_id: number, sortOrder: "asc" | "desc", status?: string, sortField?: string}) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+
+        const filters: any = { job_post: { company_id: companyProfile.id } };
+
+        if (status && this.valid_job_application_status(status)) {
+            filters.status = status;
+        }
+
+        const applications = await this.companyRepository.find_all_job_applications_by_company_id(filters, sortField, sortOrder);
+
+        // Attach signed S3 URLs to each resume record
+        const ApplicationSigned = await Promise.all(
+            applications.map(async (app) => ({
+            ...app,
+            resume_url: await this.s3Service.getFileUrl(app.resume_url as string),
+
+            }))
+        );
+        return ApplicationSigned;
+    }
+
+    async get_job_application(user_id: number, app_id: number) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        const application = await this.companyRepository.find_job_application_by_id(companyProfile.id, app_id);
+        if (!application) {
+            throw new Error("Job application not found");
+        }
+        // Attach signed S3 URL to the resume record
+        const applicationWithSignedUrl = {
+        ...application,
+        resume_url: await this.s3Service.getFileUrl(application.resume_url as string),
+        };
+        return applicationWithSignedUrl;
+
+    }
+
 }

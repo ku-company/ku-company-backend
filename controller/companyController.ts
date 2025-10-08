@@ -208,6 +208,57 @@ export class CompanyController {
         }
     }
 
+    async get_all_job_applications(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const { status, sortField, sortOrder = "desc" } = req.query;
+
+            const result = await this.companyService.get_all_job_applications({
+                user_id: user.id,
+                status: status ? String(status) : "",
+                sortField: sortField ? String(sortField) : "",
+                sortOrder: sortOrder === "asc" ? "asc" : "desc",
+            });
+            if (!result) {
+                return res.status(404).json({
+                    message: "No job applications found"
+                });
+            }
+            res.status(200).json({
+                message: "Job applications retrieved successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+    
+    async get_job_application(req: Request, res: Response){
+        if (!req.params.id) {
+            return res.status(400).json({ message: "Job application ID is required" });
+        }
+        try{
+            const user = req.user as { id: number };
+            const job_application_id = parseInt(req.params.id);
+            const result = await this.companyService.get_job_application(user.id, job_application_id);
+            if (!result) {
+                return res.status(404).json({
+                    message: "Job application not found"
+                });
+            }
+            res.status(200).json({
+                message: "Job application retrieved successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+
 
 
 }
