@@ -294,11 +294,6 @@ export class CompanyController {
             const user = req.user as { id: number };
             const job_application_id = Number(req.params.id);
             const result = await this.companyService.send_the_confirmation_to_employee(user.id, job_application_id)
-            if (!result) {
-                return res.status(404).json({
-                    message: "Job application not found"
-                });
-            }
             res.status(200).json({
                 message: "Confirmation sent successfully",
                 data: result

@@ -339,20 +339,20 @@ export class EmployeeRepository{
         if(!employee){
             throw new Error("Employee profile not found");
         }
-        if(employee.has_job == false){
-
-        
         const job_application = await this.prisma.jobApplication.findUnique({
-            where: {
-                id: job_application_id
+                where: {
+                    id: job_application_id
             },
-            include: {
-                job_post: true
+                include: {
+                    job_post: true
+                }
+            })
+            
+            if(!job_application){
+                throw new Error("Job application not found")
             }
-        })
-        if(!job_application){
-            throw new Error("Job application not found")
-        }
+        
+        if(employee.has_job == false){
         if(job_application.company_send_status === "Confirmed"){
             const job_applcation_update_status = await this.prisma.jobApplication.update({
             where: {
