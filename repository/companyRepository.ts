@@ -1,8 +1,11 @@
-import type { jobApplication, PrismaClient } from "@prisma/client";
+import { NotificationStatus, type jobApplication, type PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { CompanyProfileDB } from "../model/userModel.js";
 import type {CompanyProfileDTO} from "../dtoModel/userDTO.js";
 import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
+import type { CompanyJobApplicationStatus, EmployeeJobApplicationStatus } from "../utils/enums.js";
+import { stat } from "fs";
+import { application } from "express";
 
 export class CompanyRepository {
 
@@ -195,10 +198,52 @@ export class CompanyRepository {
                 id: id
             },
             data: {
-                status: status
+                company_send_status: status as CompanyJobApplicationStatus
             }
         });
     }
 
+    async send_the_confirmation_to_employee(job_application_id: number, user_id: number){
+        const company = await this.prisma.companyProfile.findUnique({
+            where: {
+                user_id: user_id
+            }
+        })
+        const job_application = await this.prisma.jobApplication.findUnique({
+            where: {
+                id: job_application_id
+            }
+        })
+        if(!job_application){
+            throw new Error("Job application not found")
+        }
+        else if(!company){
+            throw new Error("Company profile not found")
+        }
+        const job_applcation_update_status = await this.prisma.jobApplication.update({
+            where: {
+                id : job_application_id
+            },
+            data: {
+                company_send_status: "Confirmed",
+                company_responded_at: new Date()
+                }
+            }
+        )
+        const notification = await this.prisma.notification.create({
+            data: {
+                message: "Congratulations! Your application has been confirmed. We're looking for your confirmation letter to continue the process.",
+                employee_id: job_application.employee_id!,
+                company_id: company.id,
+                application_id: job_application.id,
+                notification_status: "Accepted",
+                notification_type: "ApplicationConfirmed"
+            },
+            include:{
+                application: true
+            }
+        })
+        return notification
+    }
 
 }

@@ -31,3 +31,17 @@ export enum NotificationStatus {
   Accepted = "Accepted",
   Rejected = "Rejected"
 }
+
+export enum CompanyJobApplicationStatus {
+  Pending = "Pending",
+  Confirmed = "Confirmed",
+  Requested = "Requested",
+  Accepted = "Accepted",
+  Rejected = "Rejected"
+}
+
+export enum EmployeeJobApplicationStatus {
+  Pending = "Pending",
+  Confirmed = "Confirmed",
+  Rejected = "Rejected"
+}

@@ -183,7 +183,19 @@ export class CompanyService {
             throw new Error(`Job application is already ${status}`);
         }
         return this.companyRepository.update_job_application_status(app_id, capitalizeFirstLetter(status) as string);
+    }
 
+    async send_the_confirmation_to_employee(user_id: number, app_id: number){
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        const application = await this.companyRepository.find_job_application_by_id(companyProfile.id, app_id);
+        if (!application) {
+            throw new Error("Job application not found");
+        }
+
+        return this.companyRepository.send_the_confirmation_to_employee(app_id, user_id);
     }
 
 }
