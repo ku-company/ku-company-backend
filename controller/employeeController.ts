@@ -217,4 +217,18 @@ export class EmployeeController{
             })
         }
     }
+    
+    async sent_the_confirmation_to_company(req: any, res: any){
+        try {
+            const result = await this.employeeService.sent_the_confirmation_to_company(req.user.id, req.params.id);
+            res.status(200).json({
+                message: "Confirmation sent successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
 }

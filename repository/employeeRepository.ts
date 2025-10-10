@@ -329,4 +329,115 @@ export class EmployeeRepository{
         }))
         return application
     }
+
+    async sent_the_confirmation_to_company(user_id: number, job_application_id: number){
+        const employee = await this.prisma.employeeProfile.findUnique({
+            where: {
+                user_id: user_id
+            }
+        })
+        if(!employee){
+            throw new Error("Employee profile not found");
+        }
+        if(employee.has_job == false){
+
+        
+        const job_application = await this.prisma.jobApplication.findUnique({
+            where: {
+                id: job_application_id
+            },
+            include: {
+                job_post: true
+            }
+        })
+        if(!job_application){
+            throw new Error("Job application not found")
+        }
+        if(job_application.company_send_status === "Confirmed"){
+            const job_applcation_update_status = await this.prisma.jobApplication.update({
+            where: {
+                id : job_application_id
+            },
+            data: {
+                employee_send_status: "Confirmed",
+                employee_responded_at: new Date()
+            }
+            })
+
+            const employee_update_status = await this.prisma.employeeProfile.update({
+                where: {
+                    user_id: user_id
+                },
+                data: {
+                    has_job: true
+                }
+            })
+        
+            const notification = await this.prisma.notification.create({
+            data: {
+                message: "I accepted your offer. Thank you for your consideration.",
+                employee_id: employee.id,
+                company_id: job_application.job_post.company_id,
+                application_id: job_application_id,
+                notification_status: "Accepted",
+                notification_type: "ConfirmationAccepted"
+            },
+            include: {
+                application: true
+            }
+            })
+            const cancel_all_applications = await this.prisma.jobApplication.updateMany({
+                where:{
+                    employee_id: employee.id,
+                    company_send_status: "Confirmed",
+                    employee_send_status: "Pending"
+                    
+                },
+                data: {
+                    employee_send_status: "Rejected",
+                    employee_responded_at: new Date()
+                }
+            })
+            const canceledApplications = await this.prisma.jobApplication.findMany({
+                where: {
+                    employee_id: employee.id,
+                    company_send_status: "Confirmed",
+                    employee_send_status: "Rejected"
+                },
+                include: {
+                    job_post: true
+                }
+            });
+
+            await Promise.all(canceledApplications.map(async (cancel_application: any) =>{
+                await this.prisma.notification.create({
+                    data: {
+                        message: "Sorry, I have to reject your offer. Thank you for your consideration and offer.",
+                        employee_id: employee.id,
+                        company_id: cancel_application.job_post.company_id,
+                        application_id: cancel_application.id,
+                        notification_status: "Rejected",
+                        notification_type: "ConfirmationRejected"
+                    },
+                    include: {
+                        application: true
+                    }
+
+                })
+            }))
+            const decrement_job_post = await this.prisma.jobPost.update({
+                where:{
+                    id: job_application.job_post.id
+                },
+                data: {
+                    available_position: {
+                        decrement: 1
+                    }
+                }
+            })
+            
+            return  notification
+            }
+        }
+    }
 }
