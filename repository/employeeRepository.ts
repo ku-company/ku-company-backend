@@ -174,6 +174,7 @@ export class EmployeeRepository{
                     user_id : user_id
                 }
             })
+            if(employee.has_job == false){
 
             if(!employee){
                 throw new Error("Employee profile not found");
@@ -192,6 +193,9 @@ export class EmployeeRepository{
                     id : job_id
                 }
             })
+            if(!job){
+                throw new Error("Job not found")
+            }
             if(job.status !== "Active"){
                 throw new Error("This job cannot be applied to");
             }
@@ -224,6 +228,9 @@ export class EmployeeRepository{
                 }
             })
             return result
+        }else{
+            throw new Error("You have already a job")
+        }
         }catch(e:any){
             throw new Error("Failed to apply to job: " + e.message);
         }
