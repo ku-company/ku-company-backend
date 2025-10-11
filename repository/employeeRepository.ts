@@ -242,11 +242,19 @@ export class EmployeeRepository{
                 user_id : user_id
             }
         })
-        return await this.prisma.resume.findMany({
+        if(!employee){
+            throw new Error("Employee profile not found");
+        }
+        const resumes =  await this.prisma.resume.findMany({
             where: {
                 employee_id: employee.id
             }
         })
+        console.log(resumes)
+        if(resumes.length == 0){
+            throw new Error("No resumes found")
+        }
+        return resumes
     }
 
     async cancel_application(user_id: number, job_application_id: number){
