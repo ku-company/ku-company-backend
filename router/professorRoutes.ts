@@ -21,9 +21,9 @@ router.post("/my-profile/create", async (req , res) =>{
     professorController.create_profile(req, res)
 })
 
-// router.patch("/my-profile/edit", async (req , res) => {
-//     professorController.edit_profile(req, res)
-// })
+router.patch("/my-profile/edit", async (req , res) => {
+    professorController.edit_profile(req, res)
+})
 
 // router.delete("/my-profile/delete", async (req , res) => {
 //     professorController.delete_profile(req,res)

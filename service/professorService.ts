@@ -14,7 +14,9 @@ export class ProfessorService{
 
     async has_profile(user_id: number){
         const profile = await this.professorRepository.get_profile(user_id);
-        if (!profile) throw new Error("Profile not found");
+        if (!profile){
+            throw new Error("Profile not found");   
+        }
         return profile;
     }
 
@@ -49,7 +51,18 @@ export class ProfessorService{
     }
 
     async edit_profile(req: any, input: EditProfessorProfile){
-        return await this.professorRepository.edit_profile(req.user.id, input)
+        await this.has_profile(req.user.id);
+        if (!input.first_name) {
+            throw new Error("First name is required");
+        }
+        if (!input.last_name) {
+            throw new Error("Last name is required");
+        }
+        const result = await this.professorRepository.edit_profile(req.user.id, input)
+        if(!result){
+            throw new Error("Profile not found")
+        }
+        return result;
 
     }
 

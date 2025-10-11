@@ -63,13 +63,38 @@ export class ProfessorRepository{
 
     async edit_profile(user_id: number, input: EditProfessorProfile){
         try{
+            const { first_name, last_name, department, faculty, position, contactInfo, summary } = input;
+            await this.prisma.user.update({
+                where: {
+                    id: user_id
+                },
+                data: {
+                    first_name,
+                    last_name
+                }
+            });
             return await this.prisma.professorProfile.update({
             where: {
                 user_id: user_id
             },
             data: {
-                ...input,
+                department,
+                faculty,
+                position,
+                contactInfo,
+                summary,
                 updated_at: new Date()
+            },
+            include: {
+                user: {
+                    select: {
+                        first_name: true,
+                        last_name: true,
+                        email: true,
+                        profile_image: true,
+                        verified: true
+                    }
+                }
             }
         })
         }catch(e){
