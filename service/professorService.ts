@@ -42,11 +42,12 @@ export class ProfessorService{
     
 
     async delete_profile(req: any){
-            const result = await this.professorRepository.delete_profile(req.user.id)
-            if(!result){
-                throw new Error("Profile not found")
-            }
-            return result
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        const result = await this.professorRepository.delete_profile(req.user.id)
+        return result
         
     }
 
