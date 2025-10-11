@@ -114,7 +114,7 @@ model professorProfile {
   summary      String?        @db.VarChar(255)
   updated_at   DateTime       @updatedAt
   annoucements Announcement[]
-  user         User           @relation("UserProfessor", fields: [user_id], references: [id], onDelete: Cascade)
+  user         User           User @relation(name: "UserProfessor",fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model employeeProfile {
@@ -242,3 +242,4 @@ model Notification {
   company companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
   application jobApplication? @relation(fields: [application_id], references: [id], onDelete: Cascade)
 }
+
