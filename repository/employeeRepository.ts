@@ -21,11 +21,17 @@ export class EmployeeRepository{
         if(existingProfile){
             throw new Error("Profile already exists");
         }
-        const data = req.body
+
+        const data: any = { ...req.body, updated_at: new Date() };
+
+        // Convert birthDate to Date if provided
+        if (req.body.birthDate) {
+            data.birthDate = new Date(req.body.birthDate); // ✅ converts to ISO-8601 DateTime
+        }
+
         return await this.prisma.employeeProfile.create({
             data: {
                 ...data,
-                updated_at: new Date(),
                 user: {
                     connect: {
                         id: req.user.id
@@ -55,21 +61,20 @@ export class EmployeeRepository{
         })
     };
 
-    async edit_profile(user_id: number, input: EditEmployeeProfile){
-        try{
-            return await this.prisma.employeeProfile.update({
-            where: {
-                user_id: user_id
-            },
-            data: {
-                ...input,
-                updated_at: new Date()
+    async edit_profile(user_id: number, input: EditEmployeeProfile) {
+        try {
+            const data: any = { ...input, updated_at: new Date() };
+            if (input.birthDate) {
+                data.birthDate = new Date(input.birthDate); 
             }
-        })
-        }catch(e){
-            throw new Error("Profile not found");
+            return await this.prisma.employeeProfile.update({
+                where: { user_id },
+                data,
+            });
+        } catch (e: any) {
+            throw new Error("Failure because" + e.message);
         }
-    };
+}
 
     async upload_resume(employee_id: number, file_url: string, is_main = false): Promise<void> {
         await this.prisma.resume.create({

@@ -10,8 +10,12 @@ import { UserController } from "../controller/userController.js";
 const router = Router();
 const employeeController = new EmployeeController();
 const userController = new UserController();
-router.use(verifiedMiddleware);
+
 router.use(authorizeRole("Student", "Alumni", "Admin"));
+router.post("/my-profile/create", async (req , res) =>{
+    employeeController.create_profile(req, res)
+})
+router.use(verifiedMiddleware);
 
 // === Profile Image Routes ===
 router.post(
