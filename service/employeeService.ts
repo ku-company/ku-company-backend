@@ -210,4 +210,9 @@ export class EmployeeService{
     async checkout_list_apply_jobs(user_id: number, resume_id: number, job_ids: number[]){
         return await this.employeeRepository.apply_job_checkout_list(user_id, resume_id, job_ids)
     }
+
+    async sent_the_confirmation_to_company(user_id: number, application_id: number){
+        const job_id_num = Number(application_id)
+        return await this.employeeRepository.sent_the_confirmation_to_company(user_id, job_id_num)
+    }
 }

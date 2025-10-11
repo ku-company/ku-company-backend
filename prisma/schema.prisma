@@ -1,173 +1,23 @@
-generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x", "linux-arm64-openssl-3.0.x"]
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DOCKER_DATABASE_URL")
-}
-
-model User {
-  id               Int               @id @default(autoincrement())
-  first_name       String?           @db.VarChar(255)
-  last_name        String?           @db.VarChar(255)
-  user_name        String?           @unique @db.VarChar(255)
-  email            String            @unique @db.VarChar(255)
-  password_hash    String?           @db.VarChar(255)
-  verified         Boolean           @default(false)
-  profile_image    String?           @db.VarChar(255)
-  created_at       DateTime          @default(now())
-  updated_at       DateTime          @updatedAt
-  company_name     String?           @unique @db.VarChar(255)
-  status           VerifiedStatus    @default(Pending)
-  role             Role              @default(Admin)
-  links            Link[]
-  companyProfile   companyProfile?   @relation("UserCompany")
-  employeeProfile  employeeProfile?  @relation("UserEmployee")
-  professorProfile professorProfile? @relation("UserProfessor")
-}
-
-model professorProfile {
-  id           Int            @id @default(autoincrement())
-  user_id      Int            @unique
-  department   String         @db.VarChar(255)
-  faculty      String         @db.VarChar(255)
-  position     String?        @db.VarChar(255)
-  contactInfo  String?        @db.VarChar(255) 
-  summary      String?        @db.VarChar(255)
-  updated_at   DateTime       @updatedAt
-  annoucements Announcement[]
-  user         User           @relation("UserProfessor", fields: [user_id], references: [id], onDelete: Cascade)
-}
-
-model employeeProfile {
-  id              Int                   @id @default(autoincrement())
-  user_id         Int                   @unique
-  education       String?               @db.VarChar(255)
-  summary         String?               @db.VarChar(255)
-  skills          String?               @db.VarChar(255)
-  experience      String?               @db.VarChar(255)
-  contactInfo     String?               @db.VarChar(255)
-  languages       String?               @db.VarChar(255)
-  updated_at      DateTime              @updatedAt
-  birthDate       DateTime?
-  has_job         Boolean               @default(false)
-  notifications   Notification[]
-  resumes         Resume[]
-  user            User                  @relation("UserEmployee", fields: [user_id], references: [id], onDelete: Cascade)
-  jobApplications jobApplication[]
-  jobBatches      jobApplicationBatch[]
-}
-
-model Link {
-  id        Int    @id @default(autoincrement())
-  user_id   Int
-  link_name String @db.VarChar(255)
-  url       String @db.VarChar(255)
-  user      User   @relation(fields: [user_id], references: [id])
-}
-
-model Resume {
-  id              Int                   @id @default(autoincrement())
-  employee_id     Int
-  file_url        String                @db.VarChar(255)
-  is_main         Boolean               @default(false)
-  employeeProfile employeeProfile       @relation(fields: [employee_id], references: [id], onDelete: Cascade)
-  jobApplications jobApplication[]
-  jobBatches      jobApplicationBatch[]
-}
-
-model companyProfile {
-  id            Int            @id @default(autoincrement())
-  user_id       Int            @unique
-  company_name  String         @db.VarChar(255)
-  description   String         @db.VarChar(255)
-  industry      String         @db.VarChar(255)
-  location      String         @db.VarChar(255)
-  tel           String         @db.VarChar(20)
-  notifications Notification[]
-  user          User           @relation("UserCompany", fields: [user_id], references: [id], onDelete: Cascade)
-  jobPosts      jobPost[]
-}
-
-model jobApplicationBatch {
-  id           Int              @id @default(autoincrement())
-  employee_id  Int
-  resume_id    Int
-  submitted_at DateTime         @default(now())
-  applications jobApplication[]
-  user         employeeProfile  @relation(fields: [employee_id], references: [id], onDelete: Cascade)
-  resume       Resume           @relation(fields: [resume_id], references: [id], onDelete: Cascade)
-}
-
-model jobApplication {
-  id                    Int                          @id @default(autoincrement())
-  batch_id              Int?
-  job_id                Int
-  applied_at            DateTime                     @default(now())
-  employee_id           Int?
-  resume_id             Int?
-  company_responded_at  DateTime?
-  company_send_status   CompanyJobApplicationStatus  @default(Pending)
-  employee_responded_at DateTime?
-  employee_send_status  EmployeeJobApplicationStatus @default(Pending)
-  Notification          Notification[]
-  jobBatch              jobApplicationBatch?         @relation(fields: [batch_id], references: [id])
-  employee              employeeProfile?             @relation(fields: [employee_id], references: [id])
-  job_post              jobPost                      @relation(fields: [job_id], references: [id], onDelete: Cascade)
-  resume                Resume?                      @relation(fields: [resume_id], references: [id])
-
-  @@unique([employee_id, job_id])
-}
-
-model jobPost {
-  id                 Int              @id @default(autoincrement())
-  company_id         Int
-  description        String           @db.VarChar(255)
-  jobType            JobType
-  position           Position
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
-  available_position Int
-  status             JobPostStatus    @default(Active)
-  reposts            Announcement[]
-  applications       jobApplication[]
-  company            companyProfile   @relation(fields: [company_id], references: [id], onDelete: Cascade)
-}
-
-model Announcement {
-  id            Int              @id @default(autoincrement())
-  professor_id  Int
-  job_id        Int?
-  content       String           @db.VarChar(255)
-  is_connection Boolean          @default(false)
-  created_at    DateTime         @default(now())
-  job_post      jobPost?         @relation(fields: [job_id], references: [id])
-  professor     professorProfile @relation(fields: [professor_id], references: [id], onDelete: Cascade)
-}
-
-model Notification {
-  id                  Int                @id @default(autoincrement())
-  employee_id         Int
-  company_id          Int
-  message             String?            @db.VarChar(255)
-  notification_status NotificationStatus @default(Pending)
-  created_at          DateTime           @default(now())
-  notification_type   NotificationType   @default(ApplicationSubmitted)
-  application_id      Int?
-  jobApplication      jobApplication?    @relation(fields: [application_id], references: [id], onDelete: Cascade)
-  company             companyProfile     @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  employee            employeeProfile    @relation(fields: [employee_id], references: [id], onDelete: Cascade)
-}
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 enum Role {
   Student
   Alumni
   Admin
   Company
-  Unknown
   Professor
+  Unknown
+}
+
+enum NotificationType {
+  ApplicationSubmitted
+  ApplicationConfirmed 
+  ConfirmationAccepted
+  ConfirmationRejected
 }
 
 enum JobStatus {
@@ -175,7 +25,6 @@ enum JobStatus {
   Accepted
   Rejected
 }
-
 enum JobType {
   FullTime
   PartTime
@@ -195,6 +44,20 @@ enum VerifiedStatus {
   Rejected
 }
 
+enum CompanyJobApplicationStatus {
+  Pending
+  Confirmed
+  Requested
+  Accepted  
+  Rejected  
+}
+
+enum EmployeeJobApplicationStatus {
+  Confirmed
+  Rejected
+  Pending
+}
+
 enum Position {
   Backend_Developer
   Frontend_Developer
@@ -208,23 +71,174 @@ enum NotificationStatus {
   Requested
 }
 
-enum CompanyJobApplicationStatus {
-  Pending
-  Confirmed
-  Requested
-  Accepted
-  Rejected
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x", "linux-arm64-openssl-3.0.x"]
 }
 
-enum EmployeeJobApplicationStatus {
-  Confirmed
-  Rejected
-  Pending
+datasource db {
+  provider = "postgresql"
+  url      = env("DOCKER_DATABASE_URL")
 }
 
-enum NotificationType {
-  ApplicationSubmitted
-  ApplicationConfirmed
-  ConfirmationAccepted
-  ConfirmationRejected
+
+model User {
+  id      Int @id @default(autoincrement())
+  first_name   String? @db.VarChar(255)
+  last_name    String? @db.VarChar(255)
+  company_name String? @db.VarChar(255) @unique
+  user_name    String? @db.VarChar(255) @unique
+  email        String @unique @db.VarChar(255)
+  password_hash String?  @db.VarChar(255)
+  role       Role   @default(Admin)
+  verified     Boolean @default(false)
+  status       VerifiedStatus @default(Pending)
+  profile_image String? @db.VarChar(255)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  professorProfile professorProfile? @relation(name: "UserProfessor")
+  employeeProfile employeeProfile? @relation(name: "UserEmployee")
+  companyProfile  companyProfile? @relation(name: "UserCompany")
+
+  links     Link[]
+}
+
+model professorProfile {
+  id           Int            @id @default(autoincrement())
+  user_id      Int            @unique
+  department   String         @db.VarChar(255)
+  faculty      String         @db.VarChar(255)
+  position     String?        @db.VarChar(255)
+  contactInfo  String?        @db.VarChar(255) 
+  summary      String?        @db.VarChar(255)
+  updated_at   DateTime       @updatedAt
+  annoucements Announcement[]
+  user         User           @relation("UserProfessor", fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model employeeProfile {
+  id          Int   @id @default(autoincrement())
+  user_id     Int   @unique
+  has_job     Boolean @default(false)
+  education   String? @db.VarChar(255)
+  birthDate   DateTime?
+  summary     String? @db.VarChar(255)
+  skills      String? @db.VarChar(255)
+  experience  String? @db.VarChar(255)
+  contactInfo String? @db.VarChar(255)
+  languages   String? @db.VarChar(255)
+  updated_at  DateTime @updatedAt
+  user        User @relation(name: "UserEmployee", fields: [user_id], references: [id], onDelete: Cascade)
+  resumes     Resume[]
+  jobBatches jobApplicationBatch[]
+  jobApplications jobApplication[]
+  notifications Notification[]
+}
+
+model Link {
+  id        Int     @id @default(autoincrement())
+  user_id   Int     
+  link_name String  @db.VarChar(255)
+  url       String  @db.VarChar(255)
+  user      User    @relation(fields: [user_id], references: [id])
+}
+
+model Resume{
+  id            Int     @id @default(autoincrement())
+  employee_id   Int     
+  file_url      String  @db.VarChar(255)
+  is_main       Boolean @default(false)
+  employeeProfile     employeeProfile    @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+  jobBatches jobApplicationBatch[]
+  jobApplications jobApplication[]
+}
+
+model companyProfile {
+  id          Int   @id @default(autoincrement())
+  user_id     Int   @unique
+  company_name  String @db.VarChar(255)
+  description   String @db.VarChar(255)
+  industry      String @db.VarChar(255)
+  tel           String @db.VarChar(20)
+  location      String @db.VarChar(255)
+  jobPosts  jobPost[] 
+  notifications Notification[]
+
+  user        User @relation(name: "UserCompany", fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+
+model jobApplicationBatch {
+  id      Int   @id @default(autoincrement())
+  employee_id Int   
+  resume_id Int
+  submitted_at DateTime @default(now())
+  user employeeProfile  @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resume_id], references: [id], onDelete: Cascade)
+  applications jobApplication[]
+}
+
+model jobApplication {
+  id        Int     @id @default(autoincrement())
+  batch_id  Int?
+  employee_id Int?
+  resume_id Int?
+  job_id    Int
+  company_send_status    CompanyJobApplicationStatus @default(Pending)
+  employee_send_status   EmployeeJobApplicationStatus @default(Pending)
+  applied_at DateTime @default(now())
+  company_responded_at DateTime?
+  employee_responded_at DateTime?
+  jobBatch  jobApplicationBatch? @relation(fields: [batch_id], references: [id], onDelete: SetNull)
+  employee  employeeProfile?     @relation(fields: [employee_id], references: [id], onDelete: SetNull)
+  resume    Resume?              @relation(fields: [resume_id], references: [id], onDelete: SetNull)
+  job_post  jobPost              @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  notifications Notification[]   
+  @@unique([employee_id, job_id])
+}
+
+model jobPost {
+  id          Int     @id @default(autoincrement())
+  company_id  Int
+  description String  @db.VarChar(255)
+  jobType     JobType 
+  position    Position
+  available_position Int
+  status   JobPostStatus @default(Active)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  company companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  applications jobApplication[]
+  reposts Announcement[]
+}
+
+model Announcement {
+  id        Int     @id @default(autoincrement())
+  professor_id Int
+  job_id    Int?
+  content   String @db.VarChar(255)
+  is_connection Boolean @default(false)
+  created_at DateTime @default(now())
+
+  professor professorProfile @relation(fields: [professor_id], references: [id], onDelete: Cascade)
+  job_post      jobPost? @relation(fields: [job_id], references: [id])
+
+}
+
+model Notification {
+  id        Int     @id @default(autoincrement())
+  employee_id   Int
+  company_id Int
+  application_id Int?
+  message   String?  @db.VarChar(255)
+  notification_status NotificationStatus @default(Pending)
+  notification_type  NotificationType @default(ApplicationSubmitted)
+  created_at DateTime @default(now())
+
+
+  employee employeeProfile @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+  company companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  application jobApplication? @relation(fields: [application_id], references: [id], onDelete: Cascade)
 }

@@ -107,4 +107,8 @@ router.get("/my-applications", async(req , res) => {
 router.post("/checkout/apply-jobs", async(req , res) => {
     employeeController.checkout_list_apply_job(req, res)
 })
+
+router.post("/job-applications/:id/confirm", async(req , res) =>{
+    employeeController.sent_the_confirmation_to_company(req, res)
+})
 export default router;
