@@ -51,11 +51,11 @@ export class ProfessorService{
     }
 
     async edit_profile(req: any, input: EditProfessorProfile){
-        await this.has_profile(req.user.id);
-        if (!input.first_name) {
+        const profile = await this.has_profile(req.user.id);
+        if (!profile.user.first_name && !input.first_name) {
             throw new Error("First name is required");
         }
-        if (!input.last_name) {
+        if (!profile.user.last_name && !input.last_name) {
             throw new Error("Last name is required");
         }
         const result = await this.professorRepository.edit_profile(req.user.id, input)
