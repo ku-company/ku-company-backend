@@ -20,4 +20,7 @@ router.patch("/:id/status", async (req: Request, res: Response) => {
   companyController.update_job_application_status(req, res);
 });
 
+router.post("/:id/confirm", async (req: Request, res: Response) => {
+  companyController.send_confirmation_to_employee(req,res)
+})
 export default router;

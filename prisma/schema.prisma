@@ -13,6 +13,13 @@ enum Role {
   Unknown
 }
 
+enum NotificationType {
+  ApplicationSubmitted
+  ApplicationConfirmed 
+  ConfirmationAccepted
+  ConfirmationRejected
+}
+
 enum JobStatus {
   Pending
   Accepted
@@ -37,6 +44,20 @@ enum VerifiedStatus {
   Rejected
 }
 
+enum CompanyJobApplicationStatus {
+  Pending
+  Confirmed
+  Requested
+  Accepted  
+  Rejected  
+}
+
+enum EmployeeJobApplicationStatus {
+  Confirmed
+  Rejected
+  Pending
+}
+
 enum Position {
   Backend_Developer
   Frontend_Developer
@@ -47,6 +68,7 @@ enum NotificationStatus {
   Pending
   Accepted
   Rejected
+  Requested
 }
 
 generator client {
@@ -94,6 +116,7 @@ model professorProfile {
 model employeeProfile {
   id          Int   @id @default(autoincrement())
   user_id     Int   @unique
+  has_job     Boolean @default(false)
   education   String? @db.VarChar(255)
   birthDate   DateTime?
   summary     String? @db.VarChar(255)
@@ -158,8 +181,11 @@ model jobApplication {
   employee_id Int?
   resume_id Int?
   job_id    Int
-  status    String  @db.VarChar(255) @default("Pending")
+  company_send_status    CompanyJobApplicationStatus @default(Pending)
+  employee_send_status   EmployeeJobApplicationStatus @default(Pending)
   applied_at DateTime @default(now())
+  company_responded_at DateTime?
+  employee_responded_at DateTime?
   jobBatch  jobApplicationBatch? @relation(fields: [batch_id], references: [id], onDelete: SetNull)
   employee  employeeProfile?     @relation(fields: [employee_id], references: [id], onDelete: SetNull)
   resume    Resume?              @relation(fields: [resume_id], references: [id], onDelete: SetNull)
@@ -201,13 +227,14 @@ model Notification {
   id        Int     @id @default(autoincrement())
   employee_id   Int
   company_id Int
-  applicaition_id Int?
+  application_id Int?
   message   String?  @db.VarChar(255)
   notification_status NotificationStatus @default(Pending)
+  notification_type  NotificationType @default(ApplicationSubmitted)
   created_at DateTime @default(now())
 
 
   employee employeeProfile @relation(fields: [employee_id], references: [id], onDelete: Cascade)
   company companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  application jobApplication? @relation(fields: [applicaition_id], references: [id], onDelete: Cascade)
+  application jobApplication? @relation(fields: [application_id], references: [id], onDelete: Cascade)
 }
