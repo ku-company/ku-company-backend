@@ -439,5 +439,8 @@ export class EmployeeRepository{
             return  notification
             }
         }
+        else{
+            throw new Error("You already have a job, you cannot confirm another job")
+        }
     }
 }
