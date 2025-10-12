@@ -80,6 +80,25 @@ class EmployerSignUpStrategy extends SignUpStrategy{
     }
 }
 
+class ProfessorSignUpStrategy extends SignUpStrategy {
+    async sign_up(userData: any) {
+        let response_user: any = {
+            id: userData.id,
+            first_name: userData.first_name!,
+            last_name: userData.last_name!,
+            full_name: `${userData.first_name} ${userData.last_name}`,
+            email: userData.email,
+            role: userData.role,
+            verified: userData.verified,
+            profile_image: userData.profile_image,
+            status: "Pending",
+            professor_profile: userData.professorProfile ?? null
+        }
+        
+        return response_user
+    }
+}
+
 
 export class SignUpStrategyFactory {
 
@@ -92,6 +111,8 @@ export class SignUpStrategyFactory {
             return new AdminSignUpStrategy();
         case "Company":
             return new EmployerSignUpStrategy();
+        case "Professor":
+            return new ProfessorSignUpStrategy();
         default:
             throw new Error("Invalid role");
         }
