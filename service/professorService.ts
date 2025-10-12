@@ -71,7 +71,7 @@ export class ProfessorService{
 
     }
     async has_reposted_job(profile_id: number, job_id: number){
-        const repost = await this.professorRepository.has_reposted_job(profile_id, job_id);
+        const repost = await this.professorRepository.get_repost_by_id(profile_id, job_id);
         return repost;
     }
 
@@ -86,8 +86,19 @@ export class ProfessorService{
         if (await this.has_reposted_job(profile.id, job_id)) {
             throw new Error("You have already reposted this job");
         }
-        console.log("input", input)
         const result = await this.professorRepository.repost_job(profile.id, job_id, input)
+        return result
+    }
+
+    async edit_repost(req: any, repost_id: number, input: ProfessorRepost){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        if (!repost_id){
+            throw new Error("Repost ID is required to edit a repost");
+        }
+        const result = await this.professorRepository.edit_repost(repost_id, profile.id, input)
         return result
     }
 

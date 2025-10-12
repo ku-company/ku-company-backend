@@ -221,6 +221,8 @@ model Announcement {
   content   String?  @db.VarChar(255)
   is_connection Boolean @default(false)
   created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
 
   professor professorProfile @relation(fields: [professor_id], references: [id], onDelete: Cascade)
   job_post      jobPost? @relation(fields: [job_id], references: [id])

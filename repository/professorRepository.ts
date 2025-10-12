@@ -100,7 +100,7 @@ export class ProfessorRepository{
         }
     };
 
-    async has_reposted_job(profile_id: number, job_id: number){
+    async get_repost_by_id(profile_id: number, job_id: number){
         const repost = await this.prisma.announcement.findFirst({
             where: {
                 professor_id: profile_id,
@@ -122,7 +122,6 @@ export class ProfessorRepository{
     }
     return await this.prisma.announcement.create({  
         data: {
-            // professor_id: profile_id,
             ...input,
             job_post: { connect: { id: job_id } },
             professor: { connect: { id: profile_id } }
@@ -135,6 +134,28 @@ export class ProfessorRepository{
         })
     }
 
+    async edit_repost(repost_id: number, profile_id: number, input: ProfessorRepost){
+        const repost = await this.prisma.announcement.findUnique({
+            where: { id: repost_id },
+            select: { professor_id: true }
+        });
 
-  
+        if (!repost) {
+            throw new Error("Repost not found");
+        }
+
+        if (repost.professor_id !== profile_id) {
+            throw new Error("Unauthorized to edit this repost");
+        }
+        return await this.prisma.announcement.update({
+            where: {
+                id: repost_id
+            },
+            data: {
+                ...input,
+            }
+
+        })
+    }
+
 }

@@ -33,5 +33,9 @@ router.delete("/my-profile", async (req , res) => {
     professorController.repost_job(req, res)
 })  
 
+router.patch("/job-postings/repost/:id", async (req , res) =>{
+    // id is announcement(repost) id
+    professorController.edit_repost(req, res)
+})
 
 export default router;
