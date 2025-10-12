@@ -28,14 +28,32 @@ router.delete("/my-profile", async (req , res) => {
     professorController.delete_profile(req,res)
 })
 
+
+
+ router.get("/job-postings/all-reposts", async (req , res) =>{
+    // get all repost job posting by professor
+    professorController.get_all_repost_job(req, res)
+})  
+
+// router.get("/job-postings/repost/:id", async (req , res) =>{
+//     // id is announcement(repost) id
+//     professorController.get_repost_by_id(req, res)
+// })
+
 // Repost job posting
  router.post("/job-postings/repost/:id", async (req , res) =>{
+    // id is job posting id
     professorController.repost_job(req, res)
 })  
 
 router.patch("/job-postings/repost/:id", async (req , res) =>{
     // id is announcement(repost) id
     professorController.edit_repost(req, res)
+})
+
+router.delete("/job-postings/repost/:id", async (req , res) =>{
+    // id is announcement(repost) id
+    professorController.delete_repost(req,res)   
 })
 
 export default router;

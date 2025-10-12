@@ -158,4 +158,32 @@ export class ProfessorRepository{
         })
     }
 
+    async delete_repost(repost_id: number, profile_id: number){
+        const repost = await this.prisma.announcement.findUnique({
+            where: { id: repost_id },
+            select: { professor_id: true }
+        });
+
+        if (!repost) {
+            throw new Error("Repost not found");
+        }
+        if (repost.professor_id !== profile_id) {
+            throw new Error("Unauthorized to delete this repost");
+        }
+        return await this.prisma.announcement.delete({
+            where: { id: repost_id }
+        });
+    }
+
+    async get_all_repost_job(profile_id: number){
+        return await this.prisma.announcement.findMany({
+            where: {
+                professor_id: profile_id
+            },
+            include: {
+                job_post: true,
+            }
+        })
+    }
+
 }
