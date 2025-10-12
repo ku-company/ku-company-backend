@@ -15,3 +15,8 @@ export interface EditProfessorProfile{
     contactInfo: string | null;
     summary: string | null;
 }
+
+export interface ProfessorRepost{
+    content: string | null;
+    is_connection: boolean;
+}

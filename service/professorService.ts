@@ -1,15 +1,19 @@
 import { ProfessorRepository } from "../repository/professorRepository.js"
 import type { EditProfessorProfile, InputProfessorProfile } from "../model/professorModel.js";
 import { UserService } from "./userService.js";
+import { CompanyRepository } from "../repository/companyRepository.js";
+import type { ProfessorRepost } from "../model/professorModel.js";
 
 export class ProfessorService{
 
     private professorRepository: ProfessorRepository
     private userService: UserService;
+    private companyRepository: CompanyRepository;
 
     constructor(){
         this.professorRepository = new ProfessorRepository();
         this.userService = new UserService();
+        this.companyRepository = new CompanyRepository();
     }
 
     async has_profile(user_id: number){
@@ -65,6 +69,26 @@ export class ProfessorService{
         }
         return result;
 
+    }
+    async has_reposted_job(profile_id: number, job_id: number){
+        const repost = await this.professorRepository.has_reposted_job(profile_id, job_id);
+        return repost;
+    }
+
+     async repost_job(req: any, job_id: number, input: ProfessorRepost){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        if (!job_id){
+            throw new Error("Job ID is required to repost a job");
+        }
+        if (await this.has_reposted_job(profile.id, job_id)) {
+            throw new Error("You have already reposted this job");
+        }
+        console.log("input", input)
+        const result = await this.professorRepository.repost_job(profile.id, job_id, input)
+        return result
     }
 
 }

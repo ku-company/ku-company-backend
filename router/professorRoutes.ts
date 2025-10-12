@@ -28,5 +28,10 @@ router.delete("/my-profile", async (req , res) => {
     professorController.delete_profile(req,res)
 })
 
+// Repost job posting
+ router.post("/job-postings/repost/:id", async (req , res) =>{
+    professorController.repost_job(req, res)
+})  
+
 
 export default router;

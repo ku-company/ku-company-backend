@@ -1,8 +1,6 @@
 import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import type { EditEmployeeProfile, InputEmployeeProfile } from "../model/employeeModel.js";
-import type { EditProfessorProfile, InputProfessorProfile } from "../model/professorModel.js";
-import { VerifiedStatus } from "@prisma/client";
+import type { EditProfessorProfile, InputProfessorProfile, ProfessorRepost } from "../model/professorModel.js";
 
 export class ProfessorRepository{
 
@@ -102,7 +100,41 @@ export class ProfessorRepository{
         }
     };
 
-  
+    async has_reposted_job(profile_id: number, job_id: number){
+        const repost = await this.prisma.announcement.findFirst({
+            where: {
+                professor_id: profile_id,
+                job_id: job_id
+            }
+        });
+        return repost;
+    }
+
+  // repost job posting
+  async repost_job(profile_id: number, job_id: number, input: ProfessorRepost){
+    const job = await this.prisma.jobPost.findUnique({
+        where: {
+            id: job_id
+        }
+    });
+    if(!job){
+        throw new Error("Job not found");
+    }
+    return await this.prisma.announcement.create({  
+        data: {
+            // professor_id: profile_id,
+            ...input,
+            job_post: { connect: { id: job_id } },
+            professor: { connect: { id: profile_id } }
+
+        },            
+        include: {
+                job_post: true,
+                professor: { include: { user: true } },
+            }
+        })
+    }
+
 
   
 }

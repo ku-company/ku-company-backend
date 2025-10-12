@@ -64,4 +64,19 @@ export class ProfessorController{
         }
     }
 
+        async repost_job(req: any, res: any){
+        try{
+            const result = await this.professorService.repost_job(req, Number(req.params.id), req.body);
+            res.status(200).json({
+                message: "Job reposted successfully",
+                data: result
+            })
+        }catch(error:any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+
 }
