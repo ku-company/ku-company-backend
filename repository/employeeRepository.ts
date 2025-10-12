@@ -15,7 +15,7 @@ export class EmployeeRepository{
     async create_profile(req: any){
         const existingProfile = await this.prisma.employeeProfile.findUnique({
             where: {
-                user_id: req.user_id
+                user_id: req.user.id
             }
         })
         if(existingProfile){
