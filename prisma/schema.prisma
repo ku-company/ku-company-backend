@@ -218,7 +218,7 @@ model Announcement {
   id        Int     @id @default(autoincrement())
   professor_id Int
   job_id    Int?
-  content   String @db.VarChar(255)
+  content   String?  @db.VarChar(255)
   is_connection Boolean @default(false)
   created_at DateTime @default(now())
 
