@@ -105,12 +105,16 @@ model User {
 }
 
 model professorProfile {
-  id          Int   @id @default(autoincrement())
-  user_id     Int   @unique
-  department  String @db.VarChar(255)
-  faculty     String @db.VarChar(255)
-  user        User @relation(name: "UserProfessor",fields: [user_id], references: [id], onDelete: Cascade)
+  id           Int            @id @default(autoincrement())
+  user_id      Int            @unique
+  department   String         @db.VarChar(255)
+  faculty      String         @db.VarChar(255)
+  position     String?        @db.VarChar(255)
+  contactInfo  String?        @db.VarChar(255) 
+  summary      String?        @db.VarChar(255)
+  updated_at   DateTime       @updatedAt
   annoucements Announcement[]
+  user         User           @relation(name: "UserProfessor",fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model employeeProfile {
@@ -238,3 +242,4 @@ model Notification {
   company companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
   application jobApplication? @relation(fields: [application_id], references: [id], onDelete: Cascade)
 }
+
