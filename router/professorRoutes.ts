@@ -35,10 +35,10 @@ router.delete("/my-profile", async (req , res) => {
     professorController.get_all_repost_job(req, res)
 })  
 
-// router.get("/job-postings/repost/:id", async (req , res) =>{
-//     // id is announcement(repost) id
-//     professorController.get_repost_by_id(req, res)
-// })
+router.get("/job-postings/repost/:id", async (req , res) =>{
+    // id is announcement(repost) id
+    professorController.get_repost_by_id(req, res)
+})
 
 // Repost job posting
  router.post("/job-postings/repost/:id", async (req , res) =>{

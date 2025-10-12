@@ -100,7 +100,7 @@ export class ProfessorRepository{
         }
     };
 
-    async get_repost_by_id(profile_id: number, job_id: number){
+    async get_repost_by_job_id(profile_id: number, job_id: number){
         const repost = await this.prisma.announcement.findFirst({
             where: {
                 professor_id: profile_id,
@@ -179,6 +179,17 @@ export class ProfessorRepository{
         return await this.prisma.announcement.findMany({
             where: {
                 professor_id: profile_id
+            },
+            include: {
+                job_post: true,
+            }
+        })
+    }
+
+    async get_repost_by_id(repost_id: number){
+        return await this.prisma.announcement.findUnique({
+            where: {
+                id: repost_id
             },
             include: {
                 job_post: true,

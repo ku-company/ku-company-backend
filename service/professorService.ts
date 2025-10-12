@@ -71,7 +71,7 @@ export class ProfessorService{
 
     }
     async has_reposted_job(profile_id: number, job_id: number){
-        const repost = await this.professorRepository.get_repost_by_id(profile_id, job_id);
+        const repost = await this.professorRepository.get_repost_by_job_id(profile_id, job_id);
         return repost;
     }
 
@@ -124,14 +124,10 @@ export class ProfessorService{
     }
 
     async get_repost_by_id(req: any, repost_id: number){
-        const profile = await this.has_profile(req.user.id);
-        if (!profile) {
-            throw new Error("Profile not found");
-        }
         if (!repost_id){
             throw new Error("Repost ID is required to get a repost");
         }
-        const result = await this.professorRepository.get_repost_by_id(profile.id, repost_id)
+        const result = await this.professorRepository.get_repost_by_id(repost_id)
         if(!result){
             throw new Error("Repost not found")
         }
