@@ -12,10 +12,15 @@ const employeeController = new EmployeeController();
 const userController = new UserController();
 
 router.use(authorizeRole("Student", "Alumni", "Admin"));
+
 router.post("/my-profile/create", async (req , res) =>{
     employeeController.create_profile(req, res)
 })
+router.get("/my-profile", async (req , res) =>{
+    employeeController.get_employee_profile(req, res)
+})
 router.use(verifiedMiddleware);
+
 
 // === Profile Image Routes ===
 router.post(
@@ -77,12 +82,7 @@ router.patch("/profile/resumes/:id/set-main", (req, res) => {
 
 // === Employee Profile Routes ===
 // Manage employee profile
-router.get("/my-profile", async (req , res) =>{
-    employeeController.get_employee_profile(req, res)
-})
-router.post("/my-profile/create", async (req , res) =>{
-    employeeController.create_profile(req, res)
-})
+
 router.patch("/my-profile/edit", async (req , res) => {
     employeeController.edit_profile(req, res)
 })
