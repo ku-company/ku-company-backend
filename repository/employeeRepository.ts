@@ -250,7 +250,6 @@ export class EmployeeRepository{
                 employee_id: employee.id
             }
         })
-        console.log(resumes)
         if(resumes.length == 0){
             throw new Error("No resumes found")
         }
@@ -263,6 +262,9 @@ export class EmployeeRepository{
                 user_id : user_id
             }
         })
+        if(!owner){
+            throw new Error("Employee profile not found");
+        }
         const application = await this.prisma.jobApplication.findUnique({
             where: {
                 id: job_application_id,
@@ -281,6 +283,9 @@ export class EmployeeRepository{
                 job_post: true
             }
         })
+        if(!delete_application){
+            throw new Error("Failed to delete application")
+        }
         return delete_application
     }
 
@@ -298,6 +303,9 @@ export class EmployeeRepository{
                 job_post: true
             }
         })
+        if(all_applications.length == 0){
+            throw new Error("No applications found")
+        }
         return all_applications
     }
 
@@ -317,6 +325,9 @@ export class EmployeeRepository{
                 resume_id: resume_id,
             }
         })
+        if(!batch){
+            throw new Error("Failed to create batch");
+        }
         const existingApplications = await Promise.all(job_ids.map(async (job_id) => {
         return await this.prisma.jobApplication.findFirst({
                 where: {
@@ -328,7 +339,6 @@ export class EmployeeRepository{
                 }
             });
         }));
-
         const alreadyAppliedApplications = existingApplications.filter(app => app !== null);
 
         if (alreadyAppliedApplications.length > 0) {
@@ -457,6 +467,9 @@ export class EmployeeRepository{
             })
             
             return  notification
+            }
+            else{
+                throw new Error("This application, Company has not confirmed yet")
             }
         }
         else{
