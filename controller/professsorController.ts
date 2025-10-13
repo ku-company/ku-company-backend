@@ -64,4 +64,47 @@ export class ProfessorController{
         }
     }
 
+    async add_comment_to_company(req: any, res: any){
+        try{
+            const company_id = Number(req.params.id)
+            const result = await this.professorService.add_comment_to_company(req.user.id, company_id, req.body.comment)
+            res.status(200).json({
+                message: "Comment added successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+    async edit_comment(req: any, res: any){
+        try{
+            const comment_id = Number(req.params.id)
+            const result = await this.professorService.edit_comment(req.user.id, comment_id, req.body.comment)
+            res.status(200).json({
+                message: "Comment edited successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+    
+    async delete_comment(req: any, res: any){
+        try{
+            const comment_id = Number(req.params.id)
+            const result = await this.professorService.delete_comment(req.user.id, comment_id)
+            res.status(200).json({
+                message: "Comment deleted successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
 }

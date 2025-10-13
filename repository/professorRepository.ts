@@ -3,6 +3,7 @@ import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { EditEmployeeProfile, InputEmployeeProfile } from "../model/employeeModel.js";
 import type { EditProfessorProfile, InputProfessorProfile } from "../model/professorModel.js";
 import { VerifiedStatus } from "@prisma/client";
+import { lstat } from "fs";
 
 export class ProfessorRepository{
 
@@ -102,7 +103,109 @@ export class ProfessorRepository{
         }
     };
 
-  
+    async add_comment_to_company(user_id: number ,company_id: number, comment: string){
+        const professor = await this.prisma.professorProfile.findUnique({
+            where:{
+                user_id: user_id
+            }
+        })
+        if(!professor){
+            throw new Error("Professor not found");
+        }
+        const company = await this.prisma.companyProfile.findUnique({
+            where: {
+                id: company_id
+            }
+        })
+        if(!company){
+            throw new Error("Company not found");
+        }
+        const add_comment = await this.prisma.comment.create({
+            data: {
+                user_id: user_id,
+                company_id: company.id,
+                content: comment,
+                created_at: new Date()
+            },
+            include:{
+                user: {
+                    select: {
+                        first_name: true,
+                        last_name: true
+                    }
+                },
+                company: true
+            }
+        })
+        return add_comment
+    }
 
-  
+    async edit_comment(user_id: number, comment_id: number , comment: string){
+        const professor = await this.prisma.professorProfile.findUnique({
+            where:{
+                user_id: user_id
+            }
+        })
+        if(!professor){
+            throw new Error("Professor not found");
+        }
+        const find_comment = await this.prisma.comment.findUnique({
+            where: {
+                id: comment_id,
+                user_id: user_id
+            }
+        })
+        if(!find_comment){
+            throw new Error("Comment not found");
+        }
+
+        const edit_comment = await this.prisma.comment.update({
+            where: {
+                id: comment_id,
+                user_id: user_id
+            },
+            data: {
+                content: comment,
+                updated_at: new Date()
+            },
+            include: {
+                user: {
+                    select: {
+                        first_name: true,
+                        last_name: true
+                    }
+                },
+                company: true
+            }
+        })
+        return edit_comment
+    }
+
+    async delete_comment(user_id: number, comment_id: number){
+        const professor = await this.prisma.professorProfile.findUnique({
+            where:{
+                user_id: user_id
+            }
+        })
+        if(!professor){
+            throw new Error("Professor not found");
+        }
+        const find_comment = await this.prisma.comment.findUnique({
+            where: {
+                id: comment_id,
+                user_id: user_id
+            }
+        })
+        if(!find_comment){
+            throw new Error("Comment not found");
+        }
+
+        return await this.prisma.comment.delete({
+            where: {
+                id: comment_id,
+                user_id: user_id
+            }
+        })
+
+    }
 }

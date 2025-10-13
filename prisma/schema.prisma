@@ -102,6 +102,7 @@ model User {
   companyProfile  companyProfile? @relation(name: "UserCompany")
 
   links     Link[]
+  comment Comment[]
 }
 
 model professorProfile {
@@ -164,7 +165,7 @@ model companyProfile {
   location      String @db.VarChar(255)
   jobPosts  jobPost[] 
   notifications Notification[]
-
+  comments Comment[]
   user        User @relation(name: "UserCompany", fields: [user_id], references: [id], onDelete: Cascade)
 }
 
@@ -243,3 +244,15 @@ model Notification {
   application jobApplication? @relation(fields: [application_id], references: [id], onDelete: Cascade)
 }
 
+
+model Comment {
+  id           Int      @id @default(autoincrement())
+  company_id   Int
+  user_id      Int
+  content      String   @db.VarChar(255)
+  created_at   DateTime @default(now())
+  updated_at   DateTime? @default(now())
+
+  company      companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
