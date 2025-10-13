@@ -130,6 +130,21 @@ export class UserController {
 
     }
 
+    async get_profile(req: Request, res: Response){
+        try{
+            const user_id = Number(req.params.id)
+            const result = await this.userService.get_other_profile(user_id);
+            res.status(200).json({
+                message: "Profile retrieved successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
     
 
 

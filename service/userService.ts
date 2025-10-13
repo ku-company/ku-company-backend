@@ -222,4 +222,9 @@ export class UserService {
         }
     }
 
+    async get_other_profile(user_id: number){
+        const user = await this.userRepository.get_profile(user_id)
+        return user
+    }
+
 }
