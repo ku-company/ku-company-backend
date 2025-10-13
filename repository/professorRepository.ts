@@ -129,7 +129,6 @@ export class ProfessorRepository{
         },            
         include: {
                 job_post: true,
-                professor: { include: { user: true } },
             }
         })
     }
