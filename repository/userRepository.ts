@@ -201,6 +201,9 @@ export class UserRepository {
         }
         const strategy = ProfileFactory.set_strategy(user.role, this.prisma)
         const profile = await strategy.get_profile(user_id);
+        if(!profile){
+            throw new Error("Profile not found")
+        }
         return profile
     }
 
