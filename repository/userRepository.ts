@@ -4,6 +4,7 @@ import type { UserDB} from "../model/userModel.js";
 import type { UserSummaryDTO } from "../dtoModel/userDTO.js";
 import { Role } from "../utils/enums.js";
 import bcrypt from "bcryptjs";
+import { ProfileFactory } from "../helper/profileStrategy.js";
 
 export class UserRepository {
 
@@ -187,6 +188,23 @@ export class UserRepository {
             throw new Error("User not found");
         }
         return updatedUser;
+    }
+
+    async get_profile(user_id: number){
+        const user =  await this.prisma.user.findUnique({
+            where: {
+                id: user_id
+            }
+        })
+        if(!user){
+            throw new Error("User not found")
+        }
+        const strategy = ProfileFactory.set_strategy(user.role, this.prisma)
+        const profile = await strategy.get_profile(user_id);
+        if(!profile){
+            throw new Error("Profile not found")
+        }
+        return profile
     }
 
 }
