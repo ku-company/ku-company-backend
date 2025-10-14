@@ -64,6 +64,77 @@ export class ProfessorController{
         }
     }
 
+    async repost_job(req: any, res: any){
+        try{
+            const result = await this.professorService.repost_job(req, Number(req.params.id), req.body);
+            res.status(200).json({
+                message: "Job reposted successfully",
+                data: result
+            })
+        }catch(error:any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async edit_repost(req: any, res: any){
+        try{
+            const result = await this.professorService.edit_repost(req, Number(req.params.id), req.body);
+            res.status(200).json({
+                message: "Repost edited successfully",
+                data: result
+            })
+        }catch(error:any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async delete_repost(req: any, res: any){
+        try{
+            const result = await this.professorService.delete_repost(req, Number(req.params.id));
+            res.status(200).json({
+                message: "Repost deleted successfully",
+                data: result
+            })
+        }catch(error:any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async get_all_repost_job(req: any, res: any){
+        try{
+            const result = await this.professorService.get_all_repost_job(req);
+            res.status(200).json({
+                message: "Repost job retrieved successfully",
+                data: result
+            })
+        }catch(error:any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async get_repost_by_id(req: any, res: any){
+        try{
+            const result = await this.professorService.get_repost_by_id(req, Number(req.params.id));
+            res.status(200).json({
+                message: "Repost job retrieved successfully",
+                data: result
+            })
+        }catch(error:any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+
     async add_comment_to_company(req: any, res: any){
         try{
             const company_id = Number(req.params.id)
