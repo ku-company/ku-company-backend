@@ -1,7 +1,6 @@
 import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import type { EditEmployeeProfile, InputEmployeeProfile } from "../model/employeeModel.js";
-import type { EditProfessorProfile, InputProfessorProfile } from "../model/professorModel.js";
+import type { EditProfessorProfile, InputProfessorProfile, ProfessorRepost } from "../model/professorModel.js";
 import { VerifiedStatus } from "@prisma/client";
 import { lstat } from "fs";
 
@@ -125,7 +124,8 @@ export class ProfessorRepository{
     }
     return await this.prisma.announcement.create({  
         data: {
-            ...input,
+            content: input.content ?? null,
+            is_connection: input.is_connection ?? false,
             job_post: { connect: { id: job_id } },
             professor: { connect: { id: profile_id } }
 
