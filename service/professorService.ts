@@ -68,7 +68,18 @@ export class ProfessorService{
             throw new Error("Profile not found")
         }
         return result;
+    }
 
+    async add_comment_to_company(user_id: number, company_id: number, comment: string){
+        return await this.professorRepository.add_comment_to_company(user_id, company_id, comment)
+    }
+
+    async edit_comment(user_id: number, comment_id: number , comment: string){
+        return await this.professorRepository.edit_comment(user_id, comment_id, comment)
+    }
+
+    async delete_comment(user_id: number, comment_id: number){
+        return await this.professorRepository.delete_comment(user_id, comment_id)
     }
     async has_reposted_job(profile_id: number, job_id: number){
         const repost = await this.professorRepository.get_repost_by_job_id(profile_id, job_id);

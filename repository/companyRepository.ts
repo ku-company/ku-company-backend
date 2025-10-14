@@ -33,6 +33,11 @@ export class CompanyRepository {
         return this.prisma.companyProfile.findUnique({
             where: {
                 user_id: user_id
+            },
+            include: {
+                comments: {
+                    orderBy: {created_at: 'desc'}
+                }
             }
         });
     }
