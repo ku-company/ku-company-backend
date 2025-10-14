@@ -137,7 +137,7 @@ export class ProfessorService{
         if (!repost_id){
             throw new Error("Repost ID is required to get a repost");
         }
-        const result = await this.professorRepository.get_repost_by_id(repost_id)
+        const result = await this.professorRepository.get_announcement_by_id(repost_id, "Repost")
         if(!result){
             throw new Error("Repost not found")
         }
@@ -166,4 +166,14 @@ export class ProfessorService{
         return result
     }
 
+    async get_announcement_by_id(req: any, announcement_id: number){
+        if (!announcement_id){
+            throw new Error("Announcement ID is required to get an announcement");
+        }
+        const result = await this.professorRepository.get_announcement_by_id(announcement_id, "Announcement")
+        if(!result){
+            throw new Error("Announcement not found")
+        }
+        return result;
+    }
 }

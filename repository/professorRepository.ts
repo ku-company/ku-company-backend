@@ -191,10 +191,12 @@ export class ProfessorRepository{
         })
     }
 
-    async get_repost_by_id(repost_id: number){
+    async get_announcement_by_id(announcement_id: number, type_post: string){
+        // get Announcement by id of all type (repost, announcement, opinion)
         return await this.prisma.announcement.findUnique({
             where: {
-                id: repost_id
+                id: announcement_id,
+                type_post: type_post
             },
             include: {
                 job_post: true,

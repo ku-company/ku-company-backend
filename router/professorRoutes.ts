@@ -47,6 +47,7 @@ router.delete("/comment/:id/delete", async (req , res ) =>{
 
 router.get("/job-postings/repost/:id", async (req , res) =>{
     // id is announcement(repost) id
+    // return announcement of type repost
     professorController.get_repost_by_id(req, res)
 })
 
@@ -75,9 +76,11 @@ router.get("/announcements/all", async (req , res) =>{
     professorController.get_all_announcement(req, res)
 })
 
-// router.get("/announcement/:id", async (req , res) =>{
-//     professorController.get_announcement_by_id(req, res)
-// })
+router.get("/announcements/:id", async (req , res) =>{
+    // id is announcement id
+    // return announce of type announcement
+    professorController.get_announcement_by_id(req, res)
+})
 
 // router.patch("/announcement/:id", async (req , res) =>{
 //     professorController.edit_announcement(req, res)
