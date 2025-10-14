@@ -157,4 +157,13 @@ export class ProfessorService{
 
     }
 
+    async get_all_announcement(req: any){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        const result = await this.professorRepository.get_all_announcement(profile.id)
+        return result
+    }
+
 }

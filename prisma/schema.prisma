@@ -74,6 +74,13 @@ enum NotificationStatus {
   Read
 }
 
+enum AnnouncementType {
+  Announcement  
+  Repost      
+  Opinion    
+}
+
+
 generator client {
   provider = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x", "linux-arm64-openssl-3.0.x"]
@@ -225,6 +232,7 @@ model Announcement {
   job_id    Int?
   content   String?  @db.VarChar(255)
   is_connection Boolean @default(false)
+  type_post AnnouncementType @default(Opinion)
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 

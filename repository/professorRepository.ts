@@ -127,6 +127,7 @@ export class ProfessorRepository{
         data: {
             content: input.content ?? null,
             is_connection: input.is_connection ?? false,
+            type_post: "Repost",
             job_post: { connect: { id: job_id } },
             professor: { connect: { id: profile_id } }
 
@@ -181,7 +182,8 @@ export class ProfessorRepository{
     async get_all_repost_job(profile_id: number){
         return await this.prisma.announcement.findMany({
             where: {
-                professor_id: profile_id
+                professor_id: profile_id,
+                type_post: "Repost"
             },
             include: {
                 job_post: true,
@@ -321,6 +323,7 @@ export class ProfessorRepository{
             professor_id: profile_id,
             content: input.content,
             is_connection: input.is_connection || false,
+            type_post: "Announcement"
         }
         });
         // Get all student profiles
@@ -342,7 +345,17 @@ export class ProfessorRepository{
         );
         await Promise.all(notifications);
         return announcement;
+    }
 
-
+    async get_all_announcement(profile_id: number){
+        return await this.prisma.announcement.findMany({
+            where: {
+                professor_id: profile_id,
+                type_post: "Announcement"
+            },
+            orderBy: {
+                created_at: 'desc'
+            }
+        })
     }
 }

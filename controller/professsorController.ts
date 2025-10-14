@@ -192,4 +192,18 @@ export class ProfessorController{
             })
         }
     }
+
+    async get_all_announcement(req: any, res: any){
+        try{
+            const result = await this.professorService.get_all_announcement(req);
+            res.status(200).json({
+                message: "Announcements retrieved successfully",
+                data: result
+            })
+        }catch(error:any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
 }

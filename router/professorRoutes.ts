@@ -67,13 +67,13 @@ router.delete("/job-postings/repost/:id", async (req , res) =>{
 })
 
 // Professor Announcement Routes
-router.post("/announcement", async (req , res) =>{
+router.post("/announcements", async (req , res) =>{
     professorController.create_announcement(req, res)
 })
 
-// router.get("/announcement/all", async (req , res) =>{
-//     professorController.get_all_announcement(req, res)
-// })
+router.get("/announcements/all", async (req , res) =>{
+    professorController.get_all_announcement(req, res)
+})
 
 // router.get("/announcement/:id", async (req , res) =>{
 //     professorController.get_announcement_by_id(req, res)
