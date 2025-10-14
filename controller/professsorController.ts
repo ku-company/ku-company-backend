@@ -178,4 +178,18 @@ export class ProfessorController{
             })
         }
     }
+
+    async create_announcement(req: any, res: any){
+        try{
+            const result = await this.professorService.create_announcement(req, req.body);
+            res.status(201).json({
+                message: "Announcement created successfully",
+                data: result
+            })
+        }catch(error:any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
 }

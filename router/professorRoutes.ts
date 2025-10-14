@@ -39,7 +39,7 @@ router.delete("/comment/:id/delete", async (req , res ) =>{
 })
 
 
-
+// === Repost Job Posting Routes ===
  router.get("/job-postings/all-reposts", async (req , res) =>{
     // get all repost job posting by professor
     professorController.get_all_repost_job(req, res)
@@ -65,5 +65,26 @@ router.delete("/job-postings/repost/:id", async (req , res) =>{
     // id is announcement(repost) id
     professorController.delete_repost(req,res)   
 })
+
+// Professor Announcement Routes
+router.post("/announcement", async (req , res) =>{
+    professorController.create_announcement(req, res)
+})
+
+// router.get("/announcement/all", async (req , res) =>{
+//     professorController.get_all_announcement(req, res)
+// })
+
+// router.get("/announcement/:id", async (req , res) =>{
+//     professorController.get_announcement_by_id(req, res)
+// })
+
+// router.patch("/announcement/:id", async (req , res) =>{
+//     professorController.edit_announcement(req, res)
+// })
+
+// router.delete("/announcement/:id", async (req , res) =>{
+//     professorController.delete_announcement(req, res)
+// })
 
 export default router;

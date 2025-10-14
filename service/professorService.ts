@@ -1,8 +1,7 @@
 import { ProfessorRepository } from "../repository/professorRepository.js"
-import type { EditProfessorProfile, InputProfessorProfile } from "../model/professorModel.js";
+import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorRepostDTO, ProfessorAnnouncementDTO} from "../dtoModel/professorDTO.js";
 import { UserService } from "./userService.js";
 import { CompanyRepository } from "../repository/companyRepository.js";
-import type { ProfessorRepost } from "../model/professorModel.js";
 
 export class ProfessorService{
 
@@ -24,7 +23,7 @@ export class ProfessorService{
         return profile;
     }
 
-    async create_profile(req: any, input: InputProfessorProfile){
+    async create_profile(req: any, input: InputProfessorProfileDTO){
         if (!input.department) {
             throw new Error("Department is required");
         }
@@ -55,7 +54,7 @@ export class ProfessorService{
         
     }
 
-    async edit_profile(req: any, input: EditProfessorProfile){
+    async edit_profile(req: any, input: EditProfessorProfileDTO){
         const profile = await this.has_profile(req.user.id);
         if (!profile.user.first_name && !input.first_name) {
             throw new Error("First name is required");
@@ -86,7 +85,7 @@ export class ProfessorService{
         return repost;
     }
 
-     async repost_job(req: any, job_id: number, input: ProfessorRepost){
+     async repost_job(req: any, job_id: number, input: ProfessorRepostDTO){
         const profile = await this.has_profile(req.user.id);
         if (!profile) {
             throw new Error("Profile not found");
@@ -101,7 +100,7 @@ export class ProfessorService{
         return result
     }
 
-    async edit_repost(req: any, repost_id: number, input: ProfessorRepost){
+    async edit_repost(req: any, repost_id: number, input: ProfessorRepostDTO){
         const profile = await this.has_profile(req.user.id);
         if (!profile) {
             throw new Error("Profile not found");
@@ -143,6 +142,19 @@ export class ProfessorService{
             throw new Error("Repost not found")
         }
         return result;
+    }
+
+    async create_announcement(req: any, input: ProfessorAnnouncementDTO){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        if (!input.content) {
+            throw new Error("Content is required for announcement");
+        }
+        const result = await this.professorRepository.create_announcement(profile.id, input)
+        return result;
+
     }
 
 }

@@ -1,8 +1,9 @@
 import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import type { EditProfessorProfile, InputProfessorProfile, ProfessorRepost } from "../model/professorModel.js";
+import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorRepostDTO,ProfessorAnnouncementDTO } from "../dtoModel/professorDTO.js";
 import { VerifiedStatus } from "@prisma/client";
 import { lstat } from "fs";
+import type { employeeProfile } from "@prisma/client";
 
 export class ProfessorRepository{
 
@@ -12,7 +13,7 @@ export class ProfessorRepository{
         this.prisma = PrismaDB.getInstance();
     }
 // CRUD for professor profile
-    async create_profile(user_id: Number, input: InputProfessorProfile){
+    async create_profile(user_id: Number, input: InputProfessorProfileDTO){
         const existingProfile = await this.prisma.professorProfile.findUnique({
             where: {
                 user_id: user_id
@@ -61,7 +62,7 @@ export class ProfessorRepository{
         })
     };
 
-    async edit_profile(user_id: number, input: EditProfessorProfile){
+    async edit_profile(user_id: number, input: EditProfessorProfileDTO){
         try{
             const { first_name, last_name, department, faculty, position, contactInfo, summary } = input;
             await this.prisma.user.update({
@@ -113,7 +114,7 @@ export class ProfessorRepository{
     }
 
   // repost job posting
-  async repost_job(profile_id: number, job_id: number, input: ProfessorRepost){
+  async repost_job(profile_id: number, job_id: number, input: ProfessorRepostDTO){
     const job = await this.prisma.jobPost.findUnique({
         where: {
             id: job_id
@@ -136,7 +137,7 @@ export class ProfessorRepository{
         })
     }
 
-    async edit_repost(repost_id: number, profile_id: number, input: ProfessorRepost){
+    async edit_repost(repost_id: number, profile_id: number, input: ProfessorRepostDTO){
         const repost = await this.prisma.announcement.findUnique({
             where: { id: repost_id },
             select: { professor_id: true }
@@ -302,6 +303,46 @@ export class ProfessorRepository{
                 user_id: user_id
             }
         })
+
+    }
+
+    async create_announcement(profile_id: Number, input: ProfessorAnnouncementDTO){
+        const profile = await this.prisma.professorProfile.findUnique({
+            where: {
+                id: profile_id
+            },
+            include: { user: true }
+        });
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        const announcement = await this.prisma.announcement.create({
+        data: {
+            professor_id: profile_id,
+            content: input.content,
+            is_connection: input.is_connection || false,
+        }
+        });
+        // Get all student profiles
+        const students = await this.prisma.employeeProfile.findMany();
+
+        // Create notifications for each student
+        const notifications = students.map((student: employeeProfile) => 
+            this.prisma.notification.create({
+                data: {
+                    employee_id: student.id,
+                    company_id: null,
+                    professor_id: profile_id,
+                    announcement_id: announcement.id,
+                    message: `New announcement from Professor ${profile.user.first_name ?? ""} ${profile.user.last_name?.[0] ?? ""}: ${input.content?.substring(0, 50)}...`,
+                    notification_status: "Unread",
+                    notification_type: "NewAnnouncement",
+                }
+            })
+        );
+        await Promise.all(notifications);
+        return announcement;
+
 
     }
 }

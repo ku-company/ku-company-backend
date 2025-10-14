@@ -1,4 +1,4 @@
-export interface InputProfessorProfile{
+export interface InputProfessorProfileDTO{
     department: string;
     faculty: string;
     position : string | null;
@@ -6,7 +6,7 @@ export interface InputProfessorProfile{
     summary: string | null;
 }
 
-export interface EditProfessorProfile{
+export interface EditProfessorProfileDTO{
     first_name: string;
     last_name: string;
     department: string | null;
@@ -16,7 +16,12 @@ export interface EditProfessorProfile{
     summary: string | null;
 }
 
-export interface ProfessorRepost{
+export interface ProfessorRepostDTO{
     content: string | null;
     is_connection: boolean;
+}
+
+export interface ProfessorAnnouncementDTO{
+    content: string | null;
+    is_connection: boolean;    
 }
