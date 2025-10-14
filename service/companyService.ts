@@ -197,5 +197,4 @@ export class CompanyService {
 
         return this.companyRepository.send_the_confirmation_to_employee(app_id, user_id);
     }
-
 }

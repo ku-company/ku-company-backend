@@ -42,6 +42,13 @@ export class Company extends ProfileStrategy {
             where: {
                 user_id: user_id
             },
+            include: {
+                comments: {
+                    orderBy: { 
+                        created_at: "desc"
+                    }
+                }
+            }
         })
         return result
     }

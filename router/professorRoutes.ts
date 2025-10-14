@@ -28,5 +28,15 @@ router.delete("/my-profile", async (req , res) => {
     professorController.delete_profile(req,res)
 })
 
+router.post("/comment/:id", async (req , res) =>{
+    professorController.add_comment_to_company(req, res)
+})
+router.patch("/comment/:id/edit", async (req , res ) => {
+    professorController.edit_comment(req, res)
+})
+router.delete("/comment/:id/delete", async (req , res ) =>{
+    professorController.delete_comment(req, res)
+})
+
 
 export default router;
