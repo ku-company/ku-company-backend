@@ -126,7 +126,7 @@ export class ProfessorRepository{
                 employee_id: student.id,
                 professor_id: profile_id,
                 announcement_id: announcement_id,
-                message: `New announcement from Professor ${profile?.user.first_name ?? ""} ${profile?.user.last_name ?? ""}: ${content?.substring(0, 50)}...`,
+                message: `New announcement from Professor ${profile?.user.first_name ?? ""} ${profile?.user.last_name?.[0] ?? ""}: ${content?.substring(0, 50)}...`,
                 notification_status: "Unread",
                 notification_type: "NewAnnouncement",
                 },

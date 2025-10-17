@@ -41,7 +41,7 @@ router.delete("/comment/:id/delete", async (req , res ) =>{
 // === Repost Job Posting Routes ===
  router.get("/job-postings/all-reposts", async (req , res) =>{
     // get all repost job posting by professor
-    professorController.get_all_repost_job(req, res) // works
+    professorController.get_all_repost_job(req, res) 
 })  
 
  router.post("/job-postings/repost/:id", async (req , res) =>{
