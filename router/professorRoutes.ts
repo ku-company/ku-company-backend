@@ -2,7 +2,7 @@ import { Router } from "express";
 import verifiedMiddleware from "../middlewares/verifiedMiddleware.js";
 import authorizeRole from "../middlewares/rolebasedMiddleware.js";
 import type { Request, Response } from "express";
-import { ProfessorController } from "../controller/professsorController.js";
+import { ProfessorController } from "../controller/professorController.js";
 
 const router = Router();
 const professorController = new ProfessorController();
