@@ -45,3 +45,9 @@ export enum EmployeeJobApplicationStatus {
   Confirmed = "Confirmed",
   Rejected = "Rejected"
 }
+
+export enum AnnouncementType {
+  Announcement = "Announcement",
+  Repost = "Repost",
+  Opinion = "Opinion"
+}

@@ -18,6 +18,7 @@ enum NotificationType {
   ApplicationConfirmed 
   ConfirmationAccepted
   ConfirmationRejected
+  NewAnnouncement
 }
 
 enum JobStatus {
@@ -69,7 +70,16 @@ enum NotificationStatus {
   Accepted
   Rejected
   Requested
+  Unread
+  Read
 }
+
+enum AnnouncementType {
+  Announcement  
+  Repost      
+  Opinion    
+}
+
 
 generator client {
   provider = "prisma-client-js"
@@ -115,6 +125,7 @@ model professorProfile {
   summary      String?        @db.VarChar(255)
   updated_at   DateTime       @updatedAt
   annoucements Announcement[]
+  notifications Notification[]
   user         User           @relation(name: "UserProfessor",fields: [user_id], references: [id], onDelete: Cascade)
 }
 
@@ -221,6 +232,7 @@ model Announcement {
   job_id    Int?
   content   String?  @db.VarChar(255)
   is_connection Boolean @default(false)
+  type_post AnnouncementType @default(Opinion)
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 
@@ -233,8 +245,11 @@ model Announcement {
 model Notification {
   id        Int     @id @default(autoincrement())
   employee_id   Int
-  company_id Int
+  company_id Int?
+  professor_id Int?
   application_id Int?
+  announcement_id Int?
+
   message   String?  @db.VarChar(255)
   notification_status NotificationStatus @default(Pending)
   notification_type  NotificationType @default(ApplicationSubmitted)
@@ -242,7 +257,8 @@ model Notification {
 
 
   employee employeeProfile @relation(fields: [employee_id], references: [id], onDelete: Cascade)
-  company companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  company companyProfile? @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  professor professorProfile? @relation(fields: [professor_id], references: [id], onDelete: Cascade)
   application jobApplication? @relation(fields: [application_id], references: [id], onDelete: Cascade)
 }
 

@@ -17,6 +17,7 @@ import authorizeRole from "./middlewares/rolebasedMiddleware.js";
 import companyJobPostingRouter from "./router/jobPostingPublicRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import professorRouter from "./router/professorRoutes.js";
+import professorAnnouncementRouter from "./router/announcementFeedPublicRoutes.js";
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -34,8 +35,9 @@ app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/employee", authorizeRole("Student", "Alumni", "Admin"), employeeRouter );
 app.use("/api/company", authorizeRole("Company"), companyRouter);
-app.use("/api/job-postings", companyJobPostingRouter); // feed job postings
+app.use("/api/job-postings", companyJobPostingRouter); // public feed job postings
 app.use("/api/professor", professorRouter);
+app.use("/api/announcements", professorAnnouncementRouter); // public feed announcements
 
 
 app.get("/", (req, res) => {

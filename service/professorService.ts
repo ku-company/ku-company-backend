@@ -1,8 +1,8 @@
 import { ProfessorRepository } from "../repository/professorRepository.js"
-import type { EditProfessorProfile, InputProfessorProfile } from "../model/professorModel.js";
+import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorEditAnnouncementDTO, ProfessorAnnouncementDTO, ProfessorCreateInputDTO } from "../dtoModel/professorDTO.js";
 import { UserService } from "./userService.js";
 import { CompanyRepository } from "../repository/companyRepository.js";
-import type { ProfessorRepost } from "../model/professorModel.js";
+import { AnnouncementType } from "../utils/enums.js";
 
 export class ProfessorService{
 
@@ -24,7 +24,7 @@ export class ProfessorService{
         return profile;
     }
 
-    async create_profile(req: any, input: InputProfessorProfile){
+    async create_profile(req: any, input: InputProfessorProfileDTO){
         if (!input.department) {
             throw new Error("Department is required");
         }
@@ -55,7 +55,7 @@ export class ProfessorService{
         
     }
 
-    async edit_profile(req: any, input: EditProfessorProfile){
+    async edit_profile(req: any, input: EditProfessorProfileDTO){
         const profile = await this.has_profile(req.user.id);
         if (!profile.user.first_name && !input.first_name) {
             throw new Error("First name is required");
@@ -86,7 +86,19 @@ export class ProfessorService{
         return repost;
     }
 
-     async repost_job(req: any, job_id: number, input: ProfessorRepost){
+    async normalizePostInput(input: ProfessorCreateInputDTO,type_post: AnnouncementType, job_id?: number): Promise<ProfessorAnnouncementDTO> {
+        // Normalize the input data for all kind of post creation 
+        // (repost, announcement, opinion)
+        return {
+            ...input,
+            content: input.content?.trim() || null,
+            is_connection: input.is_connection || false,
+            job_id: job_id ?? null, // Only for repost, null for announcement
+            type_post: type_post
+        };
+    }
+
+    async repost_job(req: any, job_id: number, input: ProfessorCreateInputDTO){
         const profile = await this.has_profile(req.user.id);
         if (!profile) {
             throw new Error("Profile not found");
@@ -97,33 +109,11 @@ export class ProfessorService{
         if (await this.has_reposted_job(profile.id, job_id)) {
             throw new Error("You have already reposted this job");
         }
-        const result = await this.professorRepository.repost_job(profile.id, job_id, input)
+        const normalizedInput = await this.normalizePostInput(input, AnnouncementType.Repost, job_id);
+        const result = await this.professorRepository.create_post(profile.id, normalizedInput)
         return result
     }
 
-    async edit_repost(req: any, repost_id: number, input: ProfessorRepost){
-        const profile = await this.has_profile(req.user.id);
-        if (!profile) {
-            throw new Error("Profile not found");
-        }
-        if (!repost_id){
-            throw new Error("Repost ID is required to edit a repost");
-        }
-        const result = await this.professorRepository.edit_repost(repost_id, profile.id, input)
-        return result
-    }
-
-    async delete_repost(req: any, repost_id: number){
-        const profile = await this.has_profile(req.user.id);
-        if (!profile) {
-            throw new Error("Profile not found");
-        }
-        if (!repost_id){
-            throw new Error("Repost ID is required to delete a repost");
-        }
-        const result = await this.professorRepository.delete_repost(repost_id, profile.id)
-        return result
-    }
 
     async get_all_repost_job(req: any){
         const profile = await this.has_profile(req.user.id);
@@ -134,15 +124,82 @@ export class ProfessorService{
         return result
     }
 
-    async get_repost_by_id(req: any, repost_id: number){
-        if (!repost_id){
-            throw new Error("Repost ID is required to get a repost");
+
+    // Professor Announcement Methods
+    async create_announcement(req: any, input: ProfessorCreateInputDTO){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
         }
-        const result = await this.professorRepository.get_repost_by_id(repost_id)
+        if (!input.content) {
+            throw new Error("Content is required for announcement");
+        }
+        const normalizedInput = await this.normalizePostInput(input, AnnouncementType.Announcement);
+        console.log("Input Announcement:", normalizedInput);
+        const result = await this.professorRepository.create_post(profile.id, normalizedInput)
+        return result;
+    }
+
+    async get_all_announcement(req: any){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        const result = await this.professorRepository.get_all_announcement(profile.id)
+        return result
+    }
+
+    // General GET, PATCH, DELETE Methods (Announcement, Repost, Opinion)
+    async edit_post(req: any, post_id: number, input: ProfessorEditAnnouncementDTO){
+        // edit all type of post (repost, announcement, opinion)
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        if (!post_id){
+            throw new Error("Post ID is required to edit a post");
+        }
+        const result = await this.professorRepository.edit_post(post_id, profile.id, input)
+        return result
+    }
+
+
+    async delete_post(req: any, post_id: number){
+        // delete all type of post (repost, announcement, opinion)
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        if (!post_id){
+            throw new Error("Post ID is required to delete a post");
+        }
+        const result = await this.professorRepository.delete_post(post_id, profile.id)
+        return result
+    }
+
+    async get_post_by_id(req: any, post_id: number){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        if (!post_id){
+            throw new Error("Post ID is required to get a post");
+        }
+        const result = await this.professorRepository.get_post_by_id(post_id,profile.id) 
         if(!result){
-            throw new Error("Repost not found")
+            throw new Error("Announcement not found")
         }
         return result;
     }
+
+    async get_all_posts(req: any){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        const result = await this.professorRepository.get_all_posts(profile.id)
+        return result
+    }
+
 
 }

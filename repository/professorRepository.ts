@@ -1,8 +1,8 @@
 import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import type { EditProfessorProfile, InputProfessorProfile, ProfessorRepost } from "../model/professorModel.js";
-import { VerifiedStatus } from "@prisma/client";
+import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorEditAnnouncementDTO,ProfessorAnnouncementDTO } from "../dtoModel/professorDTO.js";
 import { lstat } from "fs";
+import type { employeeProfile } from "@prisma/client";
 
 export class ProfessorRepository{
 
@@ -12,7 +12,7 @@ export class ProfessorRepository{
         this.prisma = PrismaDB.getInstance();
     }
 // CRUD for professor profile
-    async create_profile(user_id: Number, input: InputProfessorProfile){
+    async create_profile(user_id: Number, input: InputProfessorProfileDTO){
         const existingProfile = await this.prisma.professorProfile.findUnique({
             where: {
                 user_id: user_id
@@ -61,7 +61,7 @@ export class ProfessorRepository{
         })
     };
 
-    async edit_profile(user_id: number, input: EditProfessorProfile){
+    async edit_profile(user_id: number, input: EditProfessorProfileDTO){
         try{
             const { first_name, last_name, department, faculty, position, contactInfo, summary } = input;
             await this.prisma.user.update({
@@ -112,46 +112,79 @@ export class ProfessorRepository{
         return repost;
     }
 
-  // repost job posting
-  async repost_job(profile_id: number, job_id: number, input: ProfessorRepost){
-    const job = await this.prisma.jobPost.findUnique({
-        where: {
-            id: job_id
+    async sent_announcement_notification_to_employees(profile_id: number ,announcement_id: number, content: string){
+        const profile = await this.prisma.professorProfile.findUnique({
+            where: { id: profile_id },
+            include: { user: true },
+        });
+
+        const students = await this.prisma.employeeProfile.findMany();
+        await Promise.all(
+            students.map((student: employeeProfile) =>
+            this.prisma.notification.create({
+                data: {
+                employee_id: student.id,
+                professor_id: profile_id,
+                announcement_id: announcement_id,
+                message: `New announcement from Professor ${profile?.user.first_name ?? ""} ${profile?.user.last_name?.[0] ?? ""}: ${content?.substring(0, 50)}...`,
+                notification_status: "Unread",
+                notification_type: "NewAnnouncement",
+                },
+            })
+            )
+        );
+    }
+    
+    async create_post(
+        profile_id: number,
+        input: ProfessorAnnouncementDTO 
+        ) {
+        const { content, is_connection, type_post, job_id } = input;
+
+        const data: any = {
+        professor_id: profile_id,
+        content: content ?? null,
+        is_connection: is_connection ?? false,
+        type_post,
+        };
+
+        if (job_id) {
+            data.job_id = job_id; // for repost
         }
-    });
-    if(!job){
-        throw new Error("Job not found");
-    }
-    return await this.prisma.announcement.create({  
-        data: {
-            content: input.content ?? null,
-            is_connection: input.is_connection ?? false,
-            job_post: { connect: { id: job_id } },
-            professor: { connect: { id: profile_id } }
 
-        },            
-        include: {
-                job_post: true,
+        const announcement = await this.prisma.announcement.create({
+        data,
+        include: { job_post: true },
+        });
+
+        // Notify all employees only if Announcement
+        if (type_post === "Announcement") {
+            if (!content) {
+                throw new Error("Content is required for announcements");
             }
-        })
+            this.sent_announcement_notification_to_employees(profile_id,announcement.id, content)
+        }
+
+        return announcement;
     }
 
-    async edit_repost(repost_id: number, profile_id: number, input: ProfessorRepost){
-        const repost = await this.prisma.announcement.findUnique({
-            where: { id: repost_id },
+    async edit_post(post_id: number, profile_id: number, input: ProfessorEditAnnouncementDTO){
+        // edit all announcement type 
+        const post = await this.prisma.announcement.findFirst({
+            where: { id: post_id, type_post: input.type_post},
             select: { professor_id: true }
         });
 
-        if (!repost) {
-            throw new Error("Repost not found");
+        if (!post) {
+            throw new Error("Post not found");
         }
 
-        if (repost.professor_id !== profile_id) {
-            throw new Error("Unauthorized to edit this repost");
+        if (post.professor_id !== profile_id) {
+            throw new Error("Unauthorized to edit this post");
         }
         return await this.prisma.announcement.update({
             where: {
-                id: repost_id
+                id: post_id
             },
             data: {
                 ...input,
@@ -160,27 +193,30 @@ export class ProfessorRepository{
         })
     }
 
-    async delete_repost(repost_id: number, profile_id: number){
-        const repost = await this.prisma.announcement.findUnique({
-            where: { id: repost_id },
+
+    async delete_post(post_id: number, profile_id: number){
+        // delete all announcement type (repost, announcement, opinion)
+        const post = await this.prisma.announcement.findUnique({
+            where: { id: post_id },
             select: { professor_id: true }
         });
 
-        if (!repost) {
-            throw new Error("Repost not found");
+        if (!post) {
+            throw new Error("Post not found");
         }
-        if (repost.professor_id !== profile_id) {
-            throw new Error("Unauthorized to delete this repost");
+        if (post.professor_id !== profile_id) {
+            throw new Error("Unauthorized to delete this post");
         }
         return await this.prisma.announcement.delete({
-            where: { id: repost_id }
+            where: { id: post_id }
         });
     }
 
     async get_all_repost_job(profile_id: number){
         return await this.prisma.announcement.findMany({
             where: {
-                professor_id: profile_id
+                professor_id: profile_id,
+                type_post: "Repost"
             },
             include: {
                 job_post: true,
@@ -188,10 +224,12 @@ export class ProfessorRepository{
         })
     }
 
-    async get_repost_by_id(repost_id: number){
-        return await this.prisma.announcement.findUnique({
+    async get_post_by_id(announcement_id: number, profile_id: number){
+        // get Announcement by id of all type (repost, announcement, opinion)
+        return await this.prisma.announcement.findFirst({
             where: {
-                id: repost_id
+                id: announcement_id,
+                professor_id: profile_id
             },
             include: {
                 job_post: true,
@@ -303,5 +341,31 @@ export class ProfessorRepository{
             }
         })
 
+    }
+
+    async get_all_announcement(profile_id: number){
+        return await this.prisma.announcement.findMany({
+            where: {
+                professor_id: profile_id,
+                type_post: "Announcement"
+            },
+            orderBy: {
+                created_at: 'desc'
+            }
+        })
+    }
+
+    async get_all_posts(profile_id: number){
+        return await this.prisma.announcement.findMany({
+            where: {
+                professor_id: profile_id,
+            },
+            orderBy: {
+                created_at: 'desc'
+            },
+            include: {
+                job_post: true,
+            }
+        })
     }
 }
