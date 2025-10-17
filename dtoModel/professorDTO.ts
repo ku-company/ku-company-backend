@@ -1,3 +1,4 @@
+import { AnnouncementType } from "../utils/enums.js";
 export interface InputProfessorProfileDTO{
     department: string;
     faculty: string;
@@ -16,12 +17,21 @@ export interface EditProfessorProfileDTO{
     summary: string | null;
 }
 
-export interface ProfessorRepostDTO{
-    content: string | null;
-    is_connection: boolean;
+export interface ProfessorEditAnnouncementDTO{
+    content: string | null; // given from req.body
+    is_connection: boolean; // given from req.body
+    type_post: AnnouncementType;
 }
 
 export interface ProfessorAnnouncementDTO{
+    // for creating announcement/repost
     content: string | null;
-    is_connection: boolean;    
+    is_connection: boolean;  
+    type_post: AnnouncementType;
+    job_id: number | null;
+}
+
+export interface ProfessorCreateInputDTO{
+    content: string | null;
+    is_connection: boolean;  
 }
