@@ -18,6 +18,7 @@ import companyJobPostingRouter from "./router/jobPostingPublicRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import professorRouter from "./router/professorRoutes.js";
 import professorAnnouncementRouter from "./router/announcementFeedPublicRoutes.js";
+import aiRouter from "./router/aiRoutes.js";
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -38,6 +39,7 @@ app.use("/api/company", authorizeRole("Company"), companyRouter);
 app.use("/api/job-postings", companyJobPostingRouter); // public feed job postings
 app.use("/api/professor", professorRouter);
 app.use("/api/announcements", professorAnnouncementRouter); // public feed announcements
+app.use("/api/ai", aiRouter)
 
 
 app.get("/", (req, res) => {
