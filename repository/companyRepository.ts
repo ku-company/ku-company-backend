@@ -149,7 +149,8 @@ export class CompanyRepository {
             name: `${employeeUser?.first_name || ""} ${employeeUser?.last_name || ""}`.trim(),
             email: employeeUser?.email || "",
             position: app.job_post.position,
-            status: app.status,
+            company_send_status: app.company_send_status,
+            employee_send_status: app.employee_send_status,
             applied_at: app.applied_at,
             resume_url: resumeUrl,
         };

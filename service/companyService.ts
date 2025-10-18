@@ -179,7 +179,7 @@ export class CompanyService {
             throw new Error("Job application not found");
         }
 
-        if (application.status === status) {
+        if (application.company_send_status === status) {
             throw new Error(`Job application is already ${status}`);
         }
         return this.companyRepository.update_job_application_status(app_id, capitalizeFirstLetter(status) as string);
