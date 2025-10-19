@@ -16,8 +16,9 @@ export class UserRepository {
 
     async create_user(input: UserDB): Promise<UserDB>{
         if(input.role === Role.Alumni  || input.role === Role.Student){
-            return await this.prisma.user.create({
-                data: {
+            if(input.email.endsWith("@ku.th")){
+                return await this.prisma.user.create({
+                    data: {
                     first_name: input.first_name,
                     last_name: input.last_name,
                     company_name: input.company_name,
@@ -35,9 +36,30 @@ export class UserRepository {
                 include: {
                     employeeProfile: true,
                 }
-            })
+                })
+            }
+            throw new Error("Email must be a valid ku.th email address");
         }
-        if(input.role === Role.Admin){
+        else if(input.role === Role.Professor){
+            if(input.email.endsWith("@ku.th") && input.email.startsWith("feng")){
+                return await this.prisma.user.create({
+                    data: {
+                        first_name: input.first_name,
+                        last_name: input.last_name,
+                        company_name: input.company_name,
+                        user_name: input?.user_name,
+                        email: input.email,
+                        password_hash: input.password_hash,
+                        role: input.role as Role,
+                        verified: false,
+                        status: "Pending",
+                        profile_image: input.profile_image,
+                    }
+                })
+            }
+            throw new Error("Email must be a valid ku.th email address");
+        }
+        else if(input.role === Role.Admin){
             return await this.prisma.user.create({
                 data: {
                     first_name: input.first_name,
