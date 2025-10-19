@@ -45,6 +45,7 @@ export interface CompanyProfileDTO {
     industry: string;
     tel: string;
     location: string;
+    country: string;
     
 }
 
