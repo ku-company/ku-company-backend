@@ -137,8 +137,7 @@ export class CompanyRepository {
 
     private transformJobApplication(app: any) {
         const employeeUser = app.employee?.user ?? app.jobBatch?.user?.user;
-        const resumeUrl = app.resume?.file_url ?? app.jobBatch?.resume?.file_url ?? null;
-
+        const resumeUrl = app.resume?.file_url ?? app.jobBatch?.resume?.file_url ?? "";
         return {
             id: app.id,
             batch_id: app.batch_id ?? null,
@@ -153,7 +152,7 @@ export class CompanyRepository {
             employee_send_status: app.employee_send_status,
             applied_at: app.applied_at,
             resume_url: resumeUrl,
-        };
+        };  
     }
 
 

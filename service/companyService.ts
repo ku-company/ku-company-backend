@@ -143,7 +143,9 @@ export class CompanyService {
         const ApplicationSigned = await Promise.all(
             applications.map(async (app) => ({
             ...app,
-            resume_url: await this.s3Service.getFileUrl(app.resume_url as string),
+            resume_url: app.resume_url
+            ? await this.s3Service.getFileUrl(app.resume_url)
+            : "",
 
             }))
         );
