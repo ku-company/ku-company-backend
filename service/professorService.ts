@@ -135,7 +135,6 @@ export class ProfessorService{
             throw new Error("Content is required for announcement");
         }
         const normalizedInput = await this.normalizePostInput(input, AnnouncementType.Announcement);
-        console.log("Input Announcement:", normalizedInput);
         const result = await this.professorRepository.create_post(profile.id, normalizedInput)
         return result;
     }
@@ -210,7 +209,6 @@ export class ProfessorService{
             throw new Error("Content is required for opinion");
         }
         const normalizedInput = await this.normalizePostInput(input, AnnouncementType.Opinion);
-        console.log("Input Opinion:", normalizedInput);
         const result = await this.professorRepository.create_post(profile.id, normalizedInput)
         return result;
     }
