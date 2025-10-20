@@ -57,6 +57,7 @@ export class CompanyService {
         input.industry = input.industry ? input.industry : existingProfile.industry;
         input.tel = input.tel ? input.tel : existingProfile.tel;
         input.location = input.location ? input.location : existingProfile.location;
+        input.country = input.country ? input.country : existingProfile.country;
         return this.companyRepository.update_company_profile(input.user_id, input);
     }
 

@@ -163,12 +163,12 @@ model Resume{
 model companyProfile {
   id          Int   @id @default(autoincrement())
   user_id     Int   @unique
-  company_name  String @db.Text()
-  description   String @db.Text()
-  industry      String @db.Text()
-  country       String @db.Text()
-  tel           String @db.VarChar(30)
-  location      String @db.Text()
+  company_name  String? @db.Text()
+  description   String? @db.Text()
+  industry      String? @db.Text()
+  country       String? @db.Text()
+  tel           String? @db.VarChar(30)
+  location      String? @db.Text()
   link         String? @db.Text()
   jobPosts  jobPost[] 
   notifications Notification[]
