@@ -110,20 +110,20 @@ model User {
   professorProfile professorProfile? @relation(name: "UserProfessor")
   employeeProfile employeeProfile? @relation(name: "UserEmployee")
   companyProfile  companyProfile? @relation(name: "UserCompany")
-
   ai_verification AI_Verification?
-  links     Link[]
+
   comment Comment[]
 }
 
 model professorProfile {
   id           Int            @id @default(autoincrement())
   user_id      Int            @unique
-  department   String         @db.VarChar(255)
-  faculty      String         @db.VarChar(255)
-  position     String?        @db.VarChar(255)
-  contactInfo  String?        @db.VarChar(255) 
-  summary      String?        @db.VarChar(255)
+  department   String         @db.Text()
+  faculty      String         @db.Text()
+  position     String?        @db.Text()
+  contactInfo  String?        @db.Text()
+  summary      String?        @db.Text()
+  link        String?        @db.Text()
   updated_at   DateTime       @updatedAt
   annoucements Announcement[]
   notifications Notification[]
@@ -134,13 +134,14 @@ model employeeProfile {
   id          Int   @id @default(autoincrement())
   user_id     Int   @unique
   has_job     Boolean @default(false)
-  education   String? @db.VarChar(255)
+  education   String? @db.Text()
   birthDate   DateTime?
-  summary     String? @db.VarChar(255)
-  skills      String? @db.VarChar(255)
-  experience  String? @db.VarChar(255)
-  contactInfo String? @db.VarChar(255)
-  languages   String? @db.VarChar(255)
+  summary     String? @db.Text()
+  skills      String? @db.Text()
+  experience  String? @db.Text()
+  contactInfo String? @db.Text()
+  languages   String? @db.Text()
+  link       String? @db.Text()
   updated_at  DateTime @updatedAt
   user        User @relation(name: "UserEmployee", fields: [user_id], references: [id], onDelete: Cascade)
   resumes     Resume[]
@@ -149,13 +150,6 @@ model employeeProfile {
   notifications Notification[]
 }
 
-model Link {
-  id        Int     @id @default(autoincrement())
-  user_id   Int     
-  link_name String  @db.VarChar(255)
-  url       String  @db.VarChar(255)
-  user      User    @relation(fields: [user_id], references: [id])
-}
 
 model Resume{
   id            Int     @id @default(autoincrement())
@@ -170,11 +164,13 @@ model Resume{
 model companyProfile {
   id          Int   @id @default(autoincrement())
   user_id     Int   @unique
-  company_name  String @db.VarChar(255)
-  description   String @db.VarChar(255)
-  industry      String @db.VarChar(255)
-  tel           String @db.VarChar(20)
-  location      String @db.VarChar(255)
+  company_name  String @db.Text()
+  description   String @db.Text()
+  industry      String @db.Text()
+  country       String @db.Text()
+  tel           String @db.VarChar(30)
+  location      String @db.Text()
+  link         String? @db.Text()
   jobPosts  jobPost[] 
   notifications Notification[]
   comments Comment[]
@@ -214,7 +210,7 @@ model jobApplication {
 model jobPost {
   id          Int     @id @default(autoincrement())
   company_id  Int
-  description String  @db.VarChar(255)
+  description String  @db.Text()
   jobType     JobType 
   position    Position
   available_position Int
@@ -231,7 +227,7 @@ model Announcement {
   id        Int     @id @default(autoincrement())
   professor_id Int
   job_id    Int?
-  content   String?  @db.VarChar(255)
+  content   String?  @db.Text()
   is_connection Boolean @default(false)
   type_post AnnouncementType @default(Opinion)
   created_at DateTime @default(now())
@@ -251,7 +247,7 @@ model Notification {
   application_id Int?
   announcement_id Int?
 
-  message   String?  @db.VarChar(255)
+  message   String?  @db.Text()
   notification_status NotificationStatus @default(Pending)
   notification_type  NotificationType @default(ApplicationSubmitted)
   created_at DateTime @default(now())
@@ -268,7 +264,7 @@ model Comment {
   id           Int      @id @default(autoincrement())
   company_id   Int
   user_id      Int
-  content      String   @db.VarChar(255)
+  content      String   @db.Text()
   created_at   DateTime @default(now())
   updated_at   DateTime? @default(now())
 

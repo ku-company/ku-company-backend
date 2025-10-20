@@ -23,7 +23,8 @@ export class CompanyRepository {
                 description  : input.description,
                 industry     : input.industry,
                 tel          : input.tel,
-                location     : input.location
+                location     : input.location,
+                country      : input.country
             }
         });
         await this.update_company_name(input.user_id, input.company_name);

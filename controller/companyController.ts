@@ -19,7 +19,8 @@ export class CompanyController {
             description: req.body.description,
             industry: req.body.industry,
             tel: req.body.tel,
-            location: req.body.location
+            location: req.body.location,
+            country: req.body.country
         };
         
         const result = await this.companyService.create_profile(input);
@@ -68,7 +69,8 @@ export class CompanyController {
                 description: req.body.description,
                 industry: req.body.industry,
                 tel: req.body.tel,
-                location: req.body.location
+                location: req.body.location,
+                country: req.body.country
             };
             const result = await this.companyService.update_profile(input);
             if (!result) {
