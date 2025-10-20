@@ -59,18 +59,30 @@ export class AIRepository {
         console.log("Company", company)
         const company_name = company.company_name
         const prompt = `
-            You are an AI identity verifier.
-            Check if this entity is real and trustworthy based on online presence.
-            Return JSON: {
-                "trust_level": "High" | "Medium" | "Low",
-                "reason": "explanation",
-                "evidence_url": "most relevant link"
-            }
-            Entity Name: ${company_name}
-            Data: ${JSON.stringify(company)}
-        `;
+                You are an AI identity verifier.
+                Check if this entity is real and trustworthy based on online presence.
+                Return a valid JSON object with the following structure:
+                {
+                    "trust_level": "High" | "Medium" | "Low",
+                    "reason": "explanation",
+                    "evidence_url": "most relevant link"
+                }
+                Entity Name: ${company_name}
+                Data: ${JSON.stringify(company)}
+                `;
         const response = await this.gen_ai(prompt);
         return response
+    }
+
+    async verify_employee(employee_id: number){
+        const employee = await this.prisma.employeeProfile.findUnique({
+            where: {
+                id: employee_id
+            }
+        })
+        if(!employee){
+            throw new Error("Employee not found")
+        }
     }
 
     async gen_ai(prompt: string){
@@ -78,14 +90,29 @@ export class AIRepository {
         const googleGenAI = new GoogleGenAI({
             apiKey: process.env.Gemini_API_KEY ?? ''
         })
-        const model = await googleGenAI.models.list();
-        console.log(model)
+
         const response = await googleGenAI.models.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt
         })
+  
+        if(!response.text){
+            throw new Error("No response from AI model")
+        }
         console.log(response.text)
-        return response.text;
+        let cleanResponse = response.text.trim(); 
+        cleanResponse = cleanResponse.replace(/```json|```/g, "");
+
+        console.log(cleanResponse)
+
+
+        try {
+            const parsedResponse = json.parse(cleanResponse);
+            return parsedResponse
+        } catch (error) {
+            console.error("Failed to parse AI response:", error);
+            throw new Error("Invalid AI response format");
+        }
     }
     
 

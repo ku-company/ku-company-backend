@@ -110,7 +110,7 @@ model User {
   professorProfile professorProfile? @relation(name: "UserProfessor")
   employeeProfile employeeProfile? @relation(name: "UserEmployee")
   companyProfile  companyProfile? @relation(name: "UserCompany")
-  ai_verification AI_Verification?
+  ai_verification aiVerification?
 
   comment Comment[]
 }
@@ -273,7 +273,7 @@ model Comment {
 }
 
 
-model AI_Verification {
+model aiVerification {
   id          Int       @id @default(autoincrement())
   user_id     Int       @unique
   verified_by String?   @db.VarChar(255)
