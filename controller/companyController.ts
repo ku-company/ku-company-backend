@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { CompanyService } from "../service/companyService.js";
-import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
+import type { CompanyProfileDTO } from "../dtoModel/companyDTO.js";
 import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
 
 export class CompanyController {

@@ -1,7 +1,7 @@
 import { NotificationStatus, type jobApplication, type PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import type { CompanyProfileDB } from "../model/userModel.js";
-import type {CompanyProfileDTO} from "../dtoModel/userDTO.js";
+import type { CompanyProfileDB } from "../model/companyModel.js";
+import type {CompanyProfileDTO} from "../dtoModel/companyDTO.js";
 import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
 import type { CompanyJobApplicationStatus, EmployeeJobApplicationStatus } from "../utils/enums.js";
 import { stat } from "fs";
@@ -18,16 +18,12 @@ export class CompanyRepository {
     async create_company_profile(input: CompanyProfileDTO): Promise<CompanyProfileDB>{
         const companyProfile = await this.prisma.companyProfile.create({
             data: {
-                user_id     : input.user_id,
-                company_name : input.company_name,
-                description  : input.description,
-                industry     : input.industry,
-                tel          : input.tel,
-                location     : input.location,
-                country      : input.country
+                ...input,
             }
         });
-        await this.update_company_name(input.user_id, input.company_name);
+        if (input.company_name) {
+            await this.update_company_name(input.user_id, input.company_name);
+        }
         return companyProfile;
     }
     async find_profile_by_user_id(user_id: number): Promise<CompanyProfileDB | null> {
@@ -55,17 +51,15 @@ export class CompanyRepository {
     }
 
     async update_company_profile(user_id: number, input: CompanyProfileDTO): Promise<CompanyProfileDB | null> {
-        await this.update_company_name(user_id, input.company_name);
+        if (input.company_name) {
+            await this.update_company_name(user_id, input.company_name);
+        }
         return this.prisma.companyProfile.update({
             where: {
                 user_id: user_id
             },
             data: {
-                company_name : input.company_name,
-                description  : input.description,
-                industry     : input.industry,
-                tel          : input.tel,
-                location     : input.location
+                ...input,
             }
         });
     }
