@@ -1,7 +1,7 @@
 import { CompanyRepository } from "../repository/companyRepository.js";
 import { UserRepository } from "../repository/userRepository.js";
-import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
-import type { CompanyProfileDB } from "../model/userModel.js";
+import type { CompanyProfileDTO } from "../dtoModel/companyDTO.js";
+import type { CompanyProfileDB } from "../model/companyModel.js";
 import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/companyDTO.js";
 import { S3Service } from "./s3Services.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
@@ -95,7 +95,7 @@ export class CompanyService {
         }
         input.description = input.description ? input.description : existingPost.description;
         input.jobType = input.jobType ? input.jobType : JobType[existingPost.jobType as keyof typeof JobType];
-        input.position = input.position ? input.position : Position[existingPost.position as keyof typeof Position];
+        input.position = input.position ? input.position : existingPost.position;
 
         input.available_position = input.available_position ? input.available_position : existingPost.available_position;
         return this.companyRepository.update_job_posting(post_id, input);
