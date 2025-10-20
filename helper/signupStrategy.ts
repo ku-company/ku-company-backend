@@ -11,6 +11,7 @@ export abstract class SignUpStrategy{
         const userData: UserDB = await userRepository.create_user({
                 first_name: input.first_name,
                 last_name: input.last_name,
+                stdId: input.stdId ?? null,
                 company_name: input.company_name ?? null,
                 user_name: input.user_name || null,
                 email: input.email,
