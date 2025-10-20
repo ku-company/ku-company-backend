@@ -74,15 +74,29 @@ export class AIRepository {
         return response
     }
 
-    async verify_employee(employee_id: number){
-        const employee = await this.prisma.employeeProfile.findUnique({
-            where: {
-                id: employee_id
+    async verify_employee(user_id: number){
+        const user = await this.prisma.user.findUnique({
+            where : {
+                id: user_id
             }
         })
-        if(!employee){
-            throw new Error("Employee not found")
+        if(!user){
+            throw new Error("User not found")
         }
+        const prompt = `
+                You are an AI identity verifier.
+                Check if this user is real and trustworthy based on the below rule.
+                if StudentID has 1054 at digits 3,4,5,6 and start with last two digits, which get from current AD year - 543, for example valid StudentID 6610545243.
+                and email must be a valid @ku.th email address.
+                Return a valid JSON object with the following structure:
+                {
+                    "trust_level": "High" | "Medium" | "Low",
+                    "reason": "explanation",
+                    "evidence_url": "most relevant link"
+                }
+                StudentID: ${user.name}
+                Data: ${JSON.stringify(user)}
+                `;
     }
 
     async gen_ai(prompt: string){
