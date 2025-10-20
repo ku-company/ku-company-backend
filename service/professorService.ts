@@ -201,5 +201,28 @@ export class ProfessorService{
         return result
     }
 
+    async create_opinion(req: any, input: ProfessorCreateInputDTO){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        if (!input.content) {
+            throw new Error("Content is required for opinion");
+        }
+        const normalizedInput = await this.normalizePostInput(input, AnnouncementType.Opinion);
+        console.log("Input Opinion:", normalizedInput);
+        const result = await this.professorRepository.create_post(profile.id, normalizedInput)
+        return result;
+    }
+
+    async get_all_opinions(req: any){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        const result = await this.professorRepository.get_all_opinions(profile.id)
+        return result
+    }
+
 
 }
