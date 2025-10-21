@@ -62,6 +62,7 @@ class CreateProfileStrategy {
             industry: TO_BE_ADDED,
             tel: TO_BE_ADDED,
             location: TO_BE_ADDED,
+            country: TO_BE_ADDED
             });
         }
     }
