@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { CompanyService } from "../service/companyService.js";
-import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
+import type { CompanyProfileDTO } from "../dtoModel/companyDTO.js";
 import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
 
 export class CompanyController {
@@ -277,7 +277,7 @@ export class CompanyController {
 
             if (!result) {
                 return res.status(404).json({
-                    message: "Job application not found"
+                    message: "Failed to update job application status"
                 });
             }
             res.status(200).json({
