@@ -58,6 +58,7 @@ passport.use(
           first_name: profile.name?.givenName || profile.displayName || "Unknown",
           last_name: profile.name?.familyName || "",
           user_name: profile.displayName || null,
+          stdId: null,
           company_name: null,
           email: email,
           verified: false,

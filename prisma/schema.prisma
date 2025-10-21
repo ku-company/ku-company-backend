@@ -111,7 +111,7 @@ model User {
   professorProfile professorProfile? @relation(name: "UserProfessor")
   employeeProfile employeeProfile? @relation(name: "UserEmployee")
   companyProfile  companyProfile? @relation(name: "UserCompany")
-  ai_verification aiVerification?
+  ai_verification aiVerification[]
 
   comment Comment[]
 }
