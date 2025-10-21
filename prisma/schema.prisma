@@ -49,7 +49,7 @@ enum CompanyJobApplicationStatus {
   Pending
   Confirmed
   Requested
-  Accepted  
+  Approved
   Rejected  
 }
 

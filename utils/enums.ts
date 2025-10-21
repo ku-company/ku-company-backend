@@ -9,7 +9,7 @@ export enum Role {
 
 export enum JobStatus {
   Pending = "Pending",
-  Accepted = "Accepted",
+  Approved = "Approved",
   Rejected = "Rejected"
 }
 
@@ -36,7 +36,7 @@ export enum CompanyJobApplicationStatus {
   Pending = "Pending",
   Confirmed = "Confirmed",
   Requested = "Requested",
-  Accepted = "Accepted",
+  Approved = "Approved",
   Rejected = "Rejected"
 }
 
