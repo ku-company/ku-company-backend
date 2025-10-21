@@ -144,7 +144,9 @@ export class CompanyService {
         const ApplicationSigned = await Promise.all(
             applications.map(async (app) => ({
             ...app,
-            resume_url: await this.s3Service.getFileUrl(app.resume_url as string),
+            resume_url: app.resume_url
+            ? await this.s3Service.getFileUrl(app.resume_url)
+            : "",
 
             }))
         );
@@ -180,7 +182,7 @@ export class CompanyService {
             throw new Error("Job application not found");
         }
 
-        if (application.status === status) {
+        if (application.company_send_status === status) {
             throw new Error(`Job application is already ${status}`);
         }
         return this.companyRepository.update_job_application_status(app_id, capitalizeFirstLetter(status) as string);
