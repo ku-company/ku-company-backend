@@ -116,7 +116,7 @@ export class EmployeeService{
         const signedResumes = await Promise.all(
             resumes.map(async (r: Resume) => ({
             ...r,
-            file_url: await this.s3Service.getFileUrl(r.file_url),
+            file_url: r.file_url ? await this.s3Service.getFileUrl(r.file_url) : "",
 
             }))
         );
@@ -129,7 +129,7 @@ export class EmployeeService{
 
         const resume = await this.employeeRepository.get_resume_by_id(resume_id, profile.id);
         if (!resume) throw new Error("Resume not found");
-        resume.file_url = await this.s3Service.getFileUrl(resume.file_url);
+        resume.file_url = resume.file_url ? await this.s3Service.getFileUrl(resume.file_url) : "";
         return resume;
     }
 
