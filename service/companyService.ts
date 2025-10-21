@@ -6,7 +6,7 @@ import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/compan
 import { S3Service } from "./s3Services.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
 import { JobStatus } from "../utils/enums.js";
-import { capitalizeFirstLetter } from "../utils/capitalizeFirstLetter.js";
+import {CompanyJobApplicationStatus} from "../utils/enums.js";
 
 
 
@@ -171,7 +171,7 @@ export class CompanyService {
 
     }
 
-    async update_job_application_status(user_id: number, app_id: number, status: string) {
+    async update_job_application_status(user_id: number, app_id: number, status: CompanyJobApplicationStatus) {
 
         const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
         if (!companyProfile) {
@@ -185,7 +185,12 @@ export class CompanyService {
         if (application.company_send_status === status) {
             throw new Error(`Job application is already ${status}`);
         }
-        return this.companyRepository.update_job_application_status(app_id, capitalizeFirstLetter(status) as string);
+        if (!Object.values(CompanyJobApplicationStatus).includes(status)) {
+            throw new Error("Invalid job application status");
+        }
+
+        return this.companyRepository.update_job_application_status(app_id, status);
+        // return this.companyRepository.update_job_application_status(app_id, capitalizeFirstLetter(status) as string);
     }
 
     async send_the_confirmation_to_employee(user_id: number, app_id: number){

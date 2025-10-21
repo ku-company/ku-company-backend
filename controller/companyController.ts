@@ -277,7 +277,7 @@ export class CompanyController {
 
             if (!result) {
                 return res.status(404).json({
-                    message: "Job application not found"
+                    message: "Failed to update job application status"
                 });
             }
             res.status(200).json({

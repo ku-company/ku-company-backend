@@ -1,11 +1,9 @@
-import { NotificationStatus, type jobApplication, type PrismaClient } from "@prisma/client";
+import { type PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { CompanyProfileDB } from "../model/companyModel.js";
 import type {CompanyProfileDTO} from "../dtoModel/companyDTO.js";
 import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
-import type { CompanyJobApplicationStatus, EmployeeJobApplicationStatus } from "../utils/enums.js";
-import { stat } from "fs";
-import { application } from "express";
+import { CompanyJobApplicationStatus } from "../utils/enums.js";
 
 export class CompanyRepository {
 
@@ -26,6 +24,7 @@ export class CompanyRepository {
         }
         return companyProfile;
     }
+    
     async find_profile_by_user_id(user_id: number): Promise<CompanyProfileDB | null> {
         return this.prisma.companyProfile.findUnique({
             where: {
@@ -192,13 +191,17 @@ export class CompanyRepository {
         return this.transformJobApplication(app);
     }
 
-    async update_job_application_status(id: number, status: string) {
+    async update_job_application_status(id: number, status: CompanyJobApplicationStatus) {
+        if (!Object.values(CompanyJobApplicationStatus).includes(status)) {
+            throw new Error("Invalid job application status");
+        }
+        const typedStatus = status as CompanyJobApplicationStatus;
         return this.prisma.jobApplication.update({
             where: {
                 id: id
             },
             data: {
-                company_send_status: status as CompanyJobApplicationStatus
+                company_send_status: typedStatus
             }
         });
     }
