@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
 import { JobPostingService } from "../service/jobPostingService.js";
 import  { JobPostingPublicRepository } from "../repository/jobPostingRepository.js";
-import {isJobType, isPosition} from "../utils/validatorEnum.js";
-import { JobType, Position } from "../utils/enums.js";
+import {isJobType } from "../utils/validatorEnum.js";
+import { JobType } from "../utils/enums.js";
 import { enumToDropdown } from "../utils/enumToDropdown.js";
 
 export class JobPostingPublicController {
@@ -30,6 +30,7 @@ export class JobPostingPublicController {
         try{
             const { keyword, category, jobType } = req.query as { keyword: string; category: string; jobType: string };
 
+            console.log(`Filters - keyword: ${keyword}, category: ${category}, jobType: ${jobType}`);
             // Validate jobType
             const jobTypeEnum = jobType && isJobType(jobType) ? jobType : undefined;
             if (jobType && !jobTypeEnum) {
