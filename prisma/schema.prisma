@@ -277,10 +277,10 @@ model Comment {
 model aiVerification {
   id          Int       @id @default(autoincrement())
   user_id     Int       @unique
-  verified_by String?   @db.VarChar(255)
-  trust_level String?   @db.VarChar(50)  
-  reason      String?   @db.VarChar(500) 
-  evidence_url String?  @db.VarChar(255) 
+  verified_by String?   @db.Text()
+  trust_level String?   @db.Text()
+  reason      String?   @db.Text()
+  evidence_url String?  @db.Text() 
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
