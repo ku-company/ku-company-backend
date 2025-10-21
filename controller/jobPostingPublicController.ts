@@ -30,7 +30,6 @@ export class JobPostingPublicController {
         try{
             const { keyword, category, jobType } = req.query as { keyword: string; category: string; jobType: string };
 
-            console.log(`Filters - keyword: ${keyword}, category: ${category}, jobType: ${jobType}`);
             // Validate jobType
             const jobTypeEnum = jobType && isJobType(jobType) ? jobType : undefined;
             if (jobType && !jobTypeEnum) {
