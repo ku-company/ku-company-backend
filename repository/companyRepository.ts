@@ -65,7 +65,8 @@ export class CompanyRepository {
                 description  : input.description,
                 industry     : input.industry,
                 tel          : input.tel,
-                location     : input.location
+                location     : input.location,
+                country      : input.country
             }
         });
     }
