@@ -1,11 +1,9 @@
-import { NotificationStatus, type jobApplication, type PrismaClient } from "@prisma/client";
+import { type PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import type { CompanyProfileDB } from "../model/userModel.js";
-import type {CompanyProfileDTO} from "../dtoModel/userDTO.js";
+import type { CompanyProfileDB } from "../model/companyModel.js";
+import type {CompanyProfileDTO} from "../dtoModel/companyDTO.js";
 import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
-import type { CompanyJobApplicationStatus, EmployeeJobApplicationStatus } from "../utils/enums.js";
-import { stat } from "fs";
-import { application } from "express";
+import { CompanyJobApplicationStatus } from "../utils/enums.js";
 
 export class CompanyRepository {
 
@@ -18,18 +16,15 @@ export class CompanyRepository {
     async create_company_profile(input: CompanyProfileDTO): Promise<CompanyProfileDB>{
         const companyProfile = await this.prisma.companyProfile.create({
             data: {
-                user_id     : input.user_id,
-                company_name : input.company_name,
-                description  : input.description,
-                industry     : input.industry,
-                tel          : input.tel,
-                location     : input.location,
-                country      : input.country
+                ...input,
             }
         });
-        await this.update_company_name(input.user_id, input.company_name);
+        if (input.company_name) {
+            await this.update_company_name(input.user_id, input.company_name);
+        }
         return companyProfile;
     }
+    
     async find_profile_by_user_id(user_id: number): Promise<CompanyProfileDB | null> {
         return this.prisma.companyProfile.findUnique({
             where: {
@@ -55,7 +50,9 @@ export class CompanyRepository {
     }
 
     async update_company_profile(user_id: number, input: CompanyProfileDTO): Promise<CompanyProfileDB | null> {
-        await this.update_company_name(user_id, input.company_name);
+        if (input.company_name) {
+            await this.update_company_name(user_id, input.company_name);
+        }
         return this.prisma.companyProfile.update({
             where: {
                 user_id: user_id
@@ -139,8 +136,7 @@ export class CompanyRepository {
 
     private transformJobApplication(app: any) {
         const employeeUser = app.employee?.user ?? app.jobBatch?.user?.user;
-        const resumeUrl = app.resume?.file_url ?? app.jobBatch?.resume?.file_url ?? null;
-
+        const resumeUrl = app.resume?.file_url ?? app.jobBatch?.resume?.file_url ?? "";
         return {
             id: app.id,
             batch_id: app.batch_id ?? null,
@@ -151,10 +147,11 @@ export class CompanyRepository {
             name: `${employeeUser?.first_name || ""} ${employeeUser?.last_name || ""}`.trim(),
             email: employeeUser?.email || "",
             position: app.job_post.position,
-            status: app.status,
+            company_send_status: app.company_send_status,
+            employee_send_status: app.employee_send_status,
             applied_at: app.applied_at,
             resume_url: resumeUrl,
-        };
+        };  
     }
 
 
@@ -199,13 +196,17 @@ export class CompanyRepository {
         return this.transformJobApplication(app);
     }
 
-    async update_job_application_status(id: number, status: string) {
+    async update_job_application_status(id: number, status: CompanyJobApplicationStatus) {
+        if (!Object.values(CompanyJobApplicationStatus).includes(status)) {
+            throw new Error("Invalid job application status");
+        }
+        const typedStatus = status as CompanyJobApplicationStatus;
         return this.prisma.jobApplication.update({
             where: {
                 id: id
             },
             data: {
-                company_send_status: status as CompanyJobApplicationStatus
+                company_send_status: typedStatus
             }
         });
     }

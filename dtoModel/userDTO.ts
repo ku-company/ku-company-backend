@@ -38,16 +38,6 @@ export interface RefreshTokenRequest {
     token: string
 }
 
-export interface CompanyProfileDTO {
-    user_id: number;
-    company_name: string;
-    description: string;
-    industry: string;
-    tel: string;
-    location: string;
-    country: string;
-    
-}
 
 export interface UserSummaryDTO {
     id: number;

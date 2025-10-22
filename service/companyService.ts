@@ -1,12 +1,12 @@
 import { CompanyRepository } from "../repository/companyRepository.js";
 import { UserRepository } from "../repository/userRepository.js";
-import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
-import type { CompanyProfileDB } from "../model/userModel.js";
+import type { CompanyProfileDTO } from "../dtoModel/companyDTO.js";
+import type { CompanyProfileDB } from "../model/companyModel.js";
 import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/companyDTO.js";
 import { S3Service } from "./s3Services.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
 import { JobStatus } from "../utils/enums.js";
-import { capitalizeFirstLetter } from "../utils/capitalizeFirstLetter.js";
+import {CompanyJobApplicationStatus} from "../utils/enums.js";
 
 
 
@@ -57,6 +57,7 @@ export class CompanyService {
         input.industry = input.industry ? input.industry : existingProfile.industry;
         input.tel = input.tel ? input.tel : existingProfile.tel;
         input.location = input.location ? input.location : existingProfile.location;
+        input.country = input.country ? input.country : existingProfile.country;
         return this.companyRepository.update_company_profile(input.user_id, input);
     }
 
@@ -94,7 +95,7 @@ export class CompanyService {
         }
         input.description = input.description ? input.description : existingPost.description;
         input.jobType = input.jobType ? input.jobType : JobType[existingPost.jobType as keyof typeof JobType];
-        input.position = input.position ? input.position : Position[existingPost.position as keyof typeof Position];
+        input.position = input.position ? input.position : existingPost.position;
 
         input.available_position = input.available_position ? input.available_position : existingPost.available_position;
         return this.companyRepository.update_job_posting(post_id, input);
@@ -143,7 +144,9 @@ export class CompanyService {
         const ApplicationSigned = await Promise.all(
             applications.map(async (app) => ({
             ...app,
-            resume_url: await this.s3Service.getFileUrl(app.resume_url as string),
+            resume_url: app.resume_url
+            ? await this.s3Service.getFileUrl(app.resume_url)
+            : "",
 
             }))
         );
@@ -168,7 +171,7 @@ export class CompanyService {
 
     }
 
-    async update_job_application_status(user_id: number, app_id: number, status: string) {
+    async update_job_application_status(user_id: number, app_id: number, status: CompanyJobApplicationStatus) {
 
         const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
         if (!companyProfile) {
@@ -179,10 +182,15 @@ export class CompanyService {
             throw new Error("Job application not found");
         }
 
-        if (application.status === status) {
+        if (application.company_send_status === status) {
             throw new Error(`Job application is already ${status}`);
         }
-        return this.companyRepository.update_job_application_status(app_id, capitalizeFirstLetter(status) as string);
+        if (!Object.values(CompanyJobApplicationStatus).includes(status)) {
+            throw new Error("Invalid job application status");
+        }
+
+        return this.companyRepository.update_job_application_status(app_id, status);
+        // return this.companyRepository.update_job_application_status(app_id, capitalizeFirstLetter(status) as string);
     }
 
     async send_the_confirmation_to_employee(user_id: number, app_id: number){
