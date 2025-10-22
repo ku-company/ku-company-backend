@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { CompanyService } from "../service/companyService.js";
-import type { CompanyProfileDTO } from "../dtoModel/userDTO.js";
+import type { CompanyProfileDTO } from "../dtoModel/companyDTO.js";
 import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
 
 export class CompanyController {
@@ -19,7 +19,8 @@ export class CompanyController {
             description: req.body.description,
             industry: req.body.industry,
             tel: req.body.tel,
-            location: req.body.location
+            location: req.body.location,
+            country: req.body.country
         };
         
         const result = await this.companyService.create_profile(input);
@@ -68,7 +69,8 @@ export class CompanyController {
                 description: req.body.description,
                 industry: req.body.industry,
                 tel: req.body.tel,
-                location: req.body.location
+                location: req.body.location,
+                country: req.body.country
             };
             const result = await this.companyService.update_profile(input);
             if (!result) {
@@ -275,7 +277,7 @@ export class CompanyController {
 
             if (!result) {
                 return res.status(404).json({
-                    message: "Job application not found"
+                    message: "Failed to update job application status"
                 });
             }
             res.status(200).json({
@@ -289,6 +291,21 @@ export class CompanyController {
         }
     }
 
+    async send_confirmation_to_employee(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const job_application_id = Number(req.params.id);
+            const result = await this.companyService.send_the_confirmation_to_employee(user.id, job_application_id)
+            res.status(200).json({
+                message: "Confirmation sent successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
 
 
 

@@ -15,17 +15,23 @@ export class EmployeeRepository{
     async create_profile(req: any){
         const existingProfile = await this.prisma.employeeProfile.findUnique({
             where: {
-                user_id: req.user_id
+                user_id: req.user.id
             }
         })
         if(existingProfile){
             throw new Error("Profile already exists");
         }
-        const data = req.body
+
+        const data: any = { ...req.body, updated_at: new Date() };
+
+        // Convert birthDate to Date if provided
+        if (req.body.birthDate) {
+            data.birthDate = new Date(req.body.birthDate); // ✅ converts to ISO-8601 DateTime
+        }
+
         return await this.prisma.employeeProfile.create({
             data: {
                 ...data,
-                updated_at: new Date(),
                 user: {
                     connect: {
                         id: req.user.id
@@ -55,21 +61,20 @@ export class EmployeeRepository{
         })
     };
 
-    async edit_profile(user_id: number, input: EditEmployeeProfile){
-        try{
-            return await this.prisma.employeeProfile.update({
-            where: {
-                user_id: user_id
-            },
-            data: {
-                ...input,
-                updated_at: new Date()
+    async edit_profile(user_id: number, input: EditEmployeeProfile) {
+        try {
+            const data: any = { ...input, updated_at: new Date() };
+            if (input.birthDate) {
+                data.birthDate = new Date(input.birthDate); 
             }
-        })
-        }catch(e){
-            throw new Error("Profile not found");
+            return await this.prisma.employeeProfile.update({
+                where: { user_id },
+                data,
+            });
+        } catch (e: any) {
+            throw new Error("Failure because" + e.message);
         }
-    };
+}
 
     async upload_resume(employee_id: number, file_url: string, is_main = false): Promise<void> {
         await this.prisma.resume.create({
@@ -169,6 +174,7 @@ export class EmployeeRepository{
                     user_id : user_id
                 }
             })
+            if(employee.has_job == false){
 
             if(!employee){
                 throw new Error("Employee profile not found");
@@ -187,6 +193,9 @@ export class EmployeeRepository{
                     id : job_id
                 }
             })
+            if(!job){
+                throw new Error("Job not found")
+            }
             if(job.status !== "Active"){
                 throw new Error("This job cannot be applied to");
             }
@@ -219,6 +228,9 @@ export class EmployeeRepository{
                 }
             })
             return result
+        }else{
+            throw new Error("You have already a job")
+        }
         }catch(e:any){
             throw new Error("Failed to apply to job: " + e.message);
         }
@@ -230,11 +242,18 @@ export class EmployeeRepository{
                 user_id : user_id
             }
         })
-        return await this.prisma.resume.findMany({
+        if(!employee){
+            throw new Error("Employee profile not found");
+        }
+        const resumes =  await this.prisma.resume.findMany({
             where: {
                 employee_id: employee.id
             }
         })
+        if(resumes.length == 0){
+            throw new Error("No resumes found")
+        }
+        return resumes
     }
 
     async cancel_application(user_id: number, job_application_id: number){
@@ -243,6 +262,9 @@ export class EmployeeRepository{
                 user_id : user_id
             }
         })
+        if(!owner){
+            throw new Error("Employee profile not found");
+        }
         const application = await this.prisma.jobApplication.findUnique({
             where: {
                 id: job_application_id,
@@ -261,6 +283,9 @@ export class EmployeeRepository{
                 job_post: true
             }
         })
+        if(!delete_application){
+            throw new Error("Failed to delete application")
+        }
         return delete_application
     }
 
@@ -278,6 +303,9 @@ export class EmployeeRepository{
                 job_post: true
             }
         })
+        if(all_applications.length == 0){
+            throw new Error("No applications found")
+        }
         return all_applications
     }
 
@@ -297,6 +325,9 @@ export class EmployeeRepository{
                 resume_id: resume_id,
             }
         })
+        if(!batch){
+            throw new Error("Failed to create batch");
+        }
         const existingApplications = await Promise.all(job_ids.map(async (job_id) => {
         return await this.prisma.jobApplication.findFirst({
                 where: {
@@ -308,7 +339,6 @@ export class EmployeeRepository{
                 }
             });
         }));
-
         const alreadyAppliedApplications = existingApplications.filter(app => app !== null);
 
         if (alreadyAppliedApplications.length > 0) {
@@ -328,5 +358,122 @@ export class EmployeeRepository{
             return result
         }))
         return application
+    }
+
+    async sent_the_confirmation_to_company(user_id: number, job_application_id: number){
+        const employee = await this.prisma.employeeProfile.findUnique({
+            where: {
+                user_id: user_id
+            }
+        })
+        if(!employee){
+            throw new Error("Employee profile not found");
+        }
+        const job_application = await this.prisma.jobApplication.findUnique({
+                where: {
+                    id: job_application_id
+            },
+                include: {
+                    job_post: true
+                }
+            })
+            
+            if(!job_application){
+                throw new Error("Job application not found")
+            }
+        
+        if(employee.has_job == false){
+        if(job_application.company_send_status === "Confirmed"){
+            const job_applcation_update_status = await this.prisma.jobApplication.update({
+            where: {
+                id : job_application_id
+            },
+            data: {
+                employee_send_status: "Confirmed",
+                employee_responded_at: new Date()
+            }
+            })
+
+            const employee_update_status = await this.prisma.employeeProfile.update({
+                where: {
+                    user_id: user_id
+                },
+                data: {
+                    has_job: true
+                }
+            })
+        
+            const notification = await this.prisma.notification.create({
+            data: {
+                message: "I accepted your offer. Thank you for your consideration.",
+                employee_id: employee.id,
+                company_id: job_application.job_post.company_id,
+                application_id: job_application_id,
+                notification_status: "Accepted",
+                notification_type: "ConfirmationAccepted"
+            },
+            include: {
+                application: true
+            }
+            })
+            const cancel_all_applications = await this.prisma.jobApplication.updateMany({
+                where:{
+                    employee_id: employee.id,
+                    company_send_status: "Confirmed",
+                    employee_send_status: "Pending"
+                    
+                },
+                data: {
+                    employee_send_status: "Rejected",
+                    employee_responded_at: new Date()
+                }
+            })
+            const canceledApplications = await this.prisma.jobApplication.findMany({
+                where: {
+                    employee_id: employee.id,
+                    company_send_status: "Confirmed",
+                    employee_send_status: "Rejected"
+                },
+                include: {
+                    job_post: true
+                }
+            });
+
+            await Promise.all(canceledApplications.map(async (cancel_application: any) =>{
+                await this.prisma.notification.create({
+                    data: {
+                        message: "Sorry, I have to reject your offer. Thank you for your consideration and offer.",
+                        employee_id: employee.id,
+                        company_id: cancel_application.job_post.company_id,
+                        application_id: cancel_application.id,
+                        notification_status: "Rejected",
+                        notification_type: "ConfirmationRejected"
+                    },
+                    include: {
+                        application: true
+                    }
+
+                })
+            }))
+            const decrement_job_post = await this.prisma.jobPost.update({
+                where:{
+                    id: job_application.job_post.id
+                },
+                data: {
+                    available_position: {
+                        decrement: 1
+                    }
+                }
+            })
+            
+            return  notification
+            }
+            else{
+                throw new Error("This application, Company has not confirmed yet")
+            }
+        }
+        else{
+            throw new Error("You already have a job, you cannot confirm another job")
+        }
     }
 }

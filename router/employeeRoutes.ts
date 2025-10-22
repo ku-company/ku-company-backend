@@ -10,8 +10,17 @@ import { UserController } from "../controller/userController.js";
 const router = Router();
 const employeeController = new EmployeeController();
 const userController = new UserController();
-router.use(verifiedMiddleware);
+
 router.use(authorizeRole("Student", "Alumni", "Admin"));
+
+router.post("/my-profile/create", async (req , res) =>{
+    employeeController.create_profile(req, res)
+})
+router.get("/my-profile", async (req , res) =>{
+    employeeController.get_employee_profile(req, res)
+})
+router.use(verifiedMiddleware);
+
 
 // === Profile Image Routes ===
 router.post(
@@ -73,12 +82,7 @@ router.patch("/profile/resumes/:id/set-main", (req, res) => {
 
 // === Employee Profile Routes ===
 // Manage employee profile
-router.get("/my-profile", async (req , res) =>{
-    employeeController.get_employee_profile(req, res)
-})
-router.post("/my-profile/create", async (req , res) =>{
-    employeeController.create_profile(req, res)
-})
+
 router.patch("/my-profile/edit", async (req , res) => {
     employeeController.edit_profile(req, res)
 })
@@ -106,5 +110,9 @@ router.get("/my-applications", async(req , res) => {
 
 router.post("/checkout/apply-jobs", async(req , res) => {
     employeeController.checkout_list_apply_job(req, res)
+})
+
+router.post("/job-applications/:id/confirm", async(req , res) =>{
+    employeeController.sent_the_confirmation_to_company(req, res)
 })
 export default router;

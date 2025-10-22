@@ -116,7 +116,7 @@ export class EmployeeService{
         const signedResumes = await Promise.all(
             resumes.map(async (r: Resume) => ({
             ...r,
-            file_url: await this.s3Service.getFileUrl(r.file_url),
+            file_url: r.file_url ? await this.s3Service.getFileUrl(r.file_url) : "",
 
             }))
         );
@@ -129,7 +129,7 @@ export class EmployeeService{
 
         const resume = await this.employeeRepository.get_resume_by_id(resume_id, profile.id);
         if (!resume) throw new Error("Resume not found");
-        resume.file_url = await this.s3Service.getFileUrl(resume.file_url);
+        resume.file_url = resume.file_url ? await this.s3Service.getFileUrl(resume.file_url) : "";
         return resume;
     }
 
@@ -209,5 +209,10 @@ export class EmployeeService{
     
     async checkout_list_apply_jobs(user_id: number, resume_id: number, job_ids: number[]){
         return await this.employeeRepository.apply_job_checkout_list(user_id, resume_id, job_ids)
+    }
+
+    async sent_the_confirmation_to_company(user_id: number, application_id: number){
+        const job_id_num = Number(application_id)
+        return await this.employeeRepository.sent_the_confirmation_to_company(user_id, job_id_num)
     }
 }
