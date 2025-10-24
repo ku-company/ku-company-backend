@@ -18,6 +18,7 @@ import companyJobPostingRouter from "./router/jobPostingPublicRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import professorRouter from "./router/professorRoutes.js";
 import professorAnnouncementRouter from "./router/announcementFeedPublicRoutes.js";
+import aiRouter from "./router/aiRoutes.js";
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -27,6 +28,7 @@ app.use(cors({ origin: process.env.CLIENT_URL_DEV, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
+app.use("/api/ai", aiRouter)
 
 app.use(jwtMiddleware);
 app.use("/api/mock", mockRouter);
@@ -38,6 +40,7 @@ app.use("/api/company", authorizeRole("Company"), companyRouter);
 app.use("/api/job-postings", companyJobPostingRouter); // public feed job postings
 app.use("/api/professor", professorRouter);
 app.use("/api/announcements", professorAnnouncementRouter); // public feed announcements
+
 
 
 app.get("/", (req, res) => {

@@ -14,14 +14,17 @@ export class UserRepository {
         this.prisma = PrismaDB.getInstance();
     }
 
-    async create_user(input: UserDB): Promise<UserDB>{
+    async create_user(input: UserDB): Promise<any>{
         if(input.role === Role.Alumni  || input.role === Role.Student){
+            if(!input.stdId) {
+                throw new Error("StudentId is required for Student and Alumni roles");
+            }
             if(input.email.endsWith("@ku.th")){
                 return await this.prisma.user.create({
                     data: {
                     first_name: input.first_name,
                     last_name: input.last_name,
-                    company_name: input.company_name,
+                    stdId: input.stdId,
                     user_name: input?.user_name,
                     email: input.email,
                     password_hash: input.password_hash,
@@ -46,7 +49,6 @@ export class UserRepository {
                     data: {
                         first_name: input.first_name,
                         last_name: input.last_name,
-                        company_name: input.company_name,
                         user_name: input?.user_name,
                         email: input.email,
                         password_hash: input.password_hash,

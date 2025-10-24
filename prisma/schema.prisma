@@ -96,6 +96,7 @@ model User {
   id      Int @id @default(autoincrement())
   first_name   String? @db.VarChar(255)
   last_name    String? @db.VarChar(255)
+  stdId        String? @db.VarChar(255) @unique
   company_name String? @db.VarChar(255) @unique
   user_name    String? @db.VarChar(255) @unique
   email        String @unique @db.VarChar(255)
@@ -110,6 +111,7 @@ model User {
   professorProfile professorProfile? @relation(name: "UserProfessor")
   employeeProfile employeeProfile? @relation(name: "UserEmployee")
   companyProfile  companyProfile? @relation(name: "UserCompany")
+  ai_verification aiVerification[]
 
   comment Comment[]
 }
@@ -269,4 +271,18 @@ model Comment {
 
   company      companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
   user         User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+
+model aiVerification {
+  id          Int       @id @default(autoincrement())
+  user_id     Int       @unique
+  verified_by String?   @db.Text()
+  trust_level String?   @db.Text()
+  reason      String?   @db.Text()
+  evidence_url String?  @db.Text() 
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
 }
