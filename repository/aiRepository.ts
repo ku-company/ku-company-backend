@@ -146,7 +146,8 @@ export class AIRepository {
         if(user.verified === true && user.status === "Approved" || user.status === "Rejected"){
             throw new Error("User already verified")
         }
-        const create_ai_verification = await this.prisma.aiVerification.create({
+        try {
+            const create_ai_verification = await this.prisma.aiVerification.create({
                 data: {
                     user_id: user_id,
                     verified_by: "Gemini Flash 2.5",
@@ -159,6 +160,10 @@ export class AIRepository {
                     user: true
                 }
             })
+        } catch (error) {
+            console.log(error)
+            throw new Error("Failed to create AI verification record")
+        }
         if(trust_level === "High" || trust_level === "Medium"){
             console.log("WIN")
             const update_user = await this.prisma.user.update({
