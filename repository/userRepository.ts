@@ -198,6 +198,23 @@ export class UserRepository {
     }
 
     async update_role(user_id: number, new_role: Role): Promise<UserSummaryDTO> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: user_id }
+        });
+
+        if (!user) throw new Error("User not found");
+
+        const email = user.email || "";
+          if (new_role === Role.Student || new_role === Role.Alumni) {
+            if (!email.endsWith("@ku.th")) {
+                throw new Error("Email must be a valid ku.th email address");
+            }
+        } else if (new_role === Role.Professor) {
+            if (!(email.endsWith("@ku.th") && email.startsWith("feng"))) {
+            throw new Error("Email must be a valid ku.th email address for professors");
+            }
+        }
+        
         const updatedUser = await this.prisma.user.update({
             where: {
                 id: user_id

@@ -58,7 +58,12 @@ export class CompanyRepository {
                 user_id: user_id
             },
             data: {
-                ...input,
+                company_name : input.company_name,
+                description  : input.description,
+                industry     : input.industry,
+                tel          : input.tel,
+                location     : input.location,
+                country      : input.country
             }
         });
     }
