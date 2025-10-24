@@ -8,7 +8,6 @@ import { getValidRoles } from "./roleUtils.js";
 const prisma = PrismaDB.getInstance();
 const userRepository = new UserRepository(); 
 const validRoles = getValidRoles(); 
-// const validRoles = ["Student", "Company", "Professor", "Alumni"]; 
 
 passport.use(
   new GoogleStrategy(

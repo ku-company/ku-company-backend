@@ -55,16 +55,6 @@ export interface UserOauth {
   updated_at: Date;
 }
 
-export interface CompanyProfileDB {
-    id: number;
-    user_id: number;
-    company_name: string;
-    description: string;
-    industry: string;
-    tel: string;
-    location: string;
-
-}
 
 export interface IUserRequest {
     id: number;
