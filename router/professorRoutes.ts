@@ -60,6 +60,14 @@ router.get("/announcements/all", async (req , res) =>{
     professorController.get_all_announcement(req, res)
 })
 
+// === Opinion Routes ===
+router.post("/opinions", async (req, res) => {
+    professorController.create_opinion(req, res)
+})
+
+router.get("/opinions/all", async (req, res) => {
+    professorController.get_all_opinions(req, res)
+})
 
 // === General Posting Routes === (opinion, announcement, repost)
 router.get("/posts/all", async (req , res) =>{
