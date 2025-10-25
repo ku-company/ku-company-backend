@@ -5,6 +5,7 @@ import type { UserSummaryDTO } from "../dtoModel/userDTO.js";
 import { Role } from "../utils/enums.js";
 import bcrypt from "bcryptjs";
 import { ProfileFactory } from "../helper/profileStrategy.js";
+import { DEFAULT_PROFILE_IMAGE_KEY } from "../utils/constants.js";
 
 export class UserRepository {
 
@@ -15,6 +16,9 @@ export class UserRepository {
     }
 
     async create_user(input: UserDB): Promise<any>{
+        if (!input.profile_image) {
+            input.profile_image = DEFAULT_PROFILE_IMAGE_KEY;
+        }
         if(input.role === Role.Alumni  || input.role === Role.Student){
             if(!input.stdId) {
                 throw new Error("StudentId is required for Student and Alumni roles");
@@ -194,7 +198,7 @@ export class UserRepository {
                 id: user_id
             },
             data: {
-                profile_image: null
+                profile_image: DEFAULT_PROFILE_IMAGE_KEY
             }
         });
     }
