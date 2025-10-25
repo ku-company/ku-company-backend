@@ -44,7 +44,7 @@ export class UserRepository {
             throw new Error("Email must be a valid ku.th email address");
         }
         else if(input.role === Role.Professor){
-            if(input.email.endsWith("@ku.th") && input.email.startsWith("feng")){
+            if(input.email.endsWith("@ku.th") || input.email.endsWith("@ku.ac.th")){
                 return await this.prisma.user.create({
                     data: {
                         first_name: input.first_name,
@@ -59,7 +59,8 @@ export class UserRepository {
                     }
                 })
             }
-            throw new Error("Email must be a valid ku.th email address");
+            console.log("Invalid email for professor:", input.email);
+            throw new Error("Email must be a valid ku.th or ku.ac.th email address");
         }
         else if(input.role === Role.Admin){
             return await this.prisma.user.create({
@@ -212,8 +213,8 @@ export class UserRepository {
                 throw new Error("Email must be a valid ku.th email address");
             }
         } else if (new_role === Role.Professor) {
-            if (!(email.endsWith("@ku.th") && email.startsWith("feng"))) {
-            throw new Error("Email must be a valid ku.th email address for professors");
+            if (!(email.endsWith("@ku.th") && !email.endsWith("@ku.ac.th"))) {
+            throw new Error("Email must be a valid ku.th or ku.ac.th email address for professors");
             }
         }
         
