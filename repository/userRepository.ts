@@ -5,6 +5,7 @@ import type { UserSummaryDTO } from "../dtoModel/userDTO.js";
 import { Role } from "../utils/enums.js";
 import bcrypt from "bcryptjs";
 import { ProfileFactory } from "../helper/profileStrategy.js";
+import { DEFAULT_PROFILE_IMAGE_KEY } from "../utils/constants.js";
 
 export class UserRepository {
 
@@ -15,6 +16,9 @@ export class UserRepository {
     }
 
     async create_user(input: UserDB): Promise<any>{
+        if (!input.profile_image) {
+            input.profile_image = DEFAULT_PROFILE_IMAGE_KEY;
+        }
         if(input.role === Role.Alumni  || input.role === Role.Student){
             if(!input.stdId) {
                 throw new Error("StudentId is required for Student and Alumni roles");
@@ -44,7 +48,7 @@ export class UserRepository {
             throw new Error("Email must be a valid ku.th email address");
         }
         else if(input.role === Role.Professor){
-            if(input.email.endsWith("@ku.th") && input.email.startsWith("feng")){
+            if(input.email.endsWith("@ku.th") || input.email.endsWith("@ku.ac.th")){
                 return await this.prisma.user.create({
                     data: {
                         first_name: input.first_name,
@@ -59,7 +63,8 @@ export class UserRepository {
                     }
                 })
             }
-            throw new Error("Email must be a valid ku.th email address");
+            console.log("Invalid email for professor:", input.email);
+            throw new Error("Email must be a valid ku.th or ku.ac.th email address");
         }
         else if(input.role === Role.Admin){
             return await this.prisma.user.create({
@@ -194,7 +199,7 @@ export class UserRepository {
                 id: user_id
             },
             data: {
-                profile_image: null
+                profile_image: DEFAULT_PROFILE_IMAGE_KEY
             }
         });
     }
@@ -212,8 +217,8 @@ export class UserRepository {
                 throw new Error("Email must be a valid ku.th email address");
             }
         } else if (new_role === Role.Professor) {
-            if (!(email.endsWith("@ku.th") && email.startsWith("feng"))) {
-            throw new Error("Email must be a valid ku.th email address for professors");
+            if (!(email.endsWith("@ku.th") && !email.endsWith("@ku.ac.th"))) {
+            throw new Error("Email must be a valid ku.th or ku.ac.th email address for professors");
             }
         }
         
