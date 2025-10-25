@@ -7,8 +7,12 @@ export default {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "^file-type$": "<rootDir>/tests/__mocks__/file-type.js",
-    "^jsonwebtoken$": "<rootDir>/tests/__mocks__/jsonwebtoken.ts"
+    "^jsonwebtoken$": "<rootDir>/tests/__mocks__/jsonwebtoken.js"
   },
+    modulePathIgnorePatterns: [
+      "<rootDir>/dist/",
+      "<rootDir>/tests/__mocks__/jsonwebtoken.ts"
+    ],
   globals: {
     "ts-jest": {
       useESM: true,

@@ -77,7 +77,7 @@ describe('UserRepository.create_user', () => {
 		expect(mockPrisma.user.create).not.toHaveBeenCalled();
 	});
 
-	it('creates Professor when email starts with feng and ends with ku.th', async () => {
+	it('creates Professor when email ends with ku.th', async () => {
 		const repo = new UserRepository();
 		const sample = { id: 2, role: Role.Professor } as any;
 		mockPrisma.user.create.mockResolvedValue(sample);
@@ -85,28 +85,28 @@ describe('UserRepository.create_user', () => {
 		const input = {
 			first_name: 'Prof',
 			last_name: 'X',
-			email: 'fengteach@ku.th',
+			email: 'teach@ku.th',
 			password_hash: 'hash',
 			role: Role.Professor,
 		};
 		const out = await repo.create_user(input as any);
 		expect(out).toBe(sample);
 		const args = mockPrisma.user.create.mock.calls[0][0];
-		expect(args.data).toMatchObject({ role: Role.Professor, email: 'fengteach@ku.th' });
+		expect(args.data).toMatchObject({ role: Role.Professor, email: 'teach@ku.th' });
 		expect(args.include).toBeUndefined();
 	});
 
-	it('throws for Professor when email is not feng*@ku.th', async () => {
+	it('throws for Professor when email is not ku.th or ku.ac.th', async () => {
 		const repo = new UserRepository();
 		const input = {
 			first_name: 'Prof',
 			last_name: 'X',
-			email: 'prof@ku.th',
+			email: 'prof@gmail.com',
 			password_hash: 'hash',
 			role: Role.Professor,
 		};
 		await expect(repo.create_user(input as any)).rejects.toThrow(
-			'Email must be a valid ku.th email address'
+			'Email must be a valid ku.th or ku.ac.th email address'
 		);
 		expect(mockPrisma.user.create).not.toHaveBeenCalled();
 	});
