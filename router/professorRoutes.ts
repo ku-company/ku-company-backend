@@ -6,18 +6,21 @@ import { ProfessorController } from "../controller/professorController.js";
 
 const router = Router();
 const professorController = new ProfessorController();
-router.use(verifiedMiddleware);
 router.use(authorizeRole("Professor", "Admin"));
 
 
 // === Professor Profile Routes ===
 router.get("/my-profile", async (req: Request, res: Response) =>{
+    // does not require verified middleware
     professorController.get_professor_profile(req, res)
 })
 
 router.post("/my-profile", async (req , res) =>{
+    // does not require verified middleware
     professorController.create_profile(req, res)
 })
+
+router.use(verifiedMiddleware);
 
 router.patch("/my-profile", async (req , res) => {
     professorController.edit_profile(req, res)
@@ -27,6 +30,8 @@ router.delete("/my-profile", async (req , res) => {
     professorController.delete_profile(req,res)
 })
 
+
+// === Professor Comment Routes ===
 router.post("/comment/:id", async (req , res) =>{
     professorController.add_comment_to_company(req, res)
 })
@@ -68,6 +73,7 @@ router.post("/opinions", async (req, res) => {
 router.get("/opinions/all", async (req, res) => {
     professorController.get_all_opinions(req, res)
 })
+
 
 // === General Posting Routes === (opinion, announcement, repost)
 router.get("/posts/all", async (req , res) =>{
