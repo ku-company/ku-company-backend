@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "test:integration": "DOCKER_DATABASE_URL=\"${INTEGRATION_DB_URL:-$DOCKER_DATABASE_URL}\" jest --runInBand --testMatch \"**/tests/integration/**/*.test.ts\"",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down -v",
     "db:migrate:deploy": "DOCKER_DATABASE_URL=\"${INTEGRATION_DB_URL:-$DOCKER_DATABASE_URL}\" npx prisma migrate deploy",
