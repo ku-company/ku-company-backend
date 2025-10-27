@@ -116,7 +116,7 @@ export class AIRepository {
         const prompt = `
                 You are an AI identity verifier.
                 Check if this user is real and trustworthy based on the below rule.
-                if email must be a valid @ku.th email address, and the email should start with "feng" for example fengwin@.ku.th
+                if email must be a valid @ku.th email address, and the last of email should be ku.ac.th or ku.th for example win@ku.th, win@.ku.ac.th
                 and professor might be know in the online presence such as google scholar, researchgate, or university website.
                 Return a valid JSON object with the following structure:
                 {

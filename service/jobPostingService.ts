@@ -26,6 +26,7 @@ export class JobPostingService {
         position: job.position,
         description: job.description,
         jobType: job.jobType,
+        status: job.status,
         available_position: job.available_position,
         company_name: job.company.company_name,
         company_profile_image: await this.userService.get_profile_image(job.company.user_id),
