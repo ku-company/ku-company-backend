@@ -368,4 +368,17 @@ export class ProfessorRepository{
             }
         })
     }
+
+    async get_all_opinions(profile_id: number){
+        return await this.prisma.announcement.findMany({
+            where: {
+                professor_id: profile_id,
+                type_post: "Opinion"
+            },
+            orderBy: {
+                created_at: 'desc'
+            }
+        })
+    }
+    
 }

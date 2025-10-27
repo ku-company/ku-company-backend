@@ -9,6 +9,9 @@ import { validateImageBuffer } from "../helper/image.js";
 import { ImageKeyStrategy } from "../helper/s3KeyStrategy.js"
 import { Role } from "../utils/enums.js";
 import { getValidRoles } from "../utils/roleUtils.js";
+import { createProfileStrategy } from "../helper/createProfileStrategy.js";
+import { DEFAULT_PROFILE_IMAGE_KEY } from "../utils/constants.js";
+
 
 
 export class UserService {
@@ -135,6 +138,13 @@ export class UserService {
         }
     }
 
+    async check_default_profile_image(profile_image_key: string){
+        if (profile_image_key === DEFAULT_PROFILE_IMAGE_KEY) {
+            return true;
+        }
+        return false;
+    }
+
     async update_profile_image(file: Express.Multer.File, user: IUserRequest){
         const existingUser = await this.userRepository.get_user_by_id(user.id);
         const oldProfileImage = existingUser.profile_image;
@@ -144,7 +154,9 @@ export class UserService {
         const newKey = await this.upload_profile_image(file, user);
         try{
             //delete old image from s3
-            await this.s3Service.deleteFile(oldProfileImage);
+            if (!(await this.check_default_profile_image(oldProfileImage))) {
+                await this.s3Service.deleteFile(oldProfileImage);
+            }
         }catch(error: unknown){
             console.error((error as Error).message);
             throw new Error("Failed to delete old profile image");
@@ -169,6 +181,9 @@ export class UserService {
         if(!user.profile_image){
             throw new Error("No profile image found");
         }
+        if(await this.check_default_profile_image(user.profile_image)){
+            throw new Error("Cannot delete default profile image");
+        }
         try{
             await this.s3Service.deleteFile(user.profile_image);
             await this.userRepository.delete_profile_image(user_id);
@@ -178,6 +193,12 @@ export class UserService {
         }
     }
 
+    async create_user_profile(user_id: number, role: string){
+        // for oauth login user without profile created
+        return await createProfileStrategy.create_user_profile(user_id, role);
+
+    }
+
     async update_role(user_id: number, new_role: string){
         const validRoles = getValidRoles();
         if (!validRoles.includes(new_role as Role)) {
@@ -185,7 +206,16 @@ export class UserService {
         }
 
         try{
+            // Update the user’s role in DB
             const updatedUser = await this.userRepository.update_role(user_id, new_role as Role);
+            if (!updatedUser) {
+                throw new Error("Update failed, user not found");
+            }
+
+            // Create profile for the new role if it doesn't exist
+            await this.create_user_profile(user_id, new_role);
+
+            // Generate new JWT tokens
             const payload = {
                 id: updatedUser.id,
                 user_name: updatedUser.user_name,
@@ -220,7 +250,7 @@ export class UserService {
         }catch(err){
             throw new Error("Failed to update role");
         }
-    }
+    }  
 
     async get_other_profile(user_id: number){
         const user = await this.userRepository.get_profile(user_id)

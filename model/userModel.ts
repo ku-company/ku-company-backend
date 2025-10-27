@@ -1,6 +1,7 @@
 export interface UserDB{
     first_name: string | null;
     last_name: string | null;
+    stdId: string | null;
     company_name: string | null;
     user_name: string | null;
     email: string;
@@ -17,6 +18,7 @@ export interface UserDB{
 export interface sign_up_input {
     first_name: string;
     last_name: string;
+    stdId? : string
     company_name?: string;
     email: string;
     role: string;

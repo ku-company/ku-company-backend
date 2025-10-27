@@ -223,4 +223,32 @@ export class ProfessorController{
             })
         }
     }
+
+    async create_opinion(req: any, res: any){
+        try{
+            const result = await this.professorService.create_opinion(req, req.body);
+            res.status(201).json({
+                message: "Opinion created successfully",
+                data: result
+            })
+        }catch(error:any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async get_all_opinions(req: any, res: any){
+        try{
+            const result = await this.professorService.get_all_opinions(req);
+            res.status(200).json({
+                message: "Opinions retrieved successfully",
+                data: result
+            })
+        }catch(error:any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
 }
