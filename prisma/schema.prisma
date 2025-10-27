@@ -126,9 +126,22 @@ model professorProfile {
   summary      String?        @db.Text()
   link        String?        @db.Text()
   updated_at   DateTime       @updatedAt
+  lab          String?        @db.Text() 
   annoucements Announcement[]
   notifications Notification[]
+  degrees        Degree[] 
   user         User           @relation(name: "UserProfessor",fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Degree {
+  id                    Int               @id @default(autoincrement())
+  professor_profile_id  Int
+  title                 String            @db.Text() // e.g. "Bachelor of Science in Computer Engineering"
+  institution           String?           @db.Text() // e.g. "Kasetsart University"
+  graduation_date       DateTime?         // e.g. 2019-05-15
+  description           String?           @db.Text() // optional extra info
+
+  professor      professorProfile  @relation(fields: [professor_profile_id], references: [id], onDelete: Cascade)
 }
 
 model employeeProfile {
