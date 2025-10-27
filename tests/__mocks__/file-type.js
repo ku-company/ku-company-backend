@@ -1,5 +1,6 @@
 function fileTypeFromBuffer(_buf) {
-  return Promise.resolve({ mime: 'image/png' });
+  // For tests, default to PDF so validatePdfBuffer passes.
+  return Promise.resolve({ mime: 'application/pdf' });
 }
 
 module.exports = { fileTypeFromBuffer };
