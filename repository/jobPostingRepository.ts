@@ -20,8 +20,20 @@ export class JobPostingPublicRepository {
                 ...(keyword && {
                     OR: [
                     { description: { contains: keyword, mode: "insensitive" } },
-                    { company: { company_name: { contains: keyword, mode: "insensitive" } } },
-                    { company: { location: { contains: keyword, mode: "insensitive" } } },
+                    {
+                        company: {
+                        is: {
+                            company_name: { contains: keyword, mode: "insensitive" },
+                        },
+                        },
+                    },
+                    {
+                        company: {
+                        is: {
+                            location: { contains: keyword, mode: "insensitive" },
+                        },
+                        },
+                    },
                     { position: { contains: keyword, mode: "insensitive" } },
                     
                     ],
