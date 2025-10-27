@@ -5,6 +5,7 @@ export interface JobPostingFeedDTO {
   position: string;
   description: string;
   jobType: string;
+  status: string;
   available_position: number;
   company_name: string | null;
   company_profile_image: string | null;
