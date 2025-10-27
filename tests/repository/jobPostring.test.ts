@@ -33,6 +33,7 @@ describe('JobPostingPublicRepository - get_all_job_postings', () => {
 		expect(mockPrisma.jobPost.findMany).toHaveBeenCalledWith({
 			where: {
 				available_position: { gt: 0 },
+				status: 'Active',
 			},
 			orderBy: { updated_at: 'desc' },
 			include: {
@@ -43,7 +44,7 @@ describe('JobPostingPublicRepository - get_all_job_postings', () => {
 		});
 	});
 
-	it('applies keyword filter across description, company_name, and location', async () => {
+	it('applies keyword filter across description, company_name, location, and position', async () => {
 		const repo = makeRepo();
 		mockPrisma.jobPost.findMany.mockResolvedValueOnce([]);
 		const kw = 'data';
@@ -51,20 +52,21 @@ describe('JobPostingPublicRepository - get_all_job_postings', () => {
 		const args = mockPrisma.jobPost.findMany.mock.calls[0][0];
 		expect(args.where.available_position).toEqual({ gt: 0 });
 		expect(Array.isArray(args.where.OR)).toBe(true);
-		expect(args.where.OR).toHaveLength(3);
+		expect(args.where.OR).toHaveLength(4);
 		expect(args.where.OR[0]).toEqual({ description: { contains: kw, mode: 'insensitive' } });
-		expect(args.where.OR[1]).toEqual({ company: { company_name: { contains: kw, mode: 'insensitive' } } });
-		expect(args.where.OR[2]).toEqual({ company: { location: { contains: kw, mode: 'insensitive' } } });
+		expect(args.where.OR[1]).toEqual({ company: { is: { company_name: { contains: kw, mode: 'insensitive' } } } });
+		expect(args.where.OR[2]).toEqual({ company: { is: { location: { contains: kw, mode: 'insensitive' } } } });
+		expect(args.where.OR[3]).toEqual({ position: { contains: kw, mode: 'insensitive' } });
 	});
 
-	it('applies category (position) and jobType filters when provided', async () => {
+	it('applies category (position contains, case-insensitive) and jobType filters when provided', async () => {
 		const repo = makeRepo();
 		mockPrisma.jobPost.findMany.mockResolvedValueOnce([]);
 		const category = 'Developer';
 		const jobType = 'Internship';
 		await repo.get_all_job_postings(undefined, category, jobType);
 		const args = mockPrisma.jobPost.findMany.mock.calls[0][0];
-		expect(args.where.position).toBe(category);
+		expect(args.where.position).toEqual({ contains: category, mode: 'insensitive' });
 		expect(args.where.jobType).toBe(jobType);
 	});
 
