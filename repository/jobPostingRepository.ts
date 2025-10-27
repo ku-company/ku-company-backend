@@ -17,17 +17,30 @@ export class JobPostingPublicRepository {
                 available_position: {
                     gt: 0 // only show job postings with available positions
                 },
+                status: "Active",
                 ...(keyword && {
                     OR: [
                     { description: { contains: keyword, mode: "insensitive" } },
-                    { company: { company_name: { contains: keyword, mode: "insensitive" } } },
-                    { company: { location: { contains: keyword, mode: "insensitive" } } },
+                    {
+                        company: {
+                        is: {
+                            company_name: { contains: keyword, mode: "insensitive" },
+                        },
+                        },
+                    },
+                    {
+                        company: {
+                        is: {
+                            location: { contains: keyword, mode: "insensitive" },
+                        },
+                        },
+                    },
+                    { position: { contains: keyword, mode: "insensitive" } },
                     
                     ],
                 }),
-                // category = exact match with Position enum
                 // jobType = exact match with JobType enum
-                ...(category && { position: category as any }),
+                ...(category && { position: { contains: category, mode: "insensitive" } }),
                 ...(jobType && { jobType: jobType as JobType })
                 
             },
@@ -46,6 +59,15 @@ export class JobPostingPublicRepository {
             }
         });
     }
+
+    async get_all_job_categories() {
+        const positions = await this.prisma.jobPost.findMany({
+            distinct: ['position'],
+            select: { position: true },
+        });
+        return positions.map(p => p.position);
+    }
+
 
     async get_job_posting_by_id(id: number) {
         return this.prisma.jobPost.findUnique({
