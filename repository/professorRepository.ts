@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorEditAnnouncementDTO,ProfessorAnnouncementDTO } from "../dtoModel/professorDTO.js";
+import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorEditAnnouncementDTO,ProfessorAnnouncementDTO, DegreeInputDTO } from "../dtoModel/professorDTO.js";
 import { lstat } from "fs";
 import type { employeeProfile } from "@prisma/client";
 
@@ -23,15 +23,71 @@ export class ProfessorRepository{
         }
         return await this.prisma.professorProfile.create({
             data: {
-                ...input,
-                user: {
-                    connect: {
-                        id: user_id
-                    }
-                }
+            department: input.department,
+            faculty: input.faculty,
+            position: input.position,
+            contactInfo: input.contactInfo,
+            summary: input.summary,
+            lab: input.lab,
+            user: {
+                connect: { id: user_id },
             }
-        })
+            },
+            include: { degrees: true }, // include degrees in response
+        });
+    
     };
+
+
+    async add_degree(profile_id: number, input: DegreeInputDTO) {
+        return await this.prisma.degree.create({
+            data: {
+            professor_profile_id: profile_id,
+            title: input.title,
+            institution: input.institution ?? null,
+            graduation_date: input.graduation_date
+                ? new Date(input.graduation_date)
+                : null,
+            description: input.description ?? null,
+            },
+        });
+    }
+
+    // === EDIT DEGREE ===
+    async edit_degree(degree_id: number, profile_id: number, input: DegreeInputDTO) {
+        return await this.prisma.degree.update({
+            where: { id: degree_id, professor_profile_id: profile_id },
+            data: {
+            title: input.title,
+            institution: input.institution ?? null,
+            graduation_date: input.graduation_date
+                ? new Date(input.graduation_date)
+                : null,
+            description: input.description ?? null,
+            },
+        });
+    }
+
+    async delete_degree(degree_id: number, profile_id: number) {
+        const existingDegree = await this.prisma.degree.findFirst({
+            where: {
+                id: degree_id,
+                professor_profile_id: profile_id
+            }
+        });
+        if (!existingDegree) {
+            throw new Error("Degree not found");
+        }
+        return await this.prisma.degree.delete({
+            where: { id: degree_id, professor_profile_id: profile_id },
+        });
+    }
+
+    async get_all_degrees(profile_id: number) {
+        return await this.prisma.degree.findMany({
+            where: { professor_profile_id: profile_id },
+        });
+    }
 
     async get_profile(user_id: number){
         const result = await this.prisma.professorProfile.findUnique({
@@ -47,7 +103,8 @@ export class ProfessorRepository{
                         profile_image: true,
                         verified: true
                     }
-                }
+                },
+                degrees: true
             }
         })
         return result
@@ -63,7 +120,7 @@ export class ProfessorRepository{
 
     async edit_profile(user_id: number, input: EditProfessorProfileDTO){
         try{
-            const { first_name, last_name, department, faculty, position, contactInfo, summary } = input;
+            const { first_name, last_name, department, faculty, position, contactInfo, summary, lab} = input;
             await this.prisma.user.update({
                 where: {
                     id: user_id
@@ -94,7 +151,8 @@ export class ProfessorRepository{
                         profile_image: true,
                         verified: true
                     }
-                }
+                },
+                degrees: true
             }
         })
         }catch(e){
