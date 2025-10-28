@@ -49,11 +49,6 @@ router.delete("/degrees/:id", async (req , res ) =>{
 })
 
 
-
-
-
-
-
 // === Professor Comment Routes ===
 router.post("/comment/:id", async (req , res) =>{
     professorController.add_comment_to_company(req, res)
