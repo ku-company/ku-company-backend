@@ -307,6 +307,21 @@ export class CompanyController {
         }
     }
 
+    async get_stats(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const result = await this.companyService.get_stats(user.id);
+            res.status(200).json({
+                message: "Company stats retrieved successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+
 
 
 }

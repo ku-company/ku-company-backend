@@ -36,7 +36,7 @@ app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/employee", authorizeRole("Student", "Alumni", "Admin"), employeeRouter );
-app.use("/api/company", authorizeRole("Company"), companyRouter);
+app.use("/api/company", authorizeRole("Company", "Admin"), companyRouter);
 app.use("/api/job-postings", companyJobPostingRouter); // public feed job postings
 app.use("/api/professor", professorRouter);
 app.use("/api/announcements", professorAnnouncementRouter); // public feed announcements

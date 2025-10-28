@@ -205,4 +205,12 @@ export class CompanyService {
 
         return this.companyRepository.send_the_confirmation_to_employee(app_id, user_id);
     }
+
+    async get_stats(user_id: number) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        return this.companyRepository.get_stats(companyProfile.id);
+    }
 }

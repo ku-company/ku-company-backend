@@ -249,4 +249,40 @@ export class CompanyRepository {
         return notification
     }
 
+    async get_stats(company_id: number) {
+        // Fetch total job postings and total applications for the company
+        const totalJobPostings = await this.prisma.jobPost.count({
+            where: { company_id }
+        });
+
+        const totalApplications = await this.prisma.jobApplication.count({
+            where: {
+                job_post: {
+                    company_id
+                }
+            }
+        });
+
+        const newApplicants = await this.prisma.jobApplication.count({
+            where: {
+                job_post: { company_id },
+                applied_at: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // last 7 days
+            },
+        });
+
+        const confirmedApplications = await this.prisma.jobApplication.count({
+            where: {
+                job_post: { company_id },
+                company_send_status: CompanyJobApplicationStatus.Confirmed,
+            },
+        });
+
+        return {
+            total_job_postings: totalJobPostings,
+            total_applicants: totalApplications,
+            new_applicants: newApplicants,
+            confirmed_applications: confirmedApplications
+        };
+    }
+
 }
