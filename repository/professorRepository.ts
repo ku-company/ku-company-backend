@@ -23,18 +23,18 @@ export class ProfessorRepository{
         }
         return await this.prisma.professorProfile.create({
             data: {
-            department: input.department,
-            faculty: input.faculty,
-            position: input.position,
-            contactInfo: input.contactInfo,
-            summary: input.summary,
-            lab: input.lab,
-            user: {
-                connect: { id: user_id },
-            }
+                department: input.department,
+                faculty: input.faculty,
+                position: input.position,
+                contactInfo: input.contactInfo,
+                summary: input.summary,
+                lab: input.lab,
+                user: {
+                    connect: { id: user_id },
+                },
             },
-            include: { degrees: true }, // include degrees in response
-        });
+            include: { degrees: true },
+        })
     
     };
 
@@ -55,6 +55,15 @@ export class ProfessorRepository{
 
     // === EDIT DEGREE ===
     async edit_degree(degree_id: number, profile_id: number, input: DegreeInputDTO) {
+        const existingDegree = await this.prisma.degree.findFirst({
+            where: {
+                id: degree_id,
+                professor_profile_id: profile_id
+            }
+        });
+        if (!existingDegree) {
+            throw new Error("Degree not found");
+        }
         return await this.prisma.degree.update({
             where: { id: degree_id, professor_profile_id: profile_id },
             data: {
