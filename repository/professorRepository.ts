@@ -39,7 +39,23 @@ export class ProfessorRepository{
     };
 
 
+    private validateGraduationDate(date?: string | Date | null) {
+        if (!date) return;
+
+        const gradDate = new Date(date);
+        if (isNaN(gradDate.getTime())) {
+            throw new Error("Invalid graduation date format");
+        }
+
+        if (gradDate > new Date()) {
+            throw new Error("Graduation date cannot be in the future");
+        }
+    }
+
+
+
     async add_degree(profile_id: number, input: DegreeInputDTO) {
+        this.validateGraduationDate(input.graduation_date);
         return await this.prisma.degree.create({
             data: {
             professor_profile_id: profile_id,
@@ -64,6 +80,7 @@ export class ProfessorRepository{
         if (!existingDegree) {
             throw new Error("Degree not found");
         }
+        this.validateGraduationDate(input.graduation_date);
         return await this.prisma.degree.update({
             where: { id: degree_id, professor_profile_id: profile_id },
             data: {
