@@ -285,4 +285,19 @@ export class CompanyRepository {
         };
     }
 
+    async get_active_job_postings(company_id: number) {
+        return this.prisma.jobPost.findMany({
+            where: {
+                company_id: company_id,
+                available_position: {
+                    gt: 0
+                },
+                status: "Active"
+            },
+            orderBy: {
+                created_at: 'desc' // latest first
+            }
+        });
+    }
+
 }

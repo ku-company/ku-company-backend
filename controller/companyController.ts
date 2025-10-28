@@ -322,6 +322,21 @@ export class CompanyController {
         }
     }
 
+    async get_active_job_postings(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const result = await this.companyService.get_active_job_postings(user.id);
+            res.status(200).json({
+                message: "Active job postings count retrieved successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+
 
 
 }

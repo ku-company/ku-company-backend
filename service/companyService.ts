@@ -213,4 +213,12 @@ export class CompanyService {
         }
         return this.companyRepository.get_stats(companyProfile.id);
     }
+
+    async get_active_job_postings(user_id: number) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        return this.companyRepository.get_active_job_postings(companyProfile.id);
+    }
 }
