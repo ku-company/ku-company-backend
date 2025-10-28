@@ -38,8 +38,9 @@ describeIf('Integration: ProfessorRepository', () => {
   });
 
   it('add_comment_to_company creates a comment with relations', async () => {
-    const profUser = await createProfessorUser();
-    await repo.create_profile(profUser.id, { department: 'CS', faculty: 'ENG', position: 'Lecturer' } as any);
+  const profUser = await createProfessorUser();
+  // Seed profile directly to avoid repository include differences
+  await prisma.professorProfile.create({ data: { user_id: profUser.id, department: 'CS', faculty: 'ENG', position: 'Lecturer' } });
 
     const companyUser = await prisma.user.create({ data: { email: `itest-comp-${Date.now()}@example.com`, role: 'Company', verified: true, status: 'Approved' } });
     createdUserIds.push(companyUser.id);
@@ -52,8 +53,9 @@ describeIf('Integration: ProfessorRepository', () => {
   });
 
   it('get_all_posts and get_all_announcement/opinions', async () => {
-    const profUser = await createProfessorUser();
-    const profile = await repo.create_profile(profUser.id, { department: 'CS', faculty: 'ENG', position: 'Lecturer' } as any);
+  const profUser = await createProfessorUser();
+  // Seed profile directly to avoid repository include differences
+  const profile = await prisma.professorProfile.create({ data: { user_id: profUser.id, department: 'CS', faculty: 'ENG', position: 'Lecturer' } });
 
     // Seed posts directly to avoid triggering notification fan-out in repository.create_post
     await prisma.announcement.create({ data: { professor_id: profile.id, type_post: 'Announcement', content: 'Ann', is_connection: false } });

@@ -30,6 +30,24 @@ router.delete("/my-profile", async (req , res) => {
     professorController.delete_profile(req,res)
 })
 
+// === Degree Routes ===
+router.post("/degrees", async (req , res) =>{
+    professorController.add_degree(req, res)
+})
+
+router.get("/degrees", async (req , res) =>{
+    // get all degrees of professor
+    professorController.get_all_degrees(req, res)
+})
+
+router.patch("/degrees/:id", async (req , res ) => {
+    professorController.edit_degree(req, res)
+})
+
+router.delete("/degrees/:id", async (req , res ) =>{
+    professorController.delete_degree(req, res)
+})
+
 
 // === Professor Comment Routes ===
 router.post("/comment/:id", async (req , res) =>{

@@ -5,6 +5,7 @@ export interface InputProfessorProfileDTO{
     position : string | null;
     contactInfo: string | null;
     summary: string | null;
+    lab: string | null; 
 }
 
 export interface EditProfessorProfileDTO{
@@ -15,6 +16,14 @@ export interface EditProfessorProfileDTO{
     position : string | null;
     contactInfo: string | null;
     summary: string | null;
+    lab: string | null; 
+}
+
+export interface DegreeInputDTO {
+  title: string;
+  institution?: string | null;
+  graduation_date?: string | null; // ISO format like "2021-05-01"
+  description?: string | null;
 }
 
 export interface ProfessorEditAnnouncementDTO{

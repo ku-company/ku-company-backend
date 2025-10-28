@@ -66,12 +66,15 @@ describe('ProfessorRepository - profile CRUD', () => {
 		mockPrisma.professorProfile.create.mockResolvedValueOnce(sample);
 		const out = await repo.create_profile(11 as any, { department: 'IT' } as any);
 		expect(out).toBe(sample);
-		expect(mockPrisma.professorProfile.create).toHaveBeenCalledWith({
-			data: expect.objectContaining({
-				department: 'IT',
-				user: { connect: { id: 11 } },
-			}),
-		});
+		expect(mockPrisma.professorProfile.create).toHaveBeenCalledWith(
+			expect.objectContaining({
+				data: expect.objectContaining({
+					department: 'IT',
+					user: { connect: { id: 11 } },
+				}),
+				include: { degrees: true },
+			})
+		);
 	});
 
 	it('get_profile returns include user fields', async () => {
@@ -79,20 +82,23 @@ describe('ProfessorRepository - profile CRUD', () => {
 		mockPrisma.professorProfile.findUnique.mockResolvedValueOnce({ id: 3 });
 		const out = await repo.get_profile(77);
 		expect(out).toEqual({ id: 3 });
-		expect(mockPrisma.professorProfile.findUnique).toHaveBeenCalledWith({
-			where: { user_id: 77 },
-			include: {
-				user: {
-					select: {
-						first_name: true,
-						last_name: true,
-						email: true,
-						profile_image: true,
-						verified: true,
+		expect(mockPrisma.professorProfile.findUnique).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: { user_id: 77 },
+				include: expect.objectContaining({
+					user: {
+						select: {
+							first_name: true,
+							last_name: true,
+							email: true,
+							profile_image: true,
+							verified: true,
+						},
 					},
-				},
-			},
-		});
+					degrees: true,
+				}),
+			})
+		);
 	});
 
 	it('delete_profile deletes by user_id', async () => {
@@ -123,11 +129,12 @@ describe('ProfessorRepository - profile CRUD', () => {
 		expect(mockPrisma.professorProfile.update).toHaveBeenCalledWith({
 			where: { user_id: 1 },
 			data: expect.objectContaining({ department: 'CS', faculty: 'ENG', updated_at: expect.any(Date) }),
-			include: {
+			include: expect.objectContaining({
 				user: {
 					select: expect.any(Object),
 				},
-			},
+				degrees: true,
+			}),
 		});
 
 		// failure path via thrown error
