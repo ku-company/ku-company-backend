@@ -1,5 +1,7 @@
 import { Router } from 'express';
-import passport from 'passport';
+// ESM/CJS interop: passport may be a default export or namespace
+import * as passportNS from 'passport';
+const passportLib: any = (passportNS as any).default || (passportNS as any);
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import type { UserOauth } from "../model/userModel.js";
@@ -18,7 +20,7 @@ router.get('/google', (req, res, next) => {
   const state = validRoles.includes(role as Role)
     ? JSON.stringify({ role })
     : JSON.stringify({});
-  passport.authenticate('google', {
+  passportLib.authenticate('google', {
     scope: ['profile', 'email'],
     state: state
   })(req, res, next);
@@ -27,7 +29,7 @@ router.get('/google', (req, res, next) => {
 
 router.get(
   '/google/callback',
-  passport.authenticate('google', {
+  passportLib.authenticate('google', {
     failureRedirect: '/',
     session: false,
   }),
