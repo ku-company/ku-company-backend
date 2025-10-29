@@ -146,6 +146,7 @@ export class CompanyRepository {
         const resumeUrl = app.resume?.file_url ?? app.jobBatch?.resume?.file_url ?? "";
         return {
             id: app.id,
+            user_id: employeeUser?.id,
             batch_id: app.batch_id ?? null,
             job_id: app.job_id,
             resume_id: app.resume_id ?? app.jobBatch?.resume?.id ?? null,
@@ -177,7 +178,7 @@ export class CompanyRepository {
             include: {
                 //individual job-applications
                 job_post: { select: { position: true, description: true, jobType: true } },
-                employee: {include: { user: { select: { first_name: true, last_name: true, email: true } } } },
+                employee: {include: { user: { select: { id: true, first_name: true, last_name: true, email: true } } } },
                 resume: { select: {id: true, file_url: true } }, 
             },
             // add sort

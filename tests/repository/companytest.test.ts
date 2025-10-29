@@ -192,11 +192,11 @@ describe('CompanyRepository - applications', () => {
 		mockPrisma.jobApplication.findMany.mockResolvedValue(apps as any);
 		const filters = { job_post: { company_id: 9 } };
 		const out = await repo.find_all_job_applications_by_company_id(filters, 'position', 'asc');
-		expect(mockPrisma.jobApplication.findMany).toHaveBeenCalledWith({
+			expect(mockPrisma.jobApplication.findMany).toHaveBeenCalledWith({
 			where: filters,
 			include: {
 				job_post: { select: { position: true, description: true, jobType: true } },
-				employee: { include: { user: { select: { first_name: true, last_name: true, email: true } } } },
+					employee: { include: { user: { select: expect.objectContaining({ first_name: true, last_name: true, email: true, id: true }) } } },
 				resume: { select: { id: true, file_url: true } },
 			},
 			orderBy: { job_post: { position: 'asc' } },
