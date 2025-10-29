@@ -1,4 +1,4 @@
-import { PrismaClient, JobType } from '@prisma/client';
+import { PrismaClient, JobType, WorkPlace } from '@prisma/client';
 import { EmployeeRepository } from '../../repository/employeeRepository.js';
 import { UserRepository } from '../../repository/userRepository.js';
 import { CompanyRepository } from '../../repository/companyRepository.js';
@@ -48,7 +48,7 @@ describeIf('Integration: EmployeeRepository', () => {
     createdCompanyUserIds.push(companyUser.id);
     const company = await prisma.companyProfile.create({ data: { user_id: companyUser.id, company_name: 'EmpCo' } });
     const job = await prisma.jobPost.create({
-      data: { company_id: company.id, description: 'Engineer', jobType: JobType.FullTime, position: 'Engineer', available_position: 3, status: 'Active' }
+      data: { company_id: company.id, job_title: 'Engineer', description: 'Engineer', location: 'Bangkok', work_place: WorkPlace.OnSite, minimum_expected_salary: 15000, maximum_expected_salary: 30000, jobType: JobType.FullTime, position: 'Engineer', available_position: 3, status: 'Active' } as any
     });
     return { companyUser, company, job };
   }

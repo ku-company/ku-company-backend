@@ -7,6 +7,8 @@ import { S3Service } from "./s3Services.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
 import { JobStatus } from "../utils/enums.js";
 import {CompanyJobApplicationStatus} from "../utils/enums.js";
+import type { WorkPlace } from "../dtoModel/companyDTO.js";
+
 
 
 
@@ -22,7 +24,7 @@ export class CompanyService {
         this.userRepository = new UserRepository();
         this.s3Service = new S3Service(this.RESUME_BUCKET_NAME, new DocumentKeyStrategy());
     }
-
+    
     
     async create_profile(input: CompanyProfileDTO){
         // Check if user already has a profile
@@ -76,15 +78,24 @@ export class CompanyService {
         if (user?.verified === false && postingsToday.length >= 5) {
             throw new Error("Maximum job postings for today reached");
         }
+        if(input.minimum_expected_salary > input.maximum_expected_salary){
+            throw new Error("Minimum expected salary cannot be greater than maximum expected salary");
+        }
 
         const repoInput = {
             company_id: companyProfile.id,
+            job_title: input.job_title,
+            location: input.location,
+            work_place: input.work_place,
+            minimum_expected_salary: input.minimum_expected_salary,
+            maximum_expected_salary: input.maximum_expected_salary,
+            expired_at: input.expired_at || null,
             description: input.description,
             jobType: input.jobType,
             position: input.position,
             available_position: input.available_position
         };
-
+        
         return this.companyRepository.create_job_posting(repoInput);
     }
 
@@ -93,6 +104,11 @@ export class CompanyService {
         if (!existingPost) {
             throw new Error("Job posting not found");
         }
+        input.job_title = input.job_title ? input.job_title : existingPost.job_title;
+        input.location = input.location ? input.location : existingPost.location;
+        input.minimum_expected_salary = input.minimum_expected_salary ? input.minimum_expected_salary : existingPost.minimum_expected_salary;
+        input.maximum_expected_salary = input.maximum_expected_salary ? input.maximum_expected_salary : existingPost.maximum_expected_salary;
+        input.work_place = input.work_place ? (input.work_place as WorkPlace) : existingPost.work_place as WorkPlace;
         input.description = input.description ? input.description : existingPost.description;
         input.jobType = input.jobType ? input.jobType : JobType[existingPost.jobType as keyof typeof JobType];
         input.position = input.position ? input.position : existingPost.position;

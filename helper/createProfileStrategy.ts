@@ -76,6 +76,7 @@ class CreateProfileStrategy {
             position: TO_BE_ADDED,
             contactInfo: TO_BE_ADDED,
             summary: TO_BE_ADDED,
+            lab: TO_BE_ADDED
             });
         }
     }

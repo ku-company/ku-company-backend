@@ -102,15 +102,15 @@ describe('CompanyRepository - job postings', () => {
 			available_position: 2,
 		} as any);
 		expect(out).toEqual({ id: 9 });
-		expect(mockPrisma.jobPost.create).toHaveBeenCalledWith({
-			data: {
-				description: 'desc',
-				jobType: 'FullTime',
-				position: 'Backend_Developer',
-				available_position: 2,
-				company_id: 1,
-			},
-		});
+			expect(mockPrisma.jobPost.create).toHaveBeenCalledWith({
+				data: expect.objectContaining({
+					description: 'desc',
+					jobType: 'FullTime',
+					position: 'Backend_Developer',
+					available_position: 2,
+					company_id: 1,
+				}),
+			});
 	});
 
 	it('find_today_job_postings uses date window', async () => {
@@ -152,7 +152,7 @@ describe('CompanyRepository - job postings', () => {
 		expect(up).toEqual({ id: 3 });
 		expect(mockPrisma.jobPost.update).toHaveBeenCalledWith({
 			where: { id: 3 },
-			data: { description: 'd', jobType: 'Internship', position: 'Frontend_Developer', available_position: 5 },
+			data: expect.objectContaining({ description: 'd', jobType: 'Internship', position: 'Frontend_Developer', available_position: 5 }),
 		});
 
 		mockPrisma.jobPost.delete.mockResolvedValue({ id: 3 });

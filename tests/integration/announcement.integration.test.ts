@@ -1,4 +1,4 @@
-import { PrismaClient, JobType } from '@prisma/client';
+import { PrismaClient, JobType, WorkPlace } from '@prisma/client';
 import { AnnouncementRepository } from '../../repository/announcementRepository.js';
 
 const hasDb = !!process.env.DOCKER_DATABASE_URL;
@@ -26,7 +26,7 @@ describeIf('Integration: AnnouncementRepository', () => {
     const companyUser = await prisma.user.create({ data: { email: `itest-ann-co-${Date.now()}@example.com`, role: 'Company', verified: true, status: 'Approved' } });
     createdUserIds.push(companyUser.id);
     const company = await prisma.companyProfile.create({ data: { user_id: companyUser.id, company_name: 'ABC' } });
-    const job = await prisma.jobPost.create({ data: { company_id: company.id, description: 'JD', jobType: JobType.FullTime, position: 'Dev', available_position: 1 } });
+  const job = await prisma.jobPost.create({ data: { company_id: company.id, job_title: 'JD', description: 'JD', location: 'Bangkok', work_place: WorkPlace.OnSite, minimum_expected_salary: 12000, maximum_expected_salary: 24000, jobType: JobType.FullTime, position: 'Dev', available_position: 1 } as any });
 
   // Ensure deterministic ordering by setting explicit created_at timestamps
   const t1 = new Date();

@@ -93,8 +93,15 @@ export class CompanyController {
     async create_job_posting(req: Request, res: Response){
         try{
             const user = req.user as { id: number };
+            console.log(req.body)
             const input: CompanyJobPostingDTO = {
+                job_title: req.body.job_title,
                 description: req.body.description,
+                minimum_expected_salary: req.body.minimum_expected_salary,
+                maximum_expected_salary: req.body.maximum_expected_salary,
+                location: req.body.location,
+                work_place: req.body.work_place,
+                expired_at: req.body.expired_at ? new Date(req.body.expired_at) : null,
                 jobType: req.body.jobType,
                 position: req.body.position,
                 available_position: req.body.available_position
@@ -123,7 +130,13 @@ export class CompanyController {
         try{
             const job_posting_id = parseInt(req.params.id);
             const input: CompanyJobPostingDTO = {
+                job_title: req.body.job_title,
                 description: req.body.description,
+                minimum_expected_salary: req.body.minimum_expected_salary,
+                maximum_expected_salary: req.body.maximum_expected_salary,
+                location: req.body.location,
+                work_place: req.body.work_place,
+                expired_at: req.body.expired_at ? new Date(req.body.expired_at) : null,
                 jobType: req.body.jobType,
                 position: req.body.position,
                 available_position: req.body.available_position

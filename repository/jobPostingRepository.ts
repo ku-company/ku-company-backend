@@ -50,6 +50,7 @@ export class JobPostingPublicRepository {
             include: {
                 company: {
                     select: {
+                    id: true,
                     company_name: true,
                     location: true,
                     tel: true,
@@ -75,6 +76,7 @@ export class JobPostingPublicRepository {
             include: {
                 company: {
                     select: {
+                    id: true,
                     company_name: true,
                     location: true,
                     tel: true,
