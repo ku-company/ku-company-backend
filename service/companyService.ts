@@ -1,12 +1,13 @@
 import { CompanyRepository } from "../repository/companyRepository.js";
 import { UserRepository } from "../repository/userRepository.js";
-import type { CompanyProfileDTO } from "../dtoModel/companyDTO.js";
 import type { CompanyProfileDB } from "../model/companyModel.js";
-import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/companyDTO.js";
+import {type CompanyProfileDTO, type CompanyJobPostingDTO, type EditCompanyJobPostingDTO} from "../dtoModel/companyDTO.js";
+import {JobType, JobPostStatus} from "../utils/enums.js";   
 import { S3Service } from "./s3Services.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
 import { JobStatus } from "../utils/enums.js";
 import {CompanyJobApplicationStatus} from "../utils/enums.js";
+import {isJobType, isJobPostStatus} from "../utils/validatorEnum.js";
 
 
 
@@ -85,10 +86,12 @@ export class CompanyService {
             available_position: input.available_position
         };
 
+        // Validate enums
+        if (!isJobType(input.jobType)) throw new Error("Invalid job type");
         return this.companyRepository.create_job_posting(repoInput);
     }
 
-    async update_job_posting(post_id: number, input: CompanyJobPostingDTO) {
+    async update_job_posting(post_id: number, input: EditCompanyJobPostingDTO) {
         const existingPost = await this.companyRepository.find_job_posting_by_id(post_id);
         if (!existingPost) {
             throw new Error("Job posting not found");
@@ -96,8 +99,13 @@ export class CompanyService {
         input.description = input.description ? input.description : existingPost.description;
         input.jobType = input.jobType ? input.jobType : JobType[existingPost.jobType as keyof typeof JobType];
         input.position = input.position ? input.position : existingPost.position;
-
         input.available_position = input.available_position ? input.available_position : existingPost.available_position;
+        input.status = input.status ? input.status : JobPostStatus[existingPost.status as keyof typeof JobPostStatus];
+
+        // Validate enums
+        if (!isJobType(input.jobType)) throw new Error("Invalid job type");
+        if (!isJobPostStatus(input.status)) throw new Error("Invalid job post status");
+
         return this.companyRepository.update_job_posting(post_id, input);
     }
 

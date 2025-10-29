@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { CompanyService } from "../service/companyService.js";
-import type { CompanyProfileDTO } from "../dtoModel/companyDTO.js";
-import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
+import type { CompanyProfileDTO, CompanyJobPostingDTO, EditCompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
 
 export class CompanyController {
     private companyService: CompanyService;
@@ -122,11 +121,12 @@ export class CompanyController {
     }
         try{
             const job_posting_id = parseInt(req.params.id);
-            const input: CompanyJobPostingDTO = {
+            const input: EditCompanyJobPostingDTO = {
                 description: req.body.description,
                 jobType: req.body.jobType,
                 position: req.body.position,
-                available_position: req.body.available_position
+                available_position: req.body.available_position,
+                status: req.body.status
             };
             const result = await this.companyService.update_job_posting(job_posting_id, input);
             if (!result) {

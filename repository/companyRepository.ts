@@ -1,8 +1,7 @@
 import { type PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { CompanyProfileDB } from "../model/companyModel.js";
-import type {CompanyProfileDTO} from "../dtoModel/companyDTO.js";
-import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
+import type { CompanyProfileDTO, CompanyJobPostingDTO, EditCompanyJobPostingDTO} from "../dtoModel/companyDTO.js";
 import { CompanyJobApplicationStatus } from "../utils/enums.js";
 
 export class CompanyRepository {
@@ -107,7 +106,7 @@ export class CompanyRepository {
     }
 
 
-    async update_job_posting(id: number, input: CompanyJobPostingDTO) {
+    async update_job_posting(id: number, input: EditCompanyJobPostingDTO) {
         return this.prisma.jobPost.update({
             where: {
                 id: id
@@ -116,7 +115,8 @@ export class CompanyRepository {
                 description: input.description,
                 jobType: input.jobType,
                 position: input.position,
-                available_position: input.available_position
+                available_position: input.available_position,
+                status: input.status
             }
         });
     }
