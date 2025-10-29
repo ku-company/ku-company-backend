@@ -66,6 +66,7 @@ export class CompanyRepository {
     async create_job_posting(input: CompanyJobPostingDTO & { company_id: number }) {
         return this.prisma.jobPost.create({
             data: {
+                job_title: input.job_title,
                 description: input.description,
                 jobType: input.jobType,
                 position: input.position,
@@ -113,6 +114,7 @@ export class CompanyRepository {
                 id: id
             },
             data: {
+                job_title: input.job_title,
                 description: input.description,
                 jobType: input.jobType,
                 position: input.position,

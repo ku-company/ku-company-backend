@@ -12,6 +12,7 @@ export enum Position {
 }
 
 export interface CompanyJobPostingDTO {
+  job_title: string;
   description: string;
   jobType: JobType;
   position: string;

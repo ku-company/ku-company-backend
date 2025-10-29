@@ -224,6 +224,7 @@ model jobApplication {
 model jobPost {
   id          Int     @id @default(autoincrement())
   company_id  Int
+  job_title   String  @db.Text()
   description String  @db.Text()
   jobType     JobType 
   position    String  @db.Text()

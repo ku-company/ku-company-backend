@@ -79,6 +79,7 @@ export class CompanyService {
 
         const repoInput = {
             company_id: companyProfile.id,
+            job_title: input.job_title,
             description: input.description,
             jobType: input.jobType,
             position: input.position,
@@ -93,6 +94,7 @@ export class CompanyService {
         if (!existingPost) {
             throw new Error("Job posting not found");
         }
+        input.job_title = input.job_title ? input.job_title : existingPost.job_title;
         input.description = input.description ? input.description : existingPost.description;
         input.jobType = input.jobType ? input.jobType : JobType[existingPost.jobType as keyof typeof JobType];
         input.position = input.position ? input.position : existingPost.position;
