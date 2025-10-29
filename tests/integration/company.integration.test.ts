@@ -1,4 +1,4 @@
-import { PrismaClient, JobType } from '@prisma/client';
+import { PrismaClient, JobType, WorkPlace } from '@prisma/client';
 import { CompanyRepository } from '../../repository/companyRepository.js';
 import { UserRepository } from '../../repository/userRepository.js';
 import { EmployeeRepository } from '../../repository/employeeRepository.js';
@@ -52,7 +52,7 @@ describeIf('Integration: CompanyRepository', () => {
     const updated = await repo.update_company_profile(companyUser.id, { user_id: companyUser.id, company_name: 'Comp B' } as any);
     expect(updated?.company_name).toBe('Comp B');
 
-  const job = await repo.create_job_posting({ company_id: createdProfile.id, job_title: 'Role X', description: 'Role X', jobType: JobType.Internship, position: 'Intern', available_position: 5 } as any);
+  const job = await repo.create_job_posting({ company_id: createdProfile.id, job_title: 'Role X', description: 'Role X', location: 'Bangkok', work_place: WorkPlace.OnSite, minimum_expected_salary: 8000, maximum_expected_salary: 12000, jobType: JobType.Internship, position: 'Intern', available_position: 5 } as any);
     expect(job.company_id).toBe(createdProfile.id);
 
     const today = new Date();
@@ -72,7 +72,7 @@ describeIf('Integration: CompanyRepository', () => {
   it('applications listing, status update and confirmation flow', async () => {
     const companyUser = await createCompanyUser();
     const companyProfile = await repo.create_company_profile({ user_id: companyUser.id, company_name: 'Apps Co' } as any);
-  const job = await repo.create_job_posting({ company_id: companyProfile.id, job_title: 'Engineer', description: 'Engineer', jobType: JobType.FullTime, position: 'Engineer', available_position: 2 } as any);
+  const job = await repo.create_job_posting({ company_id: companyProfile.id, job_title: 'Engineer', description: 'Engineer', location: 'Bangkok', work_place: WorkPlace.OnSite, minimum_expected_salary: 18000, maximum_expected_salary: 30000, jobType: JobType.FullTime, position: 'Engineer', available_position: 2 } as any);
 
     const { user: empUser, profile, resume } = await createStudentWithResume();
     const application = await employeeRepo.apply_to_individual_job(job.id, empUser.id, resume.id);

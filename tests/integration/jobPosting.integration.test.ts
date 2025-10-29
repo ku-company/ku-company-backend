@@ -1,4 +1,4 @@
-import { PrismaClient, JobType } from '@prisma/client';
+import { PrismaClient, JobType, WorkPlace } from '@prisma/client';
 import { JobPostingPublicRepository } from '../../repository/jobPostingRepository.js';
 
 const hasDb = !!process.env.DOCKER_DATABASE_URL;
@@ -56,11 +56,15 @@ describeIf('Integration: JobPostingPublicRepository', () => {
         company_id: company.id,
         job_title: 'ITEST: Backend developer',
         description: 'ITEST: Backend developer position',
+        location: 'Bangkok',
+        work_place: WorkPlace.OnSite,
+        minimum_expected_salary: 18000,
+        maximum_expected_salary: 35000,
         jobType: JobType.FullTime,
         position: 'Developer',
         available_position: 2,
         status: 'Active',
-      },
+      } as any,
     });
     jobId1 = job1.id;
     const job2 = await prisma.jobPost.create({
@@ -68,11 +72,15 @@ describeIf('Integration: JobPostingPublicRepository', () => {
         company_id: company.id,
         job_title: 'ITEST: Closed position',
         description: 'ITEST: Closed position',
+        location: 'Bangkok',
+        work_place: WorkPlace.OnSite,
+        minimum_expected_salary: 10000,
+        maximum_expected_salary: 15000,
         jobType: JobType.Internship,
         position: 'Designer',
         available_position: 0,
         status: 'Closed',
-      },
+      } as any,
     });
     jobId2 = job2.id;
   });

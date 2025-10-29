@@ -1,7 +1,7 @@
 import request from './_request.js';
 import { buildTestApp } from './_app.js';
 import jobPostingPublicRoutes from '../../router/jobPostingPublicRoutes.js';
-import { PrismaClient, JobType } from '@prisma/client';
+import { PrismaClient, JobType, WorkPlace } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,7 @@ describe('Controller: JobPostingPublic', () => {
     userId = user.id;
     const company = await prisma.companyProfile.create({ data: { user_id: user.id, company_name: 'CtrlCo' } });
     companyId = company.id;
-  const job = await prisma.jobPost.create({ data: { company_id: company.id, job_title: 'Controller Test', description: 'Controller Test', jobType: JobType.FullTime, position: 'Dev', available_position: 1, status: 'Active' } });
+  const job = await prisma.jobPost.create({ data: { company_id: company.id, job_title: 'Controller Test', description: 'Controller Test', location: 'Bangkok', work_place: WorkPlace.OnSite, minimum_expected_salary: 10000, maximum_expected_salary: 20000, jobType: JobType.FullTime, position: 'Dev', available_position: 1, status: 'Active' } as any });
     jobId = job.id;
   });
 

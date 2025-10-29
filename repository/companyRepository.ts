@@ -1,4 +1,4 @@
-import { type PrismaClient } from "@prisma/client";
+import { WorkPlace, type PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { CompanyProfileDB } from "../model/companyModel.js";
 import type {CompanyProfileDTO} from "../dtoModel/companyDTO.js";
@@ -68,6 +68,11 @@ export class CompanyRepository {
             data: {
                 job_title: input.job_title,
                 description: input.description,
+                minimum_expected_salary: input.minimum_expected_salary,
+                maximum_expected_salary: input.maximum_expected_salary,
+                location: input.location,
+                work_place: input.work_place as WorkPlace,
+                expired_at: input.expired_at || null,
                 jobType: input.jobType,
                 position: input.position,
                 available_position: input.available_position,
@@ -108,7 +113,7 @@ export class CompanyRepository {
     }
 
 
-    async update_job_posting(id: number, input: CompanyJobPostingDTO) {
+    async update_job_posting(id: number, input: CompanyJobPostingDTO){
         return this.prisma.jobPost.update({
             where: {
                 id: id
@@ -116,6 +121,11 @@ export class CompanyRepository {
             data: {
                 job_title: input.job_title,
                 description: input.description,
+                minimum_expected_salary: input.minimum_expected_salary,
+                maximum_expected_salary: input.maximum_expected_salary,
+                location: input.location,
+                work_place: input.work_place as WorkPlace,
+                expired_at: input.expired_at || null,
                 jobType: input.jobType,
                 position: input.position,
                 available_position: input.available_position

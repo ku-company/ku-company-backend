@@ -13,6 +13,12 @@ enum Role {
   Unknown
 }
 
+enum WorkPlace {
+  Online
+  OnSite
+  Hybrid
+}
+
 enum NotificationType {
   ApplicationSubmitted
   ApplicationConfirmed 
@@ -226,6 +232,11 @@ model jobPost {
   company_id  Int
   job_title   String  @db.Text()
   description String  @db.Text()
+  location    String  @db.Text()
+  work_place  WorkPlace
+  minimum_expected_salary Int
+  maximum_expected_salary Int
+  expired_at  DateTime?
   jobType     JobType 
   position    String  @db.Text()
   available_position Int

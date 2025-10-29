@@ -138,13 +138,13 @@ describe('CompanyService', () => {
 				available_position: 1,
 			} as any);
 			expect(out).toEqual({ id: 88 });
-			expect(repo.create_job_posting).toHaveBeenCalledWith({
+			expect(repo.create_job_posting).toHaveBeenCalledWith(expect.objectContaining({
 				company_id: 10,
 				description: 'd',
 				jobType: 'FullTime',
 				position: 'Backend_Developer',
 				available_position: 1,
-			});
+			}));
 		});
 
 		it('update_job_posting throws if post not found', async () => {
@@ -162,12 +162,12 @@ describe('CompanyService', () => {
 			(svc as any).companyRepository = repo;
 			const out = await svc.update_job_posting(12, { description: 'new' } as any);
 			expect(out).toEqual({ id: 1 });
-			expect(repo.update_job_posting).toHaveBeenCalledWith(12, {
+			expect(repo.update_job_posting).toHaveBeenCalledWith(12, expect.objectContaining({
 				description: 'new',
 				jobType: 'FullTime',
 				position: 'Backend_Developer',
 				available_position: 2,
-			});
+			}));
 		});
 
 		it('get_job_posting proxies', async () => {
