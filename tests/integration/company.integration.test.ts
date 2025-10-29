@@ -52,7 +52,7 @@ describeIf('Integration: CompanyRepository', () => {
     const updated = await repo.update_company_profile(companyUser.id, { user_id: companyUser.id, company_name: 'Comp B' } as any);
     expect(updated?.company_name).toBe('Comp B');
 
-    const job = await repo.create_job_posting({ company_id: createdProfile.id, description: 'Role X', jobType: JobType.Internship, position: 'Intern', available_position: 5 } as any);
+  const job = await repo.create_job_posting({ company_id: createdProfile.id, job_title: 'Role X', description: 'Role X', jobType: JobType.Internship, position: 'Intern', available_position: 5 } as any);
     expect(job.company_id).toBe(createdProfile.id);
 
     const today = new Date();
@@ -72,7 +72,7 @@ describeIf('Integration: CompanyRepository', () => {
   it('applications listing, status update and confirmation flow', async () => {
     const companyUser = await createCompanyUser();
     const companyProfile = await repo.create_company_profile({ user_id: companyUser.id, company_name: 'Apps Co' } as any);
-    const job = await repo.create_job_posting({ company_id: companyProfile.id, description: 'Engineer', jobType: JobType.FullTime, position: 'Engineer', available_position: 2 } as any);
+  const job = await repo.create_job_posting({ company_id: companyProfile.id, job_title: 'Engineer', description: 'Engineer', jobType: JobType.FullTime, position: 'Engineer', available_position: 2 } as any);
 
     const { user: empUser, profile, resume } = await createStudentWithResume();
     const application = await employeeRepo.apply_to_individual_job(job.id, empUser.id, resume.id);

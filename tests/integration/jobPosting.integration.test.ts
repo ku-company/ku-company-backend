@@ -54,6 +54,7 @@ describeIf('Integration: JobPostingPublicRepository', () => {
     const job1 = await prisma.jobPost.create({
       data: {
         company_id: company.id,
+        job_title: 'ITEST: Backend developer',
         description: 'ITEST: Backend developer position',
         jobType: JobType.FullTime,
         position: 'Developer',
@@ -65,6 +66,7 @@ describeIf('Integration: JobPostingPublicRepository', () => {
     const job2 = await prisma.jobPost.create({
       data: {
         company_id: company.id,
+        job_title: 'ITEST: Closed position',
         description: 'ITEST: Closed position',
         jobType: JobType.Internship,
         position: 'Designer',

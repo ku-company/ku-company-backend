@@ -48,7 +48,7 @@ describeIf('Integration: EmployeeRepository', () => {
     createdCompanyUserIds.push(companyUser.id);
     const company = await prisma.companyProfile.create({ data: { user_id: companyUser.id, company_name: 'EmpCo' } });
     const job = await prisma.jobPost.create({
-      data: { company_id: company.id, description: 'Engineer', jobType: JobType.FullTime, position: 'Engineer', available_position: 3, status: 'Active' }
+      data: { company_id: company.id, job_title: 'Engineer', description: 'Engineer', jobType: JobType.FullTime, position: 'Engineer', available_position: 3, status: 'Active' }
     });
     return { companyUser, company, job };
   }

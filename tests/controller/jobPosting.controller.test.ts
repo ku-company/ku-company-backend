@@ -27,7 +27,7 @@ describe('Controller: JobPostingPublic', () => {
     userId = user.id;
     const company = await prisma.companyProfile.create({ data: { user_id: user.id, company_name: 'CtrlCo' } });
     companyId = company.id;
-    const job = await prisma.jobPost.create({ data: { company_id: company.id, description: 'Controller Test', jobType: JobType.FullTime, position: 'Dev', available_position: 1, status: 'Active' } });
+  const job = await prisma.jobPost.create({ data: { company_id: company.id, job_title: 'Controller Test', description: 'Controller Test', jobType: JobType.FullTime, position: 'Dev', available_position: 1, status: 'Active' } });
     jobId = job.id;
   });
 
