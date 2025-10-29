@@ -300,7 +300,16 @@ export class EmployeeRepository{
                 employee_id: employee.id
             },
             include: {
-                job_post: true
+                job_post: {
+                  include:{
+                    company: {
+                      select:{
+                        user_id: true,
+                        company_name: true
+                      }
+                    }
+                  }
+                }
             }
         })
         if(all_applications.length == 0){
