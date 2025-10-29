@@ -17,6 +17,15 @@ export class EmployeeProfile extends ProfileStrategy {
         const result = await this.prisma.employeeProfile.findUnique({
             where: {
                 user_id: user_id
+            },
+            include: {
+                user: {
+                    select: {
+                        role: true,
+                        first_name: true,
+                        last_name: true
+                    }
+                }
             }
         })
         return result
@@ -30,6 +39,13 @@ export class Professor extends ProfileStrategy {
             where: {
                 user_id: user_id
             },
+            include: {
+                user: {
+                    select: {
+                        role: true
+                    }
+                }
+            }
         })
         return result
     }
@@ -46,6 +62,11 @@ export class Company extends ProfileStrategy {
                 comments: {
                     orderBy: { 
                         created_at: "desc"
+                    }
+                },
+                user: {
+                    select: {
+                        role: true
                     }
                 }
             }
