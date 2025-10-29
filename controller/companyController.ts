@@ -94,7 +94,7 @@ export class CompanyController {
         try{
             const user = req.user as { id: number };
             const input: CompanyJobPostingDTO = {
-                job_title: req.body.title,
+                job_title: req.body.job_title,
                 description: req.body.description,
                 jobType: req.body.jobType,
                 position: req.body.position,
@@ -124,7 +124,7 @@ export class CompanyController {
         try{
             const job_posting_id = parseInt(req.params.id);
             const input: CompanyJobPostingDTO = {
-                job_title: req.body.title,
+                job_title: req.body.job_title,
                 description: req.body.description,
                 jobType: req.body.jobType,
                 position: req.body.position,
