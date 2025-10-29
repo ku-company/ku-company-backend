@@ -23,11 +23,19 @@ export class JobPostingService {
     private async toFeedDTO(job: JobPostWithCompany): Promise<JobPostingFeedDTO> {
         return {
         id: job.id,
+        job_title: job.job_title,
         position: job.position,
+        location: job.location,
+        work_place: job.work_place,
+        minimum_expected_salary: job.minimum_expected_salary,
+        maximum_expected_salary: job.maximum_expected_salary,
+        expired_at: job.expired_at || null,
+
         description: job.description,
         jobType: job.jobType,
         status: job.status,
         available_position: job.available_position,
+        company_id: job.company.id,
         company_name: job.company.company_name,
         company_profile_image: await this.userService.get_profile_image(job.company.user_id),
         company_location: job.company.location,
@@ -35,6 +43,7 @@ export class JobPostingService {
         created_at: job.created_at,
         updated_at: job.updated_at,
         posted_ago: this.postedAgo(job.created_at),
+
         };
     }
 
