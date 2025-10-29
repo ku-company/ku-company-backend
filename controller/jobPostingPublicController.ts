@@ -28,7 +28,7 @@ export class JobPostingPublicController {
 
     async get_all_job_postings(req: Request, res: Response){
         try{
-            const { keyword, category, jobType } = req.query as { keyword: string; category: string; jobType: string };
+            const { keyword, category, jobType, sortOrder } = req.query as { keyword: string; category: string; jobType: string; sortOrder: string };
 
             // Validate jobType
             const jobTypeEnum = jobType && isJobType(jobType) ? jobType : undefined;
@@ -36,7 +36,7 @@ export class JobPostingPublicController {
                 return res.status(400).json({ message: `Invalid jobType: ${jobType}` });
             }
 
-            const jobPostings = await this.JobPostingService.get_all_job_postings(keyword, category, jobTypeEnum);
+            const jobPostings = await this.JobPostingService.get_all_job_postings(keyword, category, jobTypeEnum, sortOrder);
             res.json({ job_postings: jobPostings });
         }catch(error: unknown){
             console.error((error as Error).message);

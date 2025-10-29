@@ -48,8 +48,8 @@ export class JobPostingService {
         };
     }
 
-    async get_all_job_postings(keyword?: string, category?: string, jobType?: string): Promise<JobPostingFeedDTO[]> {
-        const items = await this.jobPostingRepository.get_all_job_postings(keyword, category, jobType);
+    async get_all_job_postings(keyword?: string, category?: string, jobType?: string, sortOrder?: string): Promise<JobPostingFeedDTO[]> {
+        const items = await this.jobPostingRepository.get_all_job_postings(keyword, category, jobType, sortOrder);
         return Promise.all(items.map((job) => this.toFeedDTO(job)));
     }
 

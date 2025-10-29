@@ -11,7 +11,7 @@ export class JobPostingPublicRepository {
     }
 
 
-    async get_all_job_postings(keyword?: string, category?: string, jobType?: string) {
+    async get_all_job_postings(keyword?: string, category?: string, jobType?: string, sortOrder?: string) {
         return this.prisma.jobPost.findMany({
             where: {
                 available_position: {
@@ -52,7 +52,7 @@ export class JobPostingPublicRepository {
                 
             },
             orderBy: {
-                updated_at: 'desc',
+                updated_at: sortOrder === "asc" ? "asc" : "desc",
             },
             include: {
                 company: {
