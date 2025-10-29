@@ -36,7 +36,14 @@ export class JobPostingPublicRepository {
                         },
                     },
                     { position: { contains: keyword, mode: "insensitive" } },
-                    
+                    {
+                        company: {
+                            is: {
+                                location: { contains: keyword, mode: "insensitive" },
+                            },
+                        },
+                    },
+                    { location: { contains: keyword, mode: "insensitive" } },                    
                     ],
                 }),
                 // jobType = exact match with JobType enum
