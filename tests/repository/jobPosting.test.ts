@@ -38,7 +38,7 @@ describe('JobPostingPublicRepository - get_all_job_postings', () => {
 			orderBy: { updated_at: 'desc' },
 			include: {
 				company: {
-					select: { company_name: true, location: true, tel: true, user_id: true },
+					select: { id: true, company_name: true, location: true, tel: true, user_id: true },
 				},
 			},
 		});
@@ -91,7 +91,7 @@ describe('JobPostingPublicRepository - get_job_posting_by_id', () => {
 			where: { id: 42 },
 			include: {
 				company: {
-					select: { company_name: true, location: true, tel: true, user_id: true },
+					select: { id: true, company_name: true, location: true, tel: true, user_id: true },
 				},
 			},
 		});
