@@ -230,7 +230,11 @@ export class ProfessorRepository{
                 : announcementContent;
 
         const students = (await this.prisma.employeeProfile.findMany({
+            where: {
+                user: { verified: true},
+            },
             include: { user: true },
+
         })) as Array<employeeProfile & { user: User | null }>;
 
         await Promise.all(
