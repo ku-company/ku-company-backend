@@ -8,6 +8,7 @@ import { JobPostingPublicRepository } from "../../repository/jobPostingRepositor
 
 const mockPrisma: any = {
   jobPost: {
+    updateMany: jest.fn(),
     findMany: jest.fn(),
     findUnique: jest.fn(),
   },
@@ -30,6 +31,14 @@ describe("JobPostingPublicRepository - get_all_job_postings", () => {
     mockPrisma.jobPost.findMany.mockResolvedValueOnce(sample);
     const out = await repo.get_all_job_postings();
     expect(out).toBe(sample);
+    // ensure expired jobs are marked as Expired before querying
+    expect(mockPrisma.jobPost.updateMany).toHaveBeenCalledWith({
+      where: {
+        expired_at: { lte: expect.any(Date) },
+        status: "Active",
+      },
+      data: { status: "Expired" },
+    });
     expect(mockPrisma.jobPost.findMany).toHaveBeenCalledWith({
       where: {
         available_position: { gt: 0 },
