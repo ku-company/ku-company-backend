@@ -1,8 +1,22 @@
 import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorEditAnnouncementDTO,ProfessorAnnouncementDTO, DegreeInputDTO } from "../dtoModel/professorDTO.js";
-import { lstat } from "fs";
-import type { employeeProfile } from "@prisma/client";
+import type { employeeProfile, User } from "@prisma/client";
+import type { Transporter } from "nodemailer";
+
+let mailerPromise: Promise<Transporter | null> | null = null;
+
+const getMailer = async (): Promise<Transporter | null> => {
+    if (!mailerPromise) {
+        mailerPromise = import("../helper/mail.js")
+            .then((module) => module.mailer)
+            .catch((error) => {
+                console.error("Failed to load mailer transport:", error);
+                return null;
+            });
+    }
+    return mailerPromise;
+};
 
 export class ProfessorRepository{
 
@@ -202,23 +216,57 @@ export class ProfessorRepository{
             include: { user: true },
         });
 
-        const students = await this.prisma.employeeProfile.findMany();
+        if (!profile) {
+            throw new Error("Professor profile not found");
+        }
+
+        const professorFirstName = profile.user.first_name ?? "";
+        const professorLastInitial = profile.user.last_name?.[0] ?? "";
+        const professorName = `${professorFirstName} ${profile.user.last_name ?? ""}`.trim();
+        const announcementContent = content ?? "";
+        const preview =
+            announcementContent.length > 50
+                ? `${announcementContent.substring(0, 50)}...`
+                : announcementContent;
+
+        const students = (await this.prisma.employeeProfile.findMany({
+            include: { user: true },
+        })) as Array<employeeProfile & { user: User | null }>;
+
         await Promise.all(
-            students.map((student: employeeProfile) =>
-            this.prisma.notification.create({
-                data: {
-                employee_id: student.id,
-                professor_id: profile_id,
-                announcement_id: announcement_id,
-                message: `New announcement from Professor ${profile?.user.first_name ?? ""} ${profile?.user.last_name?.[0] ?? ""}: ${content?.substring(0, 50)}...`,
-                notification_status: "Unread",
-                notification_type: "NewAnnouncement",
-                },
+            students.map(async (student) => {
+                await this.prisma.notification.create({
+                    data: {
+                        employee_id: student.id,
+                        professor_id: profile_id,
+                        announcement_id,
+                        message: `New announcement from Professor ${professorFirstName} ${professorLastInitial}: ${preview}`,
+                        notification_status: "Unread",
+                        notification_type: "NewAnnouncement",
+                    },
+                });
+
+                if (student.user?.email) {
+                    const mailer = await getMailer();
+                    if (!mailer) {
+                        return;
+                    }
+                    try {
+                        await mailer.sendMail({
+                            from: `"KU Company System" <${process.env.MAIL_USER ?? ""}>`,
+                            replyTo: profile.user.email ?? undefined,
+                            to: student.user.email,
+                            subject: `📢 New Announcement from Professor ${professorName}`,
+                            text: `New announcement from Professor ${professorName}:\n\n${content}\n\n— KU Company System`,
+                        });
+                    } catch (error) {
+                        console.error(`Failed to send email to ${student.user.email}:`, error);
+                    }
+                }
             })
-            )
         );
     }
-    
+
     async create_post(
         profile_id: number,
         input: ProfessorAnnouncementDTO 
