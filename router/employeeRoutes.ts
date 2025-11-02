@@ -19,6 +19,11 @@ router.post("/my-profile/create", async (req , res) =>{
 router.get("/my-profile", async (req , res) =>{
     employeeController.get_employee_profile(req, res)
 })
+
+router.get("/profile/image", async (req: Request, res: Response) => {
+  userController.get_profile_image(req, res);
+});
+
 router.use(verifiedMiddleware);
 
 
@@ -30,9 +35,6 @@ router.post(
     userController.upload_profile_image(req, res);
 });
 
-router.get("/profile/image", async (req: Request, res: Response) => {
-  userController.get_profile_image(req, res);
-});
 
 router.patch("/profile/image", uploadImage.single("profile_image"), async (req: Request, res: Response) => {
   //update profile image
