@@ -134,6 +134,7 @@ export class AdminRepository{
                 created_at: "desc"
             },
             select:{
+                id: true,
                 user_name: true,
                 role: true,
                 email: true,
@@ -151,6 +152,7 @@ export class AdminRepository{
                 status: status
             },
             select:{
+                id: true,
                 user_name: true,
                 role: true,
                 email: true,
@@ -169,6 +171,7 @@ export class AdminRepository{
                 id: user_id
             },
             select: {
+                id: true,
                 user_name: true,
                 role: true,
                 email: true,
