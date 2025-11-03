@@ -97,6 +97,7 @@ export class CompanyController {
             const input: CompanyJobPostingDTO = {
                 job_title: req.body.job_title,
                 description: req.body.description,
+                status: req.body.status,
                 minimum_expected_salary: req.body.minimum_expected_salary,
                 maximum_expected_salary: req.body.maximum_expected_salary,
                 location: req.body.location,
@@ -132,6 +133,7 @@ export class CompanyController {
             const input: CompanyJobPostingDTO = {
                 job_title: req.body.job_title,
                 description: req.body.description,
+                status: req.body.status,
                 minimum_expected_salary: req.body.minimum_expected_salary,
                 maximum_expected_salary: req.body.maximum_expected_salary,
                 location: req.body.location,
