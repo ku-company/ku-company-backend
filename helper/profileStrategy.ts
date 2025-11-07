@@ -23,7 +23,9 @@ export class EmployeeProfile extends ProfileStrategy {
                     select: {
                         role: true,
                         first_name: true,
-                        last_name: true
+                        last_name: true,
+                        email:true,
+                        profile_image: true
                     }
                 }
             }
@@ -42,7 +44,9 @@ export class Professor extends ProfileStrategy {
             include: {
                 user: {
                     select: {
-                        role: true
+                        role: true,
+                        email: true,
+                        profile_image: true
                     }
                 }
             }
@@ -66,7 +70,10 @@ export class Company extends ProfileStrategy {
                 },
                 user: {
                     select: {
-                        role: true
+                        role: true,
+                        email: true,
+                        profile_image: true
+
                     }
                 }
             }
