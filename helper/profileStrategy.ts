@@ -1,9 +1,12 @@
 import type { PrismaClient } from "@prisma/client/extension";
 import { profile } from "console";
+import { UserService } from "../service/userService.js";
 
 abstract class ProfileStrategy{
+    protected userService: UserService;
     constructor(protected prisma: PrismaClient){
         this.prisma = prisma
+        this.userService = new UserService()
     }
     abstract get_profile(user_id: number): any
 
@@ -32,6 +35,7 @@ export class EmployeeProfile extends ProfileStrategy {
                 }
             }
         })
+        result.user.profile_image = await this.userService.get_profile_image(user_id)
         return result
     }
 }
@@ -58,6 +62,7 @@ export class Professor extends ProfileStrategy {
                 degrees: true
             }
         })
+        result.user.profile_image = await this.userService.get_profile_image(user_id)
         return result
     }
 }
@@ -86,6 +91,7 @@ export class Company extends ProfileStrategy {
                 }
             }
         })
+        result.user.profile_image = await this.userService.get_profile_image(user_id)
         return result
     }
 }
