@@ -11,6 +11,7 @@ import { Role } from "../utils/enums.js";
 import { getValidRoles } from "../utils/roleUtils.js";
 import { createProfileStrategy } from "../helper/createProfileStrategy.js";
 import { DEFAULT_PROFILE_IMAGE_KEY } from "../utils/constants.js";
+import { AIService } from "./aiService.js";
 
 
 
@@ -18,10 +19,12 @@ export class UserService {
     
     private userRepository: UserRepository;
     private s3Service: S3Service;
+    private aiService: AIService;
     private BUCKET_NAME = process.env.BUCKET_NAME || "";
 
     constructor() {
         this.userRepository = new UserRepository()
+        this.aiService = new AIService()
         this.s3Service = new S3Service(this.BUCKET_NAME, new ImageKeyStrategy());
     }
     
@@ -35,6 +38,15 @@ export class UserService {
         if(await this.userRepository.is_valid_create_user(input.user_name, input.email, input.company_name)){
             let strategy: SignUpStrategy = SignUpStrategyFactory.setStrategy(input.role);
             const userData: UserDB = await strategy.create_user(this.userRepository, input);
+            const user = await this.userRepository.get_user_by_email(userData.email)
+            if(!user){
+                throw new Error("User not found after creation")
+            }
+            try{
+                const ai_verify = await this.aiService.verify_user(user.id)
+            }catch(err : any){
+                console.error(err.message)
+            }
             const response = await strategy.sign_up(userData);
             return response
         }
