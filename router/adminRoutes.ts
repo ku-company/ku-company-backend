@@ -14,6 +14,10 @@ router.patch("/reject-user/:id", authorizeRole("Admin"), async (req , res) =>{
     adminController.reject_user(req,res)
 })
 
+router.patch("/pending-user/:id", authorizeRole("Admin"), async (req , res) =>{
+    adminController.pending_user(req, res)
+})
+
 router.delete("/delete-user/:id", authorizeRole("Admin"), async (req , res) =>{
     adminController.delete_user(req, res)
 })

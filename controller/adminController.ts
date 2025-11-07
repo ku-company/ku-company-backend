@@ -104,4 +104,18 @@ export class AdminController{
             })
         }
     }
+
+    async pending_user(req: any, res: any){
+        try{
+            const result = await this.admminService.pending_user(req.params.id)
+            res.status(200).json({
+                message: "User status changed to pending successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
 }

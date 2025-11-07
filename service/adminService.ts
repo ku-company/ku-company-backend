@@ -37,4 +37,9 @@ export class AdminService{
      async list_filtering_user(status: VerifiedStatus){
          return await this.adminRepository.list_filtering_user(status)
      }
+
+    async pending_user(user_id: number){
+         return await this.adminRepository.pending_user(user_id)
+    }
+
 }

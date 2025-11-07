@@ -182,4 +182,19 @@ export class AdminRepository{
         })
         return user
     }
+
+    async pending_user(id: number){
+        const user_id = await this.find_user(id)
+        const updated_user = await this.prisma.user.update({
+            where: {
+                id: user_id
+            },
+            data: {
+                verified: false,
+                status: "Pending",
+                updated_at: new Date()
+            }
+        })
+        return updated_user
+    }
 }
