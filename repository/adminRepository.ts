@@ -23,6 +23,67 @@ export class AdminRepository{
         }
         return user_id
     }
+
+    async edit_user_status(id:number, status: VerifiedStatus){
+        const user_id = Number(id)
+        try{
+        if (status == "Approved"){
+            const updated_user= await this.prisma.user.update({
+            where: {
+                id: user_id
+            },
+            data: {
+                status: status,
+                verified: true,
+                updated_at: new Date()
+            }
+            })
+            return updated_user
+        }
+        else if(status == "Rejected"){
+            const updated_user = await this.prisma.user.update({
+                where: {
+                    id: user_id
+                },
+                data: {
+                    status: status,
+                    verified: false,
+                    updated_at: new Date()
+                }
+            })
+            return updated_user
+            }
+        else if(status == "Pending"){
+            const updated_user = await this.prisma.user.update({
+                where: {
+                    id: user_id
+                },
+                data: {
+                    status: status,
+                    verified: false,
+                    updated_at: new Date()
+                }
+            })
+            return updated_user
+        }
+        }catch(error){
+            throw new Error("Invalid status value")
+        }
+    }
+
+    async edit_user_verified(id:number, verified: boolean){
+        const user_id = Number(id)
+        const updated_user= await this.prisma.user.update({
+            where: {
+                id: user_id
+            },
+            data: {
+                verified: verified,
+                updated_at: new Date()
+            }
+        })
+        return updated_user
+    }
     
     async verify_user(id: number){
         const user_id =  await this.find_user(id)

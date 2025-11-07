@@ -20,6 +20,33 @@ export class AdminController{
             })
         }
     }
+    async edit_user_status(req: any, res: any){
+        try{
+            const result = await this.admminService.edit_user_status(req.params.id, req.body.status)
+            res.status(200).json({
+                message: "User status edited successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async edit_user_verified(req: any, res: any){
+        try{
+            const result = await this.admminService.edit_user_verified(req.params.id, req.body.verified)
+            res.status(200).json({
+                message: "User verified edited successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
 
     async reject_user(req: any, res: any){
         try{
