@@ -25,7 +25,8 @@ export class EmployeeProfile extends ProfileStrategy {
                         first_name: true,
                         last_name: true,
                         user_name: true,
-                        verified: true
+                        verified: true,
+                        email: true
                     }
                 }
             }
@@ -48,7 +49,8 @@ export class Professor extends ProfileStrategy {
                         first_name: true,
                         last_name: true,
                         user_name: true,
-                        verified: true
+                        verified: true,
+                        email: true
                     }
                 },
                 degrees: true
@@ -75,7 +77,8 @@ export class Company extends ProfileStrategy {
                     select: {
                         role: true,
                         user_name: true,
-                        verified: true
+                        verified: true,
+                        email: true,
                     }
                 }
             }
