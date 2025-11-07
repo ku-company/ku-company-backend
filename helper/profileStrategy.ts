@@ -27,9 +27,7 @@ export class EmployeeProfile extends ProfileStrategy {
                         role: true,
                         first_name: true,
                         last_name: true,
-                        user_name: true,
-                        verified: true,
-                        email: true,
+                        email:true,
                         profile_image: true
                     }
                 }
@@ -51,10 +49,6 @@ export class Professor extends ProfileStrategy {
                 user: {
                     select: {
                         role: true,
-                        first_name: true,
-                        last_name: true,
-                        user_name: true,
-                        verified: true,
                         email: true,
                         profile_image: true
                     }
@@ -83,10 +77,9 @@ export class Company extends ProfileStrategy {
                 user: {
                     select: {
                         role: true,
-                        user_name: true,
-                        verified: true,
                         email: true,
                         profile_image: true
+
                     }
                 }
             }
