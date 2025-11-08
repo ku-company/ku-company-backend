@@ -86,6 +86,7 @@ export class CompanyService {
             company_id: companyProfile.id,
             job_title: input.job_title,
             location: input.location,
+            status: input.status,
             work_place: input.work_place,
             minimum_expected_salary: input.minimum_expected_salary,
             maximum_expected_salary: input.maximum_expected_salary,
@@ -112,6 +113,8 @@ export class CompanyService {
         input.description = input.description ? input.description : existingPost.description;
         input.jobType = input.jobType ? input.jobType : JobType[existingPost.jobType as keyof typeof JobType];
         input.position = input.position ? input.position : existingPost.position;
+        input.expired_at = input.expired_at ? input.expired_at : existingPost.expired_at;
+        input.status = input.status ? input.status : existingPost.status;
 
         input.available_position = input.available_position ? input.available_position : existingPost.available_position;
         return this.companyRepository.update_job_posting(post_id, input);

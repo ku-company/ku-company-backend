@@ -12,6 +12,15 @@ export class JobPostingPublicRepository {
 
 
     async get_all_job_postings(keyword?: string, category?: string, jobType?: string, sortOrder?: string) {
+        await this.prisma.jobPost.updateMany({
+            where: {
+                expired_at: { lte: new Date()},
+                status: "Active"
+            },
+            data: {
+                status: "Expired"
+            }
+        })
         return this.prisma.jobPost.findMany({
             where: {
                 available_position: {

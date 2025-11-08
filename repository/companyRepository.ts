@@ -68,6 +68,7 @@ export class CompanyRepository {
             data: {
                 job_title: input.job_title,
                 description: input.description,
+                status: input.status,
                 minimum_expected_salary: input.minimum_expected_salary,
                 maximum_expected_salary: input.maximum_expected_salary,
                 location: input.location,
@@ -124,6 +125,7 @@ export class CompanyRepository {
                 minimum_expected_salary: input.minimum_expected_salary,
                 maximum_expected_salary: input.maximum_expected_salary,
                 location: input.location,
+                status: input.status,
                 work_place: input.work_place as WorkPlace,
                 expired_at: input.expired_at || null,
                 jobType: input.jobType,

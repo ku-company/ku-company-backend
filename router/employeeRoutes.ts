@@ -117,4 +117,20 @@ router.post("/checkout/apply-jobs", async(req , res) => {
 router.post("/job-applications/:id/confirm", async(req , res) =>{
     employeeController.sent_the_confirmation_to_company(req, res)
 })
+
+// comment company profile
+// === Employee Comment Routes ===
+router.post("/comment/:id", async (req , res) =>{
+    // id is company id
+    employeeController.add_comment_to_company(req, res)
+})
+router.patch("/comment/:id/edit", async (req , res ) => {
+    // id is comment id
+    employeeController.edit_comment(req, res)
+})
+router.delete("/comment/:id/delete", async (req , res ) =>{
+    // id is comment id
+    employeeController.delete_comment(req, res)
+})
+
 export default router;

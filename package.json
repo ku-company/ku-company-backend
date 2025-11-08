@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test-coverage": "jest --coverage",
     "test": "jest",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down -v",

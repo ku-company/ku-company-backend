@@ -1,3 +1,5 @@
+import type { JobPostStatus } from "@prisma/client";
+
 export enum JobType {
   FullTime = "FullTime",
   PartTime = "PartTime",
@@ -16,9 +18,11 @@ export enum WorkPlace {
   Online = "Online",
   Hybrid = "Hybrid"
 }
+
 export interface CompanyJobPostingDTO {
   job_title: string;
   location: string;
+  status: JobPostStatus;
   work_place: WorkPlace;
   minimum_expected_salary: number;
   maximum_expected_salary: number;

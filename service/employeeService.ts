@@ -215,4 +215,23 @@ export class EmployeeService{
         const job_id_num = Number(application_id)
         return await this.employeeRepository.sent_the_confirmation_to_company(user_id, job_id_num)
     }
+
+
+    async add_comment_to_company(user_id: number, company_id: number, comment: string){
+        if (!comment || comment.trim() === "") {
+            throw new Error("Comment cannot be empty");
+        }
+        return await this.employeeRepository.add_comment_to_company(user_id, company_id, comment)
+    }
+
+    async edit_comment(user_id: number, comment_id: number , comment: string){
+        if (!comment || comment.trim() === "") {
+            throw new Error("Comment cannot be empty");
+        }
+        return await this.employeeRepository.edit_comment(user_id, comment_id, comment)
+    }
+
+    async delete_comment(user_id: number, comment_id: number){
+        return await this.employeeRepository.delete_comment(user_id, comment_id)
+    }
 }
