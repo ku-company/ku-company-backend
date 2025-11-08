@@ -66,15 +66,12 @@ describe('ProfessorRepository - profile CRUD', () => {
 		mockPrisma.professorProfile.create.mockResolvedValueOnce(sample);
 		const out = await repo.create_profile(11 as any, { department: 'IT' } as any);
 		expect(out).toBe(sample);
-		expect(mockPrisma.professorProfile.create).toHaveBeenCalledWith(
-			expect.objectContaining({
-				data: expect.objectContaining({
-					department: 'IT',
-					user: { connect: { id: 11 } },
-				}),
-				include: { degrees: true },
-			})
-		);
+		expect(mockPrisma.professorProfile.create).toHaveBeenCalledWith({
+			data: expect.objectContaining({
+				department: 'IT',
+				user: { connect: { id: 11 } },
+			}),
+		});
 	});
 
 	it('get_profile returns include user fields', async () => {
@@ -404,4 +401,3 @@ describe('ProfessorRepository - list queries', () => {
 		});
 	});
 });
-

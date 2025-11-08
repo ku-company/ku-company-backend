@@ -32,7 +32,23 @@ describe('AnnouncementRepository', () => {
 		expect(out).toBe(sample);
 		expect(mockPrisma.announcement.findFirst).toHaveBeenCalledWith({
 			where: { id: 10 },
-			include: { job_post: true },
+			include: {
+				job_post: true,
+				professor: {
+					select: {
+						user: {
+							select: {
+								email: true,
+								verified: true,
+								user_name: true,
+								first_name: true,
+								last_name: true,
+								role: true,
+							},
+						},
+					},
+				},
+			},
 		});
 	});
 
@@ -44,8 +60,23 @@ describe('AnnouncementRepository', () => {
 		expect(out).toBe(list);
 		expect(mockPrisma.announcement.findMany).toHaveBeenCalledWith({
 			orderBy: { created_at: 'desc' },
-			include: { job_post: true },
+			include: {
+				job_post: true,
+				professor: {
+					select: {
+						user: {
+							select: {
+								email: true,
+								verified: true,
+								user_name: true,
+								first_name: true,
+								last_name: true,
+								role: true,
+							},
+						},
+					},
+				},
+			},
 		});
 	});
 });
-
