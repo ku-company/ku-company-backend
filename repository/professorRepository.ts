@@ -3,6 +3,7 @@ import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorEditAnnouncementDTO,ProfessorAnnouncementDTO, DegreeInputDTO } from "../dtoModel/professorDTO.js";
 import type { employeeProfile, User } from "@prisma/client";
 import type { Transporter } from "nodemailer";
+import validator from "validator";
 
 let mailerPromise: Promise<Transporter | null> | null = null;
 
@@ -255,6 +256,11 @@ export class ProfessorRepository{
                     if (!mailer) {
                         return;
                     }
+
+                if (!validator.isEmail(student.user.email)) {
+                    console.warn(`Invalid email format skipped: ${student.user.email}`);
+                return;
+            }
                     try {
                         await mailer.sendMail({
                             from: `"KU Company System" <${process.env.MAIL_USER ?? ""}>`,
@@ -263,6 +269,7 @@ export class ProfessorRepository{
                             subject: `📢 New Announcement from Professor ${professorName}`,
                             text: `New announcement from Professor ${professorName}:\n\n${content}\n\n— KU Company System`,
                         });
+                        console.log(`Email sent to ${student.user.email} about announcement ${announcement_id}`);
                     } catch (error) {
                         console.error(`Failed to send email to ${student.user.email}:`, error);
                     }
