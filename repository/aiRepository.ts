@@ -88,7 +88,7 @@ export class AIRepository {
         const prompt = `
                 You are an AI identity verifier.
                 Check if this user is real and trustworthy based on the below rule.
-                if StudentID has 1054 at digits 3,4,5,6 and start with last two digits, which get from current AD year + 543 and the last two digit is must be below BE current year in last two digits for exmaple if the current year BE is 2569, then the valid number should be below or eqaul to 69, for example valid StudentID 6610545243.
+                if StudentID has 1054 at digits 3,4,5,6 and start with last two digits of from current BE, and the last two digit is must be below BE current year for exmaple (BE 2568) studentID is 6610545243 then is it valid because 66 < 68 but if 69 is invalid because 69 > 68 in last two digits for exmaple if the current year BE is 2569, then the valid number should be below or eqaul to 69, for example valid StudentID 6610545243.
                 and email must be a valid @ku.th email address.
                 Return a valid JSON object with the following structure:
                 {
