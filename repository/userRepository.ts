@@ -182,6 +182,15 @@ export class UserRepository {
         return user;
     }
 
+    async get_user_by_email(email: string){
+        const user = await this.prisma.user.findFirst({
+            where: {
+                email: email
+            }
+        })
+        return user;
+    }
+
     async upload_profile_image(user_id: number, data: { profile_image: string }): Promise<void> {
         await this.prisma.user.update({
             where: {

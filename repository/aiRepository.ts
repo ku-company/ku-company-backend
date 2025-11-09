@@ -53,12 +53,18 @@ export class AIRepository {
                 user_id: user_id
             }
         })
-        if(!company){
-            throw new Error("Company not found")
-        }
 
-        const company_name = company.company_name
-        const company_country = company.country
+        if(!company){
+            console.log("Company profile not found")
+        }
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: user_id
+            }
+        })
+        
+        const company_name = company?.company_name ?? user.company_name ?? user.user_name ?? "";
+        const company_country = company?.country ?? "Unknown";
         const prompt = `
                 You are an AI identity verifier.
                 Check if this entity is real and trustworthy based on online presence.
@@ -88,7 +94,7 @@ export class AIRepository {
         const prompt = `
                 You are an AI identity verifier.
                 Check if this user is real and trustworthy based on the below rule.
-                if StudentID has 1054 at digits 3,4,5,6 and start with last two digits, which get from current AD year + 543 and the last two digit is must be below BE current year in last two digits for exmaple if the current year BE is 2569, then the valid number should be below or eqaul to 69, for example valid StudentID 6610545243.
+                if StudentID has 1054 at digits 3,4,5,6 and start with last two digits of from current BE, and the last two digit is must be below BE current year for exmaple (BE 2568) studentID is 6610545243 then is it valid because 66 < 68 but if 69 is invalid because 69 > 68 in last two digits for exmaple if the current year BE is 2569, then the valid number should be below or eqaul to 69, for example valid StudentID 6610545243.
                 and email must be a valid @ku.th email address.
                 Return a valid JSON object with the following structure:
                 {
@@ -201,9 +207,9 @@ export class AIRepository {
     
 
     async gen_ai(prompt: string){
-        console.log(process.env.GEMENI_API_KEY)
+        console.log(process.env.GEMINI_API_KEY)
         const googleGenAI = new GoogleGenAI({
-            apiKey: process.env.Gemini_API_KEY ?? ''
+            apiKey: process.env.GEMINI_API_KEY ?? ''
         })
 
         const response = await googleGenAI.models.generateContent({

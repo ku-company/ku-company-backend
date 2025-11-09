@@ -4,6 +4,7 @@ export default {
   testEnvironment: "node",
   testMatch: ["**/tests/**/*.test.ts"],
   verbose: true,
+  setupFilesAfterEnv: ["<rootDir>/tests/setup/jest.setup.ts"],
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "^file-type$": "<rootDir>/tests/__mocks__/file-type.js",
