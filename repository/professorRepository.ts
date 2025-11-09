@@ -33,7 +33,6 @@ export class ProfessorRepository{
                     connect: { id: user_id },
                 },
             },
-            include: { degrees: true },
         })
     
     };
