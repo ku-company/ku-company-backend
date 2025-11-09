@@ -4,6 +4,17 @@ import professorRoutes from '../../router/professorRoutes.js';
 import { ProfessorService } from '../../service/professorService.js';
 import { PrismaClient } from '@prisma/client';
 
+jest.mock('nodemailer', () => {
+  const createTransport = jest.fn(() => ({
+    sendMail: jest.fn(),
+  }));
+  return {
+    __esModule: true,
+    default: { createTransport },
+    createTransport,
+  };
+});
+
 const prisma = new PrismaClient();
 
 describe('Controller: Professor', () => {
