@@ -44,6 +44,7 @@ export class UserService {
             }
             try{
                 const ai_verify = await this.aiService.verify_user(user.id)
+                console.log("WIN")
             }catch(err : any){
                 console.error(err.message)
             }

@@ -53,12 +53,18 @@ export class AIRepository {
                 user_id: user_id
             }
         })
-        if(!company){
-            throw new Error("Company not found")
-        }
 
-        const company_name = company.company_name
-        const company_country = company.country
+        if(!company){
+            console.log("Company profile not found")
+        }
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: user_id
+            }
+        })
+        
+        const company_name = company?.company_name ?? user.company_name ?? user.user_name ?? "";
+        const company_country = company?.country ?? "Unknown";
         const prompt = `
                 You are an AI identity verifier.
                 Check if this entity is real and trustworthy based on online presence.
