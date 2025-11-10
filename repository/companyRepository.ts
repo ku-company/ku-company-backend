@@ -1,7 +1,7 @@
-import { type PrismaClient } from "@prisma/client";
+import { WorkPlace, type PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { CompanyProfileDB } from "../model/companyModel.js";
-import type { CompanyProfileDTO, CompanyJobPostingDTO, EditCompanyJobPostingDTO} from "../dtoModel/companyDTO.js";
+import type { CompanyProfileDTO, CompanyJobPostingDTO} from "../dtoModel/companyDTO.js";
 import { CompanyJobApplicationStatus } from "../utils/enums.js";
 
 export class CompanyRepository {
@@ -65,7 +65,14 @@ export class CompanyRepository {
     async create_job_posting(input: CompanyJobPostingDTO & { company_id: number }) {
         return this.prisma.jobPost.create({
             data: {
+                job_title: input.job_title,
                 description: input.description,
+                status: input.status,
+                minimum_expected_salary: input.minimum_expected_salary,
+                maximum_expected_salary: input.maximum_expected_salary,
+                location: input.location,
+                work_place: input.work_place as WorkPlace,
+                expired_at: input.expired_at || null,
                 jobType: input.jobType,
                 position: input.position,
                 available_position: input.available_position,
@@ -106,17 +113,23 @@ export class CompanyRepository {
     }
 
 
-    async update_job_posting(id: number, input: EditCompanyJobPostingDTO) {
+    async update_job_posting(id: number, input: CompanyJobPostingDTO){
         return this.prisma.jobPost.update({
             where: {
                 id: id
             },
             data: {
+                job_title: input.job_title,
                 description: input.description,
+                minimum_expected_salary: input.minimum_expected_salary,
+                maximum_expected_salary: input.maximum_expected_salary,
+                location: input.location,
+                status: input.status,
+                work_place: input.work_place as WorkPlace,
+                expired_at: input.expired_at || null,
                 jobType: input.jobType,
                 position: input.position,
                 available_position: input.available_position,
-                status: input.status
             }
         });
     }
@@ -134,6 +147,7 @@ export class CompanyRepository {
         const resumeUrl = app.resume?.file_url ?? app.jobBatch?.resume?.file_url ?? "";
         return {
             id: app.id,
+            user_id: employeeUser?.id,
             batch_id: app.batch_id ?? null,
             job_id: app.job_id,
             resume_id: app.resume_id ?? app.jobBatch?.resume?.id ?? null,
@@ -165,7 +179,7 @@ export class CompanyRepository {
             include: {
                 //individual job-applications
                 job_post: { select: { position: true, description: true, jobType: true } },
-                employee: {include: { user: { select: { first_name: true, last_name: true, email: true } } } },
+                employee: {include: { user: { select: { id: true, first_name: true, last_name: true, email: true } } } },
                 resume: { select: {id: true, file_url: true } }, 
             },
             // add sort

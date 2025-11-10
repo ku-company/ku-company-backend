@@ -2,6 +2,12 @@ import type { jobPost } from "@prisma/client";
 
 export interface JobPostingFeedDTO {
   id: number;
+  job_title: string;
+  location: string;
+  work_place: string;
+  minimum_expected_salary: number;
+  maximum_expected_salary: number;
+  expired_at: Date | null;
   position: string;
   description: string;
   jobType: string;
@@ -14,9 +20,11 @@ export interface JobPostingFeedDTO {
   created_at: Date;
   updated_at: Date;
   posted_ago: string;
+  company_id: number;
 }
 
 export interface companyInfoDTO {
+    id: number;
     user_id: number;
     company_name: string | null;
     location: string | null;

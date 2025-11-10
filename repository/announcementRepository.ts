@@ -17,6 +17,20 @@ export class AnnouncementRepository{
             },
             include: {
                 job_post: true,
+                professor: {
+                    select: {
+                        user: {
+                            select: {
+                                email: true,
+                                verified: true,
+                                user_name: true,
+                                first_name: true,
+                                last_name: true,
+                                role: true
+                            }
+                        }
+                    }
+                }
             }
         })
     }
@@ -28,7 +42,22 @@ export class AnnouncementRepository{
             },
             include: {
                 job_post: true,
+                professor: {
+                    select: {
+                        user: {
+                            select: {
+                                email: true,
+                                verified: true,
+                                user_name: true,
+                                first_name: true,
+                                last_name: true,
+                                role: true
+                            }
+                        }
+                    }
+                }
             }
         })
     }
 }
+

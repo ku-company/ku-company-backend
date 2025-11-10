@@ -13,6 +13,12 @@ enum Role {
   Unknown
 }
 
+enum WorkPlace {
+  Online
+  OnSite
+  Hybrid
+}
+
 enum NotificationType {
   ApplicationSubmitted
   ApplicationConfirmed 
@@ -126,9 +132,22 @@ model professorProfile {
   summary      String?        @db.Text()
   link        String?        @db.Text()
   updated_at   DateTime       @updatedAt
+  lab          String?        @db.Text() 
   annoucements Announcement[]
   notifications Notification[]
+  degrees        Degree[] 
   user         User           @relation(name: "UserProfessor",fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Degree {
+  id                    Int               @id @default(autoincrement())
+  professor_profile_id  Int
+  title                 String            @db.Text() // e.g. "Bachelor of Science in Computer Engineering"
+  institution           String?           @db.Text() // e.g. "Kasetsart University"
+  graduation_date       DateTime?         // e.g. 2019-05-15
+  description           String?           @db.Text() // optional extra info
+
+  professor      professorProfile  @relation(fields: [professor_profile_id], references: [id], onDelete: Cascade)
 }
 
 model employeeProfile {
@@ -211,7 +230,13 @@ model jobApplication {
 model jobPost {
   id          Int     @id @default(autoincrement())
   company_id  Int
+  job_title   String  @db.Text()
   description String  @db.Text()
+  location    String  @db.Text()
+  work_place  WorkPlace
+  minimum_expected_salary Int
+  maximum_expected_salary Int
+  expired_at  DateTime?
   jobType     JobType 
   position    String  @db.Text()
   available_position Int

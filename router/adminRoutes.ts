@@ -13,6 +13,12 @@ router.patch("/verify-user/:id", authorizeRole("Admin") ,async (req , res) =>{
 router.patch("/reject-user/:id", authorizeRole("Admin"), async (req , res) =>{
     adminController.reject_user(req,res)
 })
+router.patch("/edit-user-status/:id", authorizeRole("Admin"), async (req , res) =>{
+    adminController.edit_user_status(req, res)
+})
+router.patch("/edit-user-verified/:id", authorizeRole("Admin"), async (req , res) =>{
+    adminController.edit_user_verified(req, res)
+})
 
 router.delete("/delete-user/:id", authorizeRole("Admin"), async (req , res) =>{
     adminController.delete_user(req, res)

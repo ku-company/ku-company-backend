@@ -22,6 +22,14 @@ export class AdminService{
          return await this.adminRepository.delete_user(user_id)
      }
 
+     async edit_user_status(user_id: number, status: VerifiedStatus){
+            return await this.adminRepository.edit_user_status(user_id, status)
+     }
+
+     async edit_user_verified(user_id: number, verified: boolean){
+            return await this.adminRepository.edit_user_verified(user_id, verified)
+     }
+
      async edit_user(user_id: number, input: UserDB){
          return await this.adminRepository.edit_user(user_id, input)
      }

@@ -11,7 +11,16 @@ export class JobPostingPublicRepository {
     }
 
 
-    async get_all_job_postings(keyword?: string, category?: string, jobType?: string) {
+    async get_all_job_postings(keyword?: string, category?: string, jobType?: string, sortOrder?: string) {
+        await this.prisma.jobPost.updateMany({
+            where: {
+                expired_at: { lte: new Date()},
+                status: "Active"
+            },
+            data: {
+                status: "Expired"
+            }
+        })
         return this.prisma.jobPost.findMany({
             where: {
                 available_position: {
@@ -36,7 +45,14 @@ export class JobPostingPublicRepository {
                         },
                     },
                     { position: { contains: keyword, mode: "insensitive" } },
-                    
+                    {
+                        company: {
+                            is: {
+                                location: { contains: keyword, mode: "insensitive" },
+                            },
+                        },
+                    },
+                    { location: { contains: keyword, mode: "insensitive" } },                    
                     ],
                 }),
                 // jobType = exact match with JobType enum
@@ -45,11 +61,12 @@ export class JobPostingPublicRepository {
                 
             },
             orderBy: {
-                updated_at: 'desc',
+                updated_at: sortOrder === "asc" ? "asc" : "desc",
             },
             include: {
                 company: {
                     select: {
+                    id: true,
                     company_name: true,
                     location: true,
                     tel: true,
@@ -75,6 +92,7 @@ export class JobPostingPublicRepository {
             include: {
                 company: {
                     select: {
+                    id: true,
                     company_name: true,
                     location: true,
                     tel: true,

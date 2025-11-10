@@ -1,5 +1,5 @@
 import { ProfessorRepository } from "../repository/professorRepository.js"
-import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorEditAnnouncementDTO, ProfessorAnnouncementDTO, ProfessorCreateInputDTO } from "../dtoModel/professorDTO.js";
+import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorEditAnnouncementDTO, ProfessorAnnouncementDTO, ProfessorCreateInputDTO, DegreeInputDTO } from "../dtoModel/professorDTO.js";
 import { UserService } from "./userService.js";
 import { CompanyRepository } from "../repository/companyRepository.js";
 import { AnnouncementType } from "../utils/enums.js";
@@ -222,5 +222,49 @@ export class ProfessorService{
         return result
     }
 
+    async add_degree(req: any, input: DegreeInputDTO){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        if (!input.title){
+            throw new Error("Degree title is required");
+        }
+        const result = await this.professorRepository.add_degree(profile.id, input)
+        return result
+    }
+
+    async edit_degree(req: any, degree_id: number, input: DegreeInputDTO){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        if (!degree_id){
+            throw new Error("Degree ID is required to edit a degree");
+        }
+        const result = await this.professorRepository.edit_degree(degree_id, profile.id, input)
+        return result
+    }
+
+    async delete_degree(req: any, degree_id: number){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        if (!degree_id){
+            throw new Error("Degree ID is required to delete a degree");
+        }
+        const result = await this.professorRepository.delete_degree(degree_id, profile.id)
+        return result
+    }
+
+    async get_all_degrees(req: any){
+        const profile = await this.has_profile(req.user.id);
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        const result = await this.professorRepository.get_all_degrees(profile.id)
+        return result
+    }
 
 }

@@ -1,13 +1,14 @@
 import { CompanyRepository } from "../repository/companyRepository.js";
 import { UserRepository } from "../repository/userRepository.js";
 import type { CompanyProfileDB } from "../model/companyModel.js";
-import {type CompanyProfileDTO, type CompanyJobPostingDTO, type EditCompanyJobPostingDTO} from "../dtoModel/companyDTO.js";
+import {type CompanyProfileDTO, type CompanyJobPostingDTO} from "../dtoModel/companyDTO.js";
 import {JobType, JobPostStatus} from "../utils/enums.js";   
 import { S3Service } from "./s3Services.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
 import { JobStatus } from "../utils/enums.js";
 import {CompanyJobApplicationStatus} from "../utils/enums.js";
 import {isJobType, isJobPostStatus} from "../utils/validatorEnum.js";
+import type { WorkPlace } from "../dtoModel/companyDTO.js";
 
 
 
@@ -23,7 +24,7 @@ export class CompanyService {
         this.userRepository = new UserRepository();
         this.s3Service = new S3Service(this.RESUME_BUCKET_NAME, new DocumentKeyStrategy());
     }
-
+    
     
     async create_profile(input: CompanyProfileDTO){
         // Check if user already has a profile
@@ -77,9 +78,19 @@ export class CompanyService {
         if (user?.verified === false && postingsToday.length >= 5) {
             throw new Error("Maximum job postings for today reached");
         }
+        if(input.minimum_expected_salary > input.maximum_expected_salary){
+            throw new Error("Minimum expected salary cannot be greater than maximum expected salary");
+        }
 
         const repoInput = {
             company_id: companyProfile.id,
+            job_title: input.job_title,
+            location: input.location,
+            status: input.status,
+            work_place: input.work_place,
+            minimum_expected_salary: input.minimum_expected_salary,
+            maximum_expected_salary: input.maximum_expected_salary,
+            expired_at: input.expired_at || null,
             description: input.description,
             jobType: input.jobType,
             position: input.position,
@@ -88,25 +99,34 @@ export class CompanyService {
 
         // Validate enums
         if (!isJobType(input.jobType)) throw new Error("Invalid job type");
+        
         return this.companyRepository.create_job_posting(repoInput);
     }
 
-    async update_job_posting(post_id: number, input: EditCompanyJobPostingDTO) {
+    async update_job_posting(post_id: number, input: CompanyJobPostingDTO) {
         const existingPost = await this.companyRepository.find_job_posting_by_id(post_id);
         if (!existingPost) {
             throw new Error("Job posting not found");
         }
-        input.description = input.description ? input.description : existingPost.description;
-        input.jobType = input.jobType ? input.jobType : JobType[existingPost.jobType as keyof typeof JobType];
-        input.position = input.position ? input.position : existingPost.position;
-        input.available_position = input.available_position ? input.available_position : existingPost.available_position;
-        input.status = input.status ? input.status : JobPostStatus[existingPost.status as keyof typeof JobPostStatus];
+        const repoInput: CompanyJobPostingDTO = {
+            job_title: input.job_title ?? existingPost.job_title,
+            location: input.location ?? existingPost.location,
+            minimum_expected_salary: input.minimum_expected_salary ?? existingPost.minimum_expected_salary,
+            maximum_expected_salary: input.maximum_expected_salary ?? existingPost.maximum_expected_salary,
+            work_place: (input.work_place ?? existingPost.work_place) as WorkPlace,
+            description: input.description ?? existingPost.description,
+            jobType: input.jobType ?? (existingPost.jobType as JobType),
+            position: input.position ?? existingPost.position,
+            expired_at: input.expired_at ?? existingPost.expired_at ?? null,
+            status: input.status ?? (existingPost.status as JobPostStatus),
+            available_position: input.available_position ?? existingPost.available_position
+        };
 
         // Validate enums
-        if (!isJobType(input.jobType)) throw new Error("Invalid job type");
-        if (!isJobPostStatus(input.status)) throw new Error("Invalid job post status");
+        if (!isJobType(repoInput.jobType)) throw new Error("Invalid job type");
+        if (!isJobPostStatus(repoInput.status)) throw new Error("Invalid job post status");
 
-        return this.companyRepository.update_job_posting(post_id, input);
+        return this.companyRepository.update_job_posting(post_id, repoInput);
     }
 
     async get_job_posting(post_id: number) {
