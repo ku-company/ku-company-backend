@@ -37,7 +37,7 @@ describe('Controller: User', () => {
     const spy = jest.spyOn(UserService.prototype, 'sign_up').mockResolvedValue({ id: 999 } as any);
     const res = await request(app)
       .post('/api/user/sign-up')
-      .send({ email: `new-${Date.now()}@ku.th`, password: 'x', confirm_password: 'x', role: 'Student', stdId: '6600000000' });
+      .send({ email: `new-${Date.now()}@ku.th`, password: 'abcdefgh', confirm_password: 'abcdefgh', role: 'Student', stdId: '6600000000' });
     expect(res.status).toBe(201);
     expect(res.body?.data?.id).toBe(999);
     spy.mockRestore();

@@ -2,6 +2,7 @@ import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import { GoogleGenAI } from "@google/genai";
 import json from "json5"
+import { encodeForJSString, truncateSafe } from "../utils/security.js";
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -63,8 +64,10 @@ export class AIRepository {
             }
         })
         
-        const company_name = company?.company_name ?? user.company_name ?? user.user_name ?? "";
-        const company_country = company?.country ?? "Unknown";
+    const company_name = company?.company_name ?? user.company_name ?? user.user_name ?? "";
+    const company_country = company?.country ?? "Unknown";
+    const safeName = encodeForJSString(truncateSafe(company_name));
+    const safeCountry = encodeForJSString(truncateSafe(company_country));
         const prompt = `
                 You are an AI identity verifier.
                 Check if this entity is real and trustworthy based on online presence.
@@ -74,8 +77,8 @@ export class AIRepository {
                     "reason": "explanation",
                     "evidence_url": "most relevant link"
                 }
-                Entity Name: ${company_name}
-                Country: ${company_country}
+                Entity Name: '${safeName}'
+                Country: '${safeCountry}'
                 Data: ${JSON.stringify(company)}
                 `;
         const response = await this.gen_ai(prompt);
@@ -91,7 +94,9 @@ export class AIRepository {
         if(!user){
             throw new Error("User not found")
         }
-        const prompt = `
+    const safeStd = encodeForJSString(truncateSafe(user.stdId || ""));
+    const safeEmail = encodeForJSString(truncateSafe(user.email || ""));
+    const prompt = `
                 You are an AI identity verifier.
                 Check if this user is real and trustworthy based on the below rule.
                 if StudentID has 1054 at digits 3,4,5,6 and start with last two digits of from current BE, and the last two digit is must be below BE current year for exmaple (BE 2568) studentID is 6610545243 then is it valid because 66 < 68 but if 69 is invalid because 69 > 68 in last two digits for exmaple if the current year BE is 2569, then the valid number should be below or eqaul to 69, for example valid StudentID 6610545243.
@@ -101,8 +106,8 @@ export class AIRepository {
                     "trust_level": "High" | "Medium" | "Low",
                     "reason": "explanation",
                 }
-                StudentID: ${user.stdId}
-                email: ${user.email}
+                StudentID: '${safeStd}'
+                email: '${safeEmail}'
                 Data: ${JSON.stringify(user)}
                 `
                 ;
@@ -119,7 +124,10 @@ export class AIRepository {
         if(!user){
             throw new Error("User not found")
         }
-        const prompt = `
+    const safeEmail2 = encodeForJSString(truncateSafe(user.email || ""));
+    const safeFirst = encodeForJSString(truncateSafe(user.first_name || ""));
+    const safeLast = encodeForJSString(truncateSafe(user.last_name || ""));
+    const prompt = `
                 You are an AI identity verifier.
                 Check if this user is real and trustworthy based on the below rule.
                 if email must be a valid @ku.th email address, and the last of email should be ku.ac.th or ku.th for example win@ku.th, win@.ku.ac.th
@@ -130,9 +138,9 @@ export class AIRepository {
                     "reason": "explanation",
                     "evidence_url": "most relevant link
                 }
-                email: ${user.email}
-                first_name: ${user.first_name}
-                last_name: ${user.last_name}
+                email: '${safeEmail2}'
+                first_name: '${safeFirst}'
+                last_name: '${safeLast}'
                 Data: ${JSON.stringify(user)}
                 `
                 ;

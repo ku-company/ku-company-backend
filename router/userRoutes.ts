@@ -1,6 +1,9 @@
 import { Router } from "express"
+import type { Request, Response } from "express"
 import { UserController } from "../controller/userController.js";
 import verifiedMiddleware from "../middlewares/verifiedMiddleware.js";
+import { validationHandler } from "../middlewares/validationHandler.js";
+import { signUpValidators, loginValidators } from "../validators/userValidators.js";
 
 const router = Router();
 const userController = new UserController()
@@ -8,12 +11,12 @@ const userController = new UserController()
 router.post("/refresh-token", async (req, res) => {
     userController.refresh_token(req, res)
 })
-router.post("/sign-up", async (req, res) => {
+router.post("/sign-up", signUpValidators, validationHandler, async (req: Request, res: Response) => {
     userController.sign_up(req, res)
-}),
-router.post("/login", async (req,res) => {
+});
+router.post("/login", loginValidators, validationHandler, async (req: Request, res: Response) => {
     userController.login(req,res)
-})
+});
 router.get("/logout", async (req, res) => {
     userController.logout(req, res)
 })

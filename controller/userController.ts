@@ -29,8 +29,9 @@ export class UserController {
     async login(req: Request, res: Response){
         try {
             const result = await this.userService.login(req.body);
-            res.cookie("access_token", result.access_token, { httpOnly: true, maxAge: 15*60*1000 });
-            res.cookie("refresh_token", result.refresh_token, { httpOnly: true, maxAge: 7*24*60*60*1000 });
+            const secureFlag = process.env.NODE_ENV === 'production';
+            res.cookie("access_token", result.access_token, { httpOnly: true, maxAge: 15*60*1000, sameSite: 'strict', secure: secureFlag });
+            res.cookie("refresh_token", result.refresh_token, { httpOnly: true, maxAge: 7*24*60*60*1000, sameSite: 'strict', secure: secureFlag });
             res.status(200).json({
                 message: "Login successful",
                 data: result
@@ -58,7 +59,8 @@ export class UserController {
         }
     }
     async logout(req: Request, res: Response){
-        res.clearCookie('access_token')
+        res.clearCookie('access_token');
+        res.clearCookie('refresh_token');
         res.status(200).json({
             message: "Logout successful"
         })
@@ -115,8 +117,9 @@ export class UserController {
             const user = req.user as { id: number, role: string };
             const role = req.body.role as string;
             const result = await this.userService.update_role(user.id, role);
-            res.cookie("access_token", result.access_token, { httpOnly: true, maxAge: 15*60*1000 });
-            res.cookie("refresh_token", result.refresh_token, { httpOnly: true, maxAge: 7*24*60*60*1000 });
+            const secureFlag = process.env.NODE_ENV === 'production';
+            res.cookie("access_token", result.access_token, { httpOnly: true, maxAge: 15*60*1000, sameSite: 'strict', secure: secureFlag });
+            res.cookie("refresh_token", result.refresh_token, { httpOnly: true, maxAge: 7*24*60*60*1000, sameSite: 'strict', secure: secureFlag });
             res.status(200).json({
                 message: "Role updated successfully",
                 data: result

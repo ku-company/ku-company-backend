@@ -62,14 +62,19 @@ router.get(
     }
     const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m" });
     const refreshToken = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d" });
+    const secureFlag = process.env.NODE_ENV === 'production';
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'strict',
+      secure: secureFlag,
     });
 
     res.cookie("access_token", accessToken, {
       httpOnly: true,
       maxAge: 15 * 60 * 1000, // 15 min
+      sameSite: 'strict',
+      secure: secureFlag,
     });
     res.redirect(clientUrl);
   },

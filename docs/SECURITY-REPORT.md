@@ -2,7 +2,7 @@
 
 This report inventories current security controls, gaps, and a prioritized plan across OWASP ASVS, threat modeling, and testing. It maps what exists in the codebase today and what remains to be done.
 
-Last updated: 2025-11-10
+Last updated: 2025-11-10 (post-hardening updates)
 
 ## Scope at a glance
 - Stack: Node.js (ESM), Express 5, Prisma (Postgres), JWT auth, Google OAuth (passport), AWS S3 for files
@@ -28,7 +28,8 @@ Status: ✓ implemented, △ partial, · planned
 - V5 Validation, Sanitization and Encoding
   - △ express-validator used in some routes (router/company/profileRoutes.ts); validator used for emails.
   - ✓ Prisma ORM reduces SQL injection risk by parameterization
-  - · Add systematic input validation for all controllers; add output encoding where applicable
+  - ✓ Output encoding + truncation for AI prompt dynamic fields (encodeForJSString, truncateSafe)
+  - · Add systematic input validation for all controllers
 - V7 Error Handling and Logging
   - ✓ Central errorHandler middleware
   - △ Logging uses console.log; · adopt structured logger (pino/winston) with PII scrubbing
@@ -37,7 +38,8 @@ Status: ✓ implemented, △ partial, · planned
   - · At-rest encryption for sensitive fields (if any beyond hashes) – not applicable today; rely on DB and cloud provider
 - V9 Communications
   - ✓ CORS configured with explicit origin from env (index.ts); credentials enabled
-  - · Enforce HTTPS/HSTS via reverse proxy and add helmet headers
+  - ✓ Helmet security headers applied
+  - · Enforce HSTS via reverse proxy (production)
 - V10 Malicious Code and Config
   - ✓ Dependencies pinned; tests mock jsonwebtoken; dotenv used
   - · Add automated dependency and secret scanning in CI
@@ -56,10 +58,11 @@ Status: ✓ implemented, △ partial, · planned
 - Input validation
   - Injection (SQL/ORM): Prisma reduces risk; · add validation and length/format constraints everywhere
 - File uploads (S3)
-  - Malware or oversized uploads → Mitigation: file-type validation (mocked in tests), S3 presigned; · add size limits, antivirus scanning if needed
+  - Malware or oversized uploads → Mitigation: file-type validation, size limits, S3 presigned
+  - SVG scriptable content → Mitigation: image/svg+xml blocked unless future sanitizer added
 - AI verification
-  - Information disclosure to AI API → Mitigation: send minimal fields; · gate behind consent and redact PII where unnecessary
-  - Integrity: AI output parsing errors → Mitigation: JSON5 parsing with fences stripping; · enforce JSON responses and fallback paths
+  - Information disclosure → Mitigation: minimal fields, gated behind explicit consent
+  - Integrity: JSON5 parsing + fenced code removal; dynamic values encoded + truncated
 - OAuth callback
   - CSRF/state tampering → Mitigation: passport handles state; · confirm state nonce validation and tighten scopes
 
@@ -117,8 +120,8 @@ Priorities
 - Social login (OAuth/OpenID): Implemented (Google OAuth)
 - JWT expiration checking and management: Implemented (15m access, 7d refresh, refresh endpoint)
 - CORS properly set: Implemented (origin from env, not *)
-- Rate limit for login attempts: Planned (use express-rate-limit; P0)
-- Rate limit for backend APIs: Planned
+- Rate limit for login attempts: Implemented (express-rate-limit)
+- Rate limit for AI verification endpoint: Implemented
 - MFA (email/OTP verification): Planned (P1)
 - Authorization with scope: Planned (P2; add scopes in JWT claims and middleware)
 - Login timeout: Implemented via access token expiry (15m)
@@ -129,11 +132,11 @@ Priorities
 ## Mapping to threat model (checklist)
 
 - AuthZ resource ownership checks: · Planned
-- Login rate limit: · Planned (P0)
-- Helmet/HSTS headers: · Planned (P0)
+- Login rate limit: ✓ Implemented (P0)
+- Helmet security headers: ✓ Implemented (P0)
 - Comprehensive input validation: △ Partial (P0 to complete)
 - MFA/email verification: · Planned (P1)
-- Consent gating for AI verification: · Planned (P1)
+- Consent gating for AI verification: ✓ Implemented (P1)
 - Structured logging: · Planned (P1)
 - Dependency/secret scanning: · Planned (P1)
 - Token revocation/blacklist: · Planned (P2)
