@@ -88,12 +88,15 @@ describe('UserRepository.create_user', () => {
 			email: 'teach@ku.th',
 			password_hash: 'hash',
 			role: Role.Professor,
+			is_consent: true
 		};
 		const out = await repo.create_user(input as any);
 		expect(out).toBe(sample);
 		const args = mockPrisma.user.create.mock.calls[0][0];
 		expect(args.data).toMatchObject({ role: Role.Professor, email: 'teach@ku.th' });
-		expect(args.include).toBeUndefined();
+		// Consent creation should be present
+		expect(args.data.user_consent).toMatchObject({ create: { consented: true } });
+		expect(args.include).toMatchObject({ user_consent: true });
 	});
 
 	it('throws for Professor when email is not ku.th or ku.ac.th', async () => {

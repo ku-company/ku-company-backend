@@ -35,6 +35,9 @@ export class UserService {
         if(input.email.length < 5 || !input.email.includes("@")){
             throw new Error("Invalid email")
         }
+        if(!input.is_consent){
+            throw new Error("Please agree to the terms and conditions")
+        }
         if(await this.userRepository.is_valid_create_user(input.user_name, input.email, input.company_name)){
             let strategy: SignUpStrategy = SignUpStrategyFactory.setStrategy(input.role);
             const userData: UserDB = await strategy.create_user(this.userRepository, input);
@@ -44,7 +47,6 @@ export class UserService {
             }
             try{
                 const ai_verify = await this.aiService.verify_user(user.id)
-                console.log("WIN")
             }catch(err : any){
                 console.error(err.message)
             }
