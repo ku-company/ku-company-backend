@@ -2,6 +2,8 @@ import { Router } from "express"
 import verifiedMiddleware from "../middlewares/verifiedMiddleware.js";
 import { AnnouncementController } from "../controller/announcementFeedPublicController.js";
 import authorizeRole from "../middlewares/rolebasedMiddleware.js";
+import { param } from "express-validator";
+import { validationHandler } from "../middlewares/validationHandler.js";
 
 const router = Router();
 const announcementController = new AnnouncementController();
@@ -17,7 +19,10 @@ router.get("/", (req, res) => {
 
 
 // /api/announcements/:id
-router.get("/:id", (req, res) => {
+router.get("/:id",
+    param("id").isInt().withMessage("Invalid id"),
+    validationHandler,
+    (req, res) => {
     // return professor's post by id
     announcementController.get_post_by_id(req, res);
 })

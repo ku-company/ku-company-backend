@@ -1,5 +1,7 @@
 import { Router } from "express"
 import { JobPostingPublicController} from "../controller/jobPostingPublicController.js";
+import { param } from "express-validator";
+import { validationHandler } from "../middlewares/validationHandler.js";
 
 
 const router = Router();
@@ -26,7 +28,10 @@ router.get("/job-type", (req, res) => {
 })
 
 // /api/job-postings/:id
-router.get("/:id", (req, res) => {
+router.get("/:id",
+    param("id").isInt().withMessage("Invalid id"),
+    validationHandler,
+    (req, res) => {
     // return job posting by id
     jobPostingPublicController.get_job_posting_by_id(req, res);
 })

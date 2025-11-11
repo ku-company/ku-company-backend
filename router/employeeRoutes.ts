@@ -6,6 +6,8 @@ import {uploadPdf } from "../middlewares/uploadPdfMiddleware.js";
 import { uploadImage } from "../middlewares/uploadImageMiddleware.js";
 import type { Request, Response } from "express";
 import { UserController } from "../controller/userController.js";
+import { param, body } from "express-validator";
+import { validationHandler } from "../middlewares/validationHandler.js";
 
 const router = Router();
 const employeeController = new EmployeeController();
@@ -62,12 +64,18 @@ router.get("/profile/resumes/main", (req, res) => {
     employeeController.get_main_resume(req, res);
 });
 
-router.get("/profile/resumes/:id", (req, res) => {
+router.get("/profile/resumes/:id",
+    param("id").isInt().withMessage("Invalid id"),
+    validationHandler,
+    (req, res) => {
     // get specific resume by id
     employeeController.get_resume(req, res);
 });
 
-router.delete("/profile/resumes/:id", (req, res) => {
+router.delete("/profile/resumes/:id",
+    param("id").isInt().withMessage("Invalid id"),
+    validationHandler,
+    (req, res) => {
     // delete specific resume by id
     employeeController.delete_resume(req, res);
 });
@@ -77,7 +85,10 @@ router.delete("/profile/resumes", (req, res) => {
     employeeController.delete_all_resumes(req, res);
 });
 
-router.patch("/profile/resumes/:id/set-main", (req, res) => {
+router.patch("/profile/resumes/:id/set-main",
+    param("id").isInt().withMessage("Invalid id"),
+    validationHandler,
+    (req, res) => {
     // set specific resume as main
   employeeController.set_main_resume(req, res);
 });
@@ -85,8 +96,20 @@ router.patch("/profile/resumes/:id/set-main", (req, res) => {
 // === Employee Profile Routes ===
 // Manage employee profile
 
-router.patch("/my-profile/edit", async (req , res) => {
-    employeeController.edit_profile(req, res)
+router.patch(
+    "/my-profile/edit",
+    body("first_name").optional({ nullable: true }).isString().trim().withMessage("Invalid first_name"),
+    body("last_name").optional({ nullable: true }).isString().trim().withMessage("Invalid last_name"),
+    body("birthDate").optional({ nullable: true }).isISO8601().withMessage("Invalid birthDate"),
+    body("education").optional({ nullable: true }).isString().trim().withMessage("Invalid education"),
+    body("summary").optional({ nullable: true }).isString().trim().withMessage("Invalid summary"),
+    body("skills").optional({ nullable: true }).isString().trim().withMessage("Invalid skills"),
+    body("experience").optional({ nullable: true }).isString().trim().withMessage("Invalid experience"),
+    body("contactInfo").optional({ nullable: true }).isString().trim().withMessage("Invalid contactInfo"),
+    body("languages").optional({ nullable: true }).isString().trim().withMessage("Invalid languages"),
+    validationHandler,
+    async (req , res) => {
+        employeeController.edit_profile(req, res)
 })
 
 router.delete("/my-profile/delete", async (req , res) => {
@@ -94,41 +117,66 @@ router.delete("/my-profile/delete", async (req , res) => {
 })
 
 //Apply job
-router.post("/apply-job/:id", async(req , res) => {
-    employeeController.apply_to_individual_job(req, res)
-})
+router.post(
+    "/apply-job/:id",
+    param("id").isInt().withMessage("Invalid id"),
+    body("resume_id").isInt().withMessage("Invalid resume_id"),
+    validationHandler,
+    async(req , res) => { employeeController.apply_to_individual_job(req, res) }
+)
 
 router.get("/my-resumes", async(req , res) => {
     employeeController.get_all_resumes(req, res)
 })
 
-router.delete("/cancel-application/:id", async(req , res) =>{
-    employeeController.cancel_application(req, res)
-})
+router.delete("/cancel-application/:id",
+    param("id").isInt().withMessage("Invalid id"),
+    validationHandler,
+    async(req , res) => { employeeController.cancel_application(req, res) }
+)
 
 router.get("/my-applications", async(req , res) => {
     employeeController.list_all_applications(req,res)
 })
 
-router.post("/checkout/apply-jobs", async(req , res) => {
-    employeeController.checkout_list_apply_job(req, res)
+router.post(
+    "/checkout/apply-jobs",
+    body("resume_id").isInt().withMessage("Invalid resume_id"),
+    body("job_id").isArray({ min: 1 }).withMessage("job_id must be a non-empty array"),
+    body("job_id.*").isInt().withMessage("job_id elements must be integers"),
+    validationHandler,
+    async(req , res) => {
+        employeeController.checkout_list_apply_job(req, res)
 })
 
-router.post("/job-applications/:id/confirm", async(req , res) =>{
-    employeeController.sent_the_confirmation_to_company(req, res)
-})
+router.post("/job-applications/:id/confirm",
+    param("id").isInt().withMessage("Invalid id"),
+    validationHandler,
+    async(req , res) => { employeeController.sent_the_confirmation_to_company(req, res) }
+)
 
 // comment company profile
 // === Employee Comment Routes ===
-router.post("/comment/:id", async (req , res) =>{
+router.post("/comment/:id",
+    param("id").isInt().withMessage("Invalid id"),
+    body("comment").isString().trim().notEmpty().withMessage("Comment is required"),
+    validationHandler,
+    async (req , res) =>{
     // id is company id
     employeeController.add_comment_to_company(req, res)
 })
-router.patch("/comment/:id/edit", async (req , res ) => {
+router.patch("/comment/:id/edit",
+    param("id").isInt().withMessage("Invalid id"),
+    body("comment").isString().trim().notEmpty().withMessage("Comment is required"),
+    validationHandler,
+    async (req , res ) => {
     // id is comment id
     employeeController.edit_comment(req, res)
 })
-router.delete("/comment/:id/delete", async (req , res ) =>{
+router.delete("/comment/:id/delete",
+    param("id").isInt().withMessage("Invalid id"),
+    validationHandler,
+    async (req , res ) =>{
     // id is comment id
     employeeController.delete_comment(req, res)
 })

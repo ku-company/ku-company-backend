@@ -1,5 +1,5 @@
 import { URL } from "url";
-import net from "node:net";
+import * as net from "node:net";
 
 export function encodeForHTML(input = ""): string {
   return input

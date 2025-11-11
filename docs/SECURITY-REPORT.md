@@ -2,7 +2,7 @@
 
 This report inventories current security controls, gaps, and a prioritized plan across OWASP ASVS, threat modeling, and testing. It maps what exists in the codebase today and what remains to be done.
 
-Last updated: 2025-11-10 (post-hardening updates)
+Last updated: 2025-11-11 (post-hardening updates)
 
 ## Scope at a glance
 - Stack: Node.js (ESM), Express 5, Prisma (Postgres), JWT auth, Google OAuth (passport), AWS S3 for files
@@ -120,7 +120,7 @@ Priorities
 - Social login (OAuth/OpenID): Implemented (Google OAuth)
 - JWT expiration checking and management: Implemented (15m access, 7d refresh, refresh endpoint)
 - CORS properly set: Implemented (origin from env, not *)
-- Rate limit for login attempts: Implemented (express-rate-limit)
+- Rate limit for login attempts: Implemented (custom in-memory limiter on /login and /refresh-token)
 - Rate limit for AI verification endpoint: Implemented
 - MFA (email/OTP verification): Planned (P1)
 - Authorization with scope: Planned (P2; add scopes in JWT claims and middleware)
@@ -138,7 +138,7 @@ Priorities
 - MFA/email verification: · Planned (P1)
 - Consent gating for AI verification: ✓ Implemented (P1)
 - Structured logging: · Planned (P1)
-- Dependency/secret scanning: · Planned (P1)
+- Dependency/secret scanning: ✓ Implemented baseline (npm script audit:ci); CI integration recommended
 - Token revocation/blacklist: · Planned (P2)
 - Compromised password check: · Planned (P2)
 - OAuth state validation review: · Planned (P2)
@@ -159,10 +159,10 @@ Priorities
 ## Next steps (actionable)
 
 1) Add helmet and secure cookie settings; enforce HTTPS at the proxy (P0)
-2) Add express-rate-limit to /api/user/login, /api/user/refresh-token, and Admin endpoints (P0)
+2) Add rate limiting to /api/user/login and /api/user/refresh-token (P0) – Implemented
 3) Expand express-validator across controllers; centralize validation error handling (P0)
 4) Implement consent storage and gate AI verification by consent; add privacy routes (P1)
 5) Add MFA (email verification OTP) at signup / role update (P1)
 6) Introduce structured logging (pino) and mask sensitive fields (P1)
-7) Enable dependency and secret scanning in CI, and schedule audits (P1)
+7) Enable dependency and secret scanning in CI, and schedule audits (P1) – Baseline audit script added (audit:ci)
 8) Consider token revocation list and scope-based authorization for fine-grained access (P2)

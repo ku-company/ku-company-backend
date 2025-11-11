@@ -2,7 +2,7 @@ import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import { GoogleGenAI } from "@google/genai";
 import json from "json5"
-import { encodeForJSString, truncateSafe } from "../utils/security.js";
+import { encodeForJSString, truncateSafe, validateExternalUrl } from "../utils/security.js";
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -161,13 +161,30 @@ export class AIRepository {
             throw new Error("User already verified")
         }
         try {
+            let safeEvidence: string | null = null;
+            if (evidence_url) {
+                try {
+                    // Allowlist known domains only; fallback to null when invalid
+                    const allow = [
+                        "ku.th",
+                        "ku.ac.th",
+                        "google.com",
+                        "scholar.google.com",
+                        "researchgate.net",
+                        "linkedin.com"
+                    ];
+                    safeEvidence = validateExternalUrl(evidence_url, allow);
+                } catch {
+                    safeEvidence = null;
+                }
+            }
             const create_ai_verification = await this.prisma.aiVerification.create({
                 data: {
                     user_id: user_id,
                     verified_by: "Gemini Flash 2.5",
                     trust_level: trust_level,
                     reason: reason,
-                    evidence_url: evidence_url || null,
+                    evidence_url: safeEvidence,
                     created_at: new Date()
                 },
                 include: {
@@ -215,7 +232,7 @@ export class AIRepository {
     
 
     async gen_ai(prompt: string){
-        console.log(process.env.GEMINI_API_KEY)
+    // Never log secrets
         const googleGenAI = new GoogleGenAI({
             apiKey: process.env.GEMINI_API_KEY ?? ''
         })

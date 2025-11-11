@@ -6,6 +6,7 @@
   "scripts": {
     "test-coverage": "jest --coverage",
     "test": "jest",
+    "audit:ci": "node scripts/dependencyAudit.js",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down -v",
     "db:migrate:deploy": "DOCKER_DATABASE_URL=\"${INTEGRATION_DB_URL:-$DOCKER_DATABASE_URL}\" npx prisma migrate deploy",

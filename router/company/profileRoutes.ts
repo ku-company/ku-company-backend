@@ -2,7 +2,7 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import { CompanyController } from "../../controller/companyController.js";
 import { UserController } from "../../controller/userController.js";
-import {body} from "express-validator";
+import { body } from "express-validator";
 import { profileValidation } from "../../middlewares/profileValidation.js";
 import { uploadImage } from "../../middlewares/uploadImageMiddleware.js";
 
@@ -10,7 +10,15 @@ const router = Router();
 const companyController = new CompanyController();
 const userController = new UserController();
 
-router.post("/",async (req: Request, res: Response) => {
+router.post(
+  "/",
+  body("company_name").optional({ nullable: true }).isString().trim().withMessage("Invalid company_name"),
+  body("description").optional({ nullable: true }).isString().trim().withMessage("Invalid description"),
+  body("industry").optional({ nullable: true }).isString().trim().withMessage("Invalid industry"),
+  body("tel").optional({ nullable: true }).isString().trim().withMessage("Invalid tel"),
+  body("location").optional({ nullable: true }).isString().trim().withMessage("Invalid location"),
+  body("country").optional({ nullable: true }).isString().trim().withMessage("Invalid country"),
+  async (req: Request, res: Response) => {
     // create company profile
     companyController.create_profile(req, res);
 });
@@ -19,7 +27,15 @@ router.get("/", async (req: Request, res: Response) => {
     companyController.get_profile(req, res);
 });
 
-router.patch("/", async (req: Request, res: Response) => {
+router.patch(
+  "/",
+  body("company_name").optional({ nullable: true }).isString().trim().withMessage("Invalid company_name"),
+  body("description").optional({ nullable: true }).isString().trim().withMessage("Invalid description"),
+  body("industry").optional({ nullable: true }).isString().trim().withMessage("Invalid industry"),
+  body("tel").optional({ nullable: true }).isString().trim().withMessage("Invalid tel"),
+  body("location").optional({ nullable: true }).isString().trim().withMessage("Invalid location"),
+  body("country").optional({ nullable: true }).isString().trim().withMessage("Invalid country"),
+  async (req: Request, res: Response) => {
     // update company profile
     companyController.update_profile(req, res);
 });

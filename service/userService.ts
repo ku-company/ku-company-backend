@@ -79,8 +79,8 @@ export class UserService {
         if(!REFRESH_KEY){
             throw new Error("Missing REFRESH_KEY")
         }
-        const access_token = jwt.sign(payload, SECRET_KEY, {expiresIn: "15m"});
-        const refresh_token = jwt.sign(payload, REFRESH_KEY, {expiresIn: "7d"});
+    const access_token = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m", algorithm: "HS256" });
+    const refresh_token = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d", algorithm: "HS256" });
 
         const response: LoginResponse = {
             "id": user.id,
@@ -100,7 +100,7 @@ export class UserService {
             throw new Error("Missing REFRESH_KEY")
         }
         try{
-            const decoded = jwt.verify(token, REFRESH_KEY) as jwt.JwtPayload;
+            const decoded = jwt.verify(token, REFRESH_KEY, { algorithms: ["HS256"] }) as jwt.JwtPayload;
             const payload = {
                 id: decoded.id,
                 user_name: decoded.user_name,
@@ -112,7 +112,7 @@ export class UserService {
             if(!SECRET_KEY){
                 throw new Error("Missing SECRET_KEY")
             }
-            const access_token = jwt.sign(payload, SECRET_KEY, {expiresIn: "15m"});
+            const access_token = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m", algorithm: "HS256" });
             const response = {
                 "access_token": access_token
             }
@@ -248,8 +248,8 @@ export class UserService {
                 throw new Error("Missing REFRESH_KEY")
             }
             
-            const access_token = jwt.sign(payload, SECRET_KEY, {expiresIn: "15m"});
-            const refresh_token = jwt.sign(payload, REFRESH_KEY, {expiresIn: "7d"});
+            const access_token = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m", algorithm: "HS256" });
+            const refresh_token = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d", algorithm: "HS256" });
             const response: LoginResponse = {
                 "id": updatedUser.id,
                 "access_token": access_token,
