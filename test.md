@@ -11,6 +11,7 @@ This guide explains how to run all tests locally and inside Docker, including un
 - Run tests inside Docker
 - Prisma commands
 - CI overview
+- Audit & security logging tests
 - Troubleshooting
 - FAQ
 
@@ -157,3 +158,47 @@ Store secrets (DB URL, JWT keys, etc.) in GitHub Secrets. Don’t commit a real 
 
 - Why `--runInBand` for integration?
   - Avoids multiple Jest workers competing for DB connections and causing flakiness.
+
+## Audit & security logging tests
+
+These tests verify structured audit events, correlation IDs, and UTC timestamps behavior introduced by the logging layer.
+
+- Location:
+  - `tests/audit/audit.logging.test.ts` — asserts auth success/failure events and role-based access-denied audit logs
+  - `tests/audit/request.correlation.test.ts` — checks X-Request-ID propagation and consistent correlation IDs in logs
+  - `tests/audit/errorhandler.audit.test.ts` — ensures server errors produce audit entries and responses include `request_id`
+
+### Run only audit tests (host)
+
+```bash
+npm run test -- tests/audit
+```
+
+With coverage:
+```bash
+npm run test-coverage -- tests/audit
+```
+
+### What these tests assert
+
+- Authentication events:
+  - Successful login emits `auth.login` with `success: true`.
+  - Failed login emits `auth.login` with `success: false` and a reason.
+- Access control:
+  - Role-based denials emit `access_denied` with resource, action, and user context.
+- Correlation ID:
+  - Incoming `X-Request-ID` is echoed in responses and used in log metadata.
+  - If no header is provided, a correlation ID is generated and used consistently.
+- Error handling:
+  - Unhandled errors trigger `server_error` audit entries and return `request_id` in the JSON response body.
+
+Note:
+- In unit tests, the logger transports are mocked, so assertions validate the audit function calls instead of reading files.
+- When running the application manually, log files will be written under `logs/application.log` and `logs/security.log` with UTC ISO timestamps.
+
+### Prerequisite for running the app with logging
+
+Make sure the logging dependencies are installed (already added to package.json):
+```bash
+npm install pino pino-pretty
+```

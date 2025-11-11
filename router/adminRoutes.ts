@@ -3,6 +3,7 @@ import { AdminController } from "../controller/adminController.js";
 import authorizeRole from "../middlewares/rolebasedMiddleware.js";
 import { param, body } from "express-validator";
 import { validationHandler } from "../middlewares/validationHandler.js";
+import { addUserValidators, editUserStatusValidators, editUserVerifiedValidators, filterUsersValidators } from "../validators/adminValidators.js";
 
 
 const router = Router();
@@ -24,12 +25,14 @@ router.patch("/reject-user/:id",
 router.patch("/edit-user-status/:id",
     authorizeRole("Admin"),
     param("id").isInt().withMessage("Invalid id"),
+    ...editUserStatusValidators,
     validationHandler,
     async (req , res) => { adminController.edit_user_status(req, res) }
 )
 router.patch("/edit-user-verified/:id",
     authorizeRole("Admin"),
     param("id").isInt().withMessage("Invalid id"),
+    ...editUserVerifiedValidators,
     validationHandler,
     async (req , res) => { adminController.edit_user_verified(req, res) }
 )
@@ -54,16 +57,24 @@ router.patch(
     async (req , res) => { adminController.edit_user(req, res) }
 )
 
-router.post("/add-user", authorizeRole("Admin"), async (req , res) => {
-    adminController.add_user(req, res)
+router.post("/add-user",
+    authorizeRole("Admin"),
+    ...addUserValidators,
+    validationHandler,
+    async (req , res) => {
+        adminController.add_user(req, res)
 })
 
 router.get("/list-all-user", authorizeRole("Admin"), async ( req , res ) => {
     adminController.list_all_user(req, res)
 })
 
-router.get("/filtering-user", authorizeRole("Admin"), async ( req , res) => {
-    adminController.filtering_user_by_status(req, res)
+router.get("/filtering-user",
+    authorizeRole("Admin"),
+    ...filterUsersValidators,
+    validationHandler,
+    async ( req , res) => {
+        adminController.filtering_user_by_status(req, res)
 })
 
 

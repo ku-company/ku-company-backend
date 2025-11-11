@@ -1,14 +1,16 @@
 import { Router } from "express"
+import type { Request, Response } from "express";
 import { JobPostingPublicController} from "../controller/jobPostingPublicController.js";
 import { param } from "express-validator";
 import { validationHandler } from "../middlewares/validationHandler.js";
+import { listPublicJobPostingsValidators } from "../validators/jobPostingPublicValidators.js";
 
 
 const router = Router();
 const jobPostingPublicController = new JobPostingPublicController();
 
 // /api/job-postings?keyword=Emily Company&category=Backend_Developer&jobType=PartTime
-router.get("/", (req, res) => {
+router.get("/", listPublicJobPostingsValidators, validationHandler, (req: Request, res: Response) => {
     // return all job postings with optional filters: keyword, category, jobType
     jobPostingPublicController.get_all_job_postings(req, res);
 })

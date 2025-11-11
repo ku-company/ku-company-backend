@@ -10,7 +10,18 @@ import { getValidRoles } from '../utils/roleUtils.js';
 import type { Role } from '../utils/enums.js';
 
 const router = Router();
-const clientUrl = process.env.CLIENT_URL_DEV;
+// CORS-safe client URL for redirects; validate against allowlist when provided
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL_DEV || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const clientUrl = ((): string => {
+  const url = process.env.CLIENT_URL_DEV as string | undefined;
+  if (!url) return '';
+  if (allowedOrigins.length === 0 || allowedOrigins.includes(url)) return url;
+  console.warn("CLIENT_URL_DEV not in ALLOWED_ORIGINS; falling back to first allowed origin");
+  return allowedOrigins[0] || url;
+})();
 const authController = new AuthController();
 
 
@@ -33,7 +44,7 @@ router.get(
     failureRedirect: '/',
     session: false,
   }),
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     console.log("request user:",req.user)
     // issue JWT 
     const state = req.query.state ? JSON.parse(req.query.state as string) : {};
@@ -62,6 +73,11 @@ router.get(
     }
   const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m", algorithm: "HS256" });
   const refreshToken = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d", algorithm: "HS256" });
+    // Track issued refresh token for potential bulk revocation
+    try {
+      const { registerRefreshToken } = await import('../utils/tokenBlacklist.js');
+      registerRefreshToken(user.id, refreshToken);
+    } catch {/* ignore tracking errors */}
     const secureFlag = process.env.NODE_ENV === 'production';
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,

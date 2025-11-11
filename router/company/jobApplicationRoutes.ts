@@ -1,13 +1,20 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { CompanyController } from "../../controller/companyController.js";
-import { param, body } from "express-validator";
+import { param, body, query } from "express-validator";
 import { validationHandler } from "../../middlewares/validationHandler.js";
+import { CompanyJobApplicationStatus } from "../../utils/enums.js";
 
 const router = Router();
 const companyController = new CompanyController();
 
-router.get("/", async (req: Request, res: Response) => {
+router.get("/",
+  // Optional filters and sorting
+  query("status").optional({ nullable: true }).isIn(Object.values(CompanyJobApplicationStatus)).withMessage("Invalid status"),
+  query("sortField").optional({ nullable: true }).isIn(["position", "applied_at", "status"]).withMessage("Invalid sortField"),
+  query("sortOrder").optional({ nullable: true }).isIn(["asc", "desc"]).withMessage("Invalid sortOrder"),
+  validationHandler,
+  async (req: Request, res: Response) => {
   // get all job applications for a company
   companyController.get_all_job_applications(req, res);
 });
@@ -22,7 +29,7 @@ router.get("/:id",
 
 router.patch("/:id/status",
   param("id").isInt().withMessage("Invalid id"),
-  body("status").isString().withMessage("Invalid status"),
+  body("status").isIn(Object.values(CompanyJobApplicationStatus)).withMessage("Invalid status"),
   validationHandler,
   async (req: Request, res: Response) => {
   // update job application status by id

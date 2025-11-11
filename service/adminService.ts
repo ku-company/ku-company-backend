@@ -15,19 +15,43 @@ export class AdminService{
      }
 
      async reject_user(user_id: number){
-         return await this.adminRepository.reject_user(user_id)
+         const result = await this.adminRepository.reject_user(user_id)
+         // Terminate sessions for this user
+         try {
+             const { revokeAllTokensForUser } = await import('../utils/tokenBlacklist.js');
+             revokeAllTokensForUser(user_id);
+         } catch {/* ignore */}
+         return result
      }
      
      async delete_user(user_id: number){
-         return await this.adminRepository.delete_user(user_id)
+         const result = await this.adminRepository.delete_user(user_id)
+         try {
+             const { revokeAllTokensForUser } = await import('../utils/tokenBlacklist.js');
+             revokeAllTokensForUser(user_id);
+         } catch {/* ignore */}
+         return result
      }
 
      async edit_user_status(user_id: number, status: VerifiedStatus){
-            return await this.adminRepository.edit_user_status(user_id, status)
+         const result = await this.adminRepository.edit_user_status(user_id, status)
+         // On any status change, revoke sessions as a safety baseline
+         try {
+          const { revokeAllTokensForUser } = await import('../utils/tokenBlacklist.js');
+          revokeAllTokensForUser(user_id);
+         } catch {/* ignore */}
+         return result
      }
 
      async edit_user_verified(user_id: number, verified: boolean){
-            return await this.adminRepository.edit_user_verified(user_id, verified)
+            const result = await this.adminRepository.edit_user_verified(user_id, verified)
+            if (verified === false) {
+                try {
+                    const { revokeAllTokensForUser } = await import('../utils/tokenBlacklist.js');
+                    revokeAllTokensForUser(user_id);
+                } catch {/* ignore */}
+            }
+            return result
      }
 
      async edit_user(user_id: number, input: UserDB){
