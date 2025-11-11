@@ -118,6 +118,7 @@ model User {
   employeeProfile employeeProfile? @relation(name: "UserEmployee")
   companyProfile  companyProfile? @relation(name: "UserCompany")
   ai_verification aiVerification[]
+  user_consent    userConsent?
 
   comment Comment[]
 }
@@ -310,4 +311,12 @@ model aiVerification {
   updated_at  DateTime  @updatedAt
   user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+}
+
+model userConsent {
+  id          Int       @id @default(autoincrement())
+  user_id     Int       @unique
+  consented   Boolean   @default(false)
+  consented_at DateTime?
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }

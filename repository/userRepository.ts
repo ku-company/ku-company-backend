@@ -38,11 +38,18 @@ export class UserRepository {
                     profile_image: input.profile_image,
                     employeeProfile: {
                         create: {}
+                    },
+                    user_consent: {
+                        create: {
+                            consented: input.is_consent,
+                            consented_at: new Date()
+                        }
                     }
                 }, 
                 include: {
                     employeeProfile: true,
-                }
+                    user_consent: true
+                    }
                 })
             }
             throw new Error("Email must be a valid ku.th email address");
@@ -60,6 +67,15 @@ export class UserRepository {
                         verified: false,
                         status: "Pending",
                         profile_image: input.profile_image,
+                        user_consent: {
+                            create: {
+                                consented: input.is_consent,
+                                consented_at: new Date()
+                            }
+                        }
+                    },
+                    include: {
+                        user_consent: true
                     }
                 })
             }
@@ -79,6 +95,15 @@ export class UserRepository {
                     verified: true,
                     status: "Approved",
                     profile_image: input.profile_image,
+                    user_consent: {
+                        create: {
+                            consented: input.is_consent,
+                            consented_at: new Date()
+                        }
+                    }
+                },
+                include: {
+                    user_consent: true
                 }
             })
         }
@@ -94,6 +119,15 @@ export class UserRepository {
                 verified: false,
                 status: "Pending",
                 profile_image: input.profile_image,
+                user_consent: {
+                    create: {
+                        consented: input.is_consent,
+                        consented_at: new Date()
+                    }
+                }
+            },
+            include: {
+                user_consent: true
             }
         })
     }

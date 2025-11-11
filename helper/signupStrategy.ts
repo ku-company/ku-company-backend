@@ -8,12 +8,14 @@ import type { UserCompanyDTO } from "../dtoModel/userDTO.js";
 export abstract class SignUpStrategy{
 
     async create_user(userRepository: UserRepository, input: sign_up_input){
+        console.log("Input", input.is_consent)
         const userData: UserDB = await userRepository.create_user({
                 first_name: input.first_name,
                 last_name: input.last_name,
                 stdId: input.stdId ?? null,
                 company_name: input.company_name ?? null,
                 user_name: input.user_name || null,
+                is_consent: input.is_consent,
                 email: input.email,
                 password_hash: await bcrypt.hash(input.password, 10),
                 role: input.role,
@@ -40,6 +42,7 @@ class EmployeeSignUpStrategy extends SignUpStrategy{
                 verified: userData.verified,
                 status: "Pending",
                 profile_image: userData.profile_image,
+                is_consent: userData.user_consent?.consented ?? false,
                 employee_profile: userData.employeeProfile ?? null,
             }
             return response_user
@@ -58,6 +61,7 @@ class AdminSignUpStrategy extends SignUpStrategy{
                 verified: true,
                 status: "Approved",
                 profile_image: userData.profile_image,
+                is_consent: userData.user_consent?.consented ?? false,
                 employee_profile: userData.employeeProfile ?? null,
             }
         return response_user
@@ -67,6 +71,7 @@ class AdminSignUpStrategy extends SignUpStrategy{
 
 class EmployerSignUpStrategy extends SignUpStrategy{
     async sign_up(userData :any) {
+        console.log(userData.user_consent)
         let response_user: UserCompanyDTO = {
                 id: userData.id,
                 company_name: userData.company_name!,
@@ -75,6 +80,7 @@ class EmployerSignUpStrategy extends SignUpStrategy{
                 verified: userData.verified,
                 profile_image: userData.profile_image,
                 status: "Pending",
+                is_consent: userData.user_consent.consented ?? false,
                 company_profile: userData.companyProfile ?? null,
             }
         return response_user
@@ -93,6 +99,7 @@ class ProfessorSignUpStrategy extends SignUpStrategy {
             verified: userData.verified,
             profile_image: userData.profile_image,
             status: "Pending",
+            is_consent: userData.user_consent?.consented ?? false,
             professor_profile: userData.professorProfile ?? null
         }
         
