@@ -74,7 +74,7 @@ describe('Security: Refresh token rotation & revocation', () => {
     const initial = jwt.sign(payload, process.env.REFRESH_KEY as string, { algorithm: 'HS256', expiresIn: '5m' });
     // Simulate cookie
     const cookie = [`refresh_token=${initial}; HttpOnly`];
-    const logout = await request(app).get('/api/user/logout').set('Cookie', cookie);
+    const logout = await request(app).post('/api/user/logout').set('Cookie', cookie);
     expect(logout.status).toBe(200);
     const refresh = await request(app).post('/api/user/refresh-token').send({ refresh_token: initial });
     expect(refresh.status).toBe(400);

@@ -70,9 +70,9 @@ describe('Controller: User', () => {
     spy.mockRestore();
   });
 
-  it('GET /api/user/logout clears cookie and returns 200', async () => {
+  it('POST /api/user/logout clears cookie and returns 200', async () => {
     const res = await request(app)
-      .get('/api/user/logout');
+      .post('/api/user/logout');
     expect(res.status).toBe(200);
     expect(res.body?.message).toMatch(/Logout successful/);
   });

@@ -78,7 +78,8 @@ router.patch("/password",
         }
     }
 );
-router.get("/logout", async (req, res) => {
+// Use POST for logout to avoid state-changing GET and align with KISS (method simplicity)
+router.post("/logout", async (req, res) => {
     userController.logout(req, res)
 })
 

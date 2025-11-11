@@ -128,11 +128,12 @@ export class UserService {
       expiresIn: "7d",
       algorithm: "HS256",
     });
-    // Track issued refresh token for potential bulk revocation
+    // Enforce single-session (fail-safe) by revoking all existing refresh tokens for this user before registering the new one
     try {
-      const { registerRefreshToken } = await import(
+      const { revokeAllTokensForUser, registerRefreshToken } = await import(
         "../utils/tokenBlacklist.js"
       );
+      revokeAllTokensForUser(user.id);
       registerRefreshToken(user.id, refresh_token);
     } catch {
       /* ignore tracking errors */
@@ -207,9 +208,10 @@ export class UserService {
       algorithm: "HS256",
     });
     try {
-      const { registerRefreshToken } = await import(
+      const { revokeAllTokensForUser, registerRefreshToken } = await import(
         "../utils/tokenBlacklist.js"
       );
+      revokeAllTokensForUser(user.id);
       registerRefreshToken(user.id, refresh_token);
     } catch {
       /* ignore tracking errors */
@@ -468,6 +470,14 @@ export class UserService {
         changedFields: ["role"],
         correlationId: "service",
       });
+      // Revoke previous sessions for fail-safe defaults
+      try {
+        const { revokeAllTokensForUser, registerRefreshToken } = await import(
+          "../utils/tokenBlacklist.js"
+        );
+        revokeAllTokensForUser(updatedUser.id);
+        registerRefreshToken(updatedUser.id, refresh_token);
+      } catch { /* ignore */ }
       return response;
     } catch (err) {
       throw new Error("Failed to update role");

@@ -73,9 +73,10 @@ router.get(
     }
   const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m", algorithm: "HS256" });
   const refreshToken = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d", algorithm: "HS256" });
-    // Track issued refresh token for potential bulk revocation
+    // Fail-safe: revoke all existing sessions for this user before registering new refresh
     try {
-      const { registerRefreshToken } = await import('../utils/tokenBlacklist.js');
+      const { revokeAllTokensForUser, registerRefreshToken } = await import('../utils/tokenBlacklist.js');
+      revokeAllTokensForUser(user.id);
       registerRefreshToken(user.id, refreshToken);
     } catch {/* ignore tracking errors */}
     const { setAuthCookies } = await import('../utils/cookies.js');

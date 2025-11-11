@@ -43,8 +43,9 @@ const allowedOrigins = (
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // allow same-origin or server-to-server
-      if (allowedOrigins.length === 0) return callback(null, true); // permissive fallback if unset
+      // Fail-safe default: deny unless explicitly allowed
+      // Allow requests without Origin (same-origin/server-to-server tools like curl)
+      if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
       return callback(new Error("CORS origin not allowed"));
     },
