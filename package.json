@@ -47,6 +47,7 @@
     "express-session": "^1.18.2",
     "express-validator": "^7.2.1",
     "file-type": "^21.0.0",
+  "ioredis": "^5.4.1",
     "joi": "^18.0.1",
     "json5": "^2.2.3",
     "jsonwebtoken": "^9.0.2",

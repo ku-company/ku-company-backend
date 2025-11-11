@@ -63,6 +63,10 @@ app.use((req, res, next) => {
   // Basic clickjacking & MIME sniff protections (defense in depth)
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "no-referrer");
+  // Lock down powerful browser APIs by default
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  // Disallow Flash/Adobe cross-domain policies
+  res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
   // If FORCE_HTTPS is enabled, redirect plain HTTP to HTTPS
   if (FORCE_HTTPS && !req.secure) {
     const host = req.headers.host;
@@ -81,6 +85,15 @@ app.use(requestLogging);
 app.use("/api/ai", aiRouter);
 
 app.use(jwtMiddleware);
+// Prevent caching of authenticated responses to reduce risk of sensitive data stored in browser caches
+app.use((req, res, next) => {
+  if ((req as any).user) {
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+  }
+  next();
+});
 app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
