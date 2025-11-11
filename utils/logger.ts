@@ -3,8 +3,13 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { randomUUID } from "crypto";
 
-// Ensure logs directory exists
-const LOG_DIR = path.join(process.cwd(), "logs");
+// Resolve project root in a way that works for both ESM and Jest transpilation.
+// Avoid using import.meta to keep compatibility with ts-jest and CJS transforms.
+// In containers and local runs, WORKDIR/CWD is the project root.
+const ROOT_DIR = process.env.PROJECT_ROOT_DIR ?? process.cwd();
+
+// Ensure logs directory exists (deterministic location under project root)
+const LOG_DIR = path.join(ROOT_DIR, "logs");
 if (!fs.existsSync(LOG_DIR)) {
   fs.mkdirSync(LOG_DIR, { recursive: true });
 }
@@ -112,13 +117,13 @@ export function logAuthEvent(e: AuditAuthEvent) {
 }
 
 export function logAccessDenied(opts: {
-  userId?: number;
-  email?: string;
-  role?: string;
+  userId?: number | undefined;
+  email?: string | undefined;
+  role?: string | undefined;
   resource: string;
   action: string;
   reason: string;
-  ip?: string;
+  ip?: string | undefined;
   correlationId: string;
 }) {
   auditLogger.warn(

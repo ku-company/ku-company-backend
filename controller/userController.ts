@@ -16,7 +16,7 @@ export class UserController {
         event: "auth.signup",
         success: true,
         email: req.body?.email,
-        ip: req.ip,
+        ip: req.ip || "",
         correlationId: (req as any).correlationId || "no-corr",
       });
       res.status(201).json({
@@ -29,7 +29,7 @@ export class UserController {
         success: false,
         reason: error.message,
         email: req.body?.email,
-        ip: req.ip,
+        ip: req.ip || "",
         correlationId: (req as any).correlationId || "no-corr",
       });
       res.status(400).json({
@@ -41,19 +41,8 @@ export class UserController {
   async login(req: Request, res: Response) {
     try {
       const result = await this.userService.login(req.body);
-      const secureFlag = process.env.NODE_ENV === "production";
-      res.cookie("access_token", result.access_token, {
-        httpOnly: true,
-        maxAge: 15 * 60 * 1000,
-        sameSite: "strict",
-        secure: secureFlag,
-      });
-      res.cookie("refresh_token", result.refresh_token, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        sameSite: "strict",
-        secure: secureFlag,
-      });
+      const { setAuthCookies } = await import("../utils/cookies.js");
+      setAuthCookies(res, result.access_token, result.refresh_token);
       res.status(200).json({
         message: "Login successful",
         data: result,
@@ -87,19 +76,8 @@ export class UserController {
         return res.status(400).json({ message: "Missing refresh token" });
       }
       const result = await this.userService.refresh_token(token);
-      const secureFlag = process.env.NODE_ENV === "production";
-      res.cookie("access_token", result.access_token, {
-        httpOnly: true,
-        maxAge: 15 * 60 * 1000,
-        sameSite: "strict",
-        secure: secureFlag,
-      });
-      res.cookie("refresh_token", result.refresh_token, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        sameSite: "strict",
-        secure: secureFlag,
-      });
+      const { setAuthCookies } = await import("../utils/cookies.js");
+      setAuthCookies(res, result.access_token, result.refresh_token);
       res
         .status(200)
         .json({
@@ -121,14 +99,14 @@ export class UserController {
         );
         revokeRefreshToken(refresh);
       }
-      res.clearCookie("access_token");
-      res.clearCookie("refresh_token");
+      const { clearAuthCookies } = await import("../utils/cookies.js");
+      clearAuthCookies(res);
       logAuthEvent({
         event: "auth.logout",
         success: true,
         userId: (req as any).user?.id,
         email: (req as any).user?.email,
-        ip: req.ip,
+        ip: req.ip || "",
         correlationId: (req as any).correlationId || "no-corr",
       });
       logAuthEvent({
@@ -137,14 +115,14 @@ export class UserController {
         userId: (req as any).user?.id,
         email: (req as any).user?.email,
         reason: "Revocation failed but cookies cleared",
-        ip: req.ip,
+        ip: req.ip || "",
         correlationId: (req as any).correlationId || "no-corr",
       });
       res.status(200).json({ message: "Logout successful" });
     } catch (err) {
       // Even if revocation fails, attempt to clear cookies and return success to avoid leaking token presence
-      res.clearCookie("access_token");
-      res.clearCookie("refresh_token");
+      const { clearAuthCookies } = await import("../utils/cookies.js");
+      clearAuthCookies(res);
       res.status(200).json({ message: "Logout successful" });
     }
   }
@@ -214,19 +192,8 @@ export class UserController {
         revokeRefreshToken(oldRefresh);
       }
       const result = await this.userService.update_role(user.id, role);
-      const secureFlag = process.env.NODE_ENV === "production";
-      res.cookie("access_token", result.access_token, {
-        httpOnly: true,
-        maxAge: 15 * 60 * 1000,
-        sameSite: "strict",
-        secure: secureFlag,
-      });
-      res.cookie("refresh_token", result.refresh_token, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        sameSite: "strict",
-        secure: secureFlag,
-      });
+      const { setAuthCookies } = await import("../utils/cookies.js");
+      setAuthCookies(res, result.access_token, result.refresh_token);
       res.status(200).json({
         message: "Role updated successfully",
         data: result,

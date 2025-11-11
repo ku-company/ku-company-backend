@@ -70,9 +70,8 @@ router.patch("/password",
             const user = req.user as { id: number };
             const { current_password, new_password } = req.body;
             const result = await userController.change_password(user.id, current_password, new_password)
-            const secureFlag = process.env.NODE_ENV === 'production';
-            res.cookie("access_token", result.access_token, { httpOnly: true, maxAge: 15*60*1000, sameSite: 'strict', secure: secureFlag });
-            res.cookie("refresh_token", result.refresh_token, { httpOnly: true, maxAge: 7*24*60*60*1000, sameSite: 'strict', secure: secureFlag });
+            const { setAuthCookies } = await import("../utils/cookies.js");
+            setAuthCookies(res, result.access_token, result.refresh_token);
             res.status(200).json({ message: result.message });
         } catch (err: any) {
             res.status(400).json({ message: err.message });

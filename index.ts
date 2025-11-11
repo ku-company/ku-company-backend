@@ -23,6 +23,10 @@ import { csrfProtection } from "./middlewares/csrf.js";
 import { requestLogging } from "./middlewares/requestLogging.js";
 import { appLogger } from "./utils/logger.js";
 
+// Optional HTTPS redirect & HSTS hardening
+const FORCE_HTTPS = process.env.FORCE_HTTPS === 'enabled';
+const HSTS_MAX_AGE = Number(process.env.HSTS_MAX_AGE || 31536000); // 1 year default
+
 dotenv.config();
 const port = process.env.PORT || 8000;
 const app: Express = express();
@@ -51,8 +55,20 @@ app.use(express.json());
 // Optional CSRF protection (double-submit). Enable by setting CSRF_PROTECTION=enabled.
 app.use(csrfProtection);
 // Minimal security headers
-app.use((_, res, next) => {
+app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
+  // Basic clickjacking & MIME sniff protections (defense in depth)
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  if (FORCE_HTTPS) {
+    // In production behind a proxy, ensure trustProxy is set to evaluate req.secure
+    if (!app.get('trust proxy')) app.set('trust proxy', 1);
+    if (!req.secure) {
+      const host = req.headers.host;
+      return res.redirect(301, `https://${host}${req.originalUrl}`);
+    }
+    res.setHeader("Strict-Transport-Security", `max-age=${HSTS_MAX_AGE}; includeSubDomains`);
+  }
   next();
 });
 app.use(cookieParser());

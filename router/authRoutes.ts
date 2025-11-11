@@ -78,20 +78,8 @@ router.get(
       const { registerRefreshToken } = await import('../utils/tokenBlacklist.js');
       registerRefreshToken(user.id, refreshToken);
     } catch {/* ignore tracking errors */}
-    const secureFlag = process.env.NODE_ENV === 'production';
-    res.cookie("refresh_token", refreshToken, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: 'strict',
-      secure: secureFlag,
-    });
-
-    res.cookie("access_token", accessToken, {
-      httpOnly: true,
-      maxAge: 15 * 60 * 1000, // 15 min
-      sameSite: 'strict',
-      secure: secureFlag,
-    });
+    const { setAuthCookies } = await import('../utils/cookies.js');
+    setAuthCookies(res, accessToken, refreshToken);
     res.redirect(clientUrl);
   },
 );
