@@ -21,6 +21,9 @@ export class JobPostingService {
     }
 
     private async toFeedDTO(job: JobPostWithCompany): Promise<JobPostingFeedDTO> {
+        // Be resilient: if the related user record was concurrently deleted (rare but possible in tests),
+        // don't fail the entire feed; just omit the profile image.
+        const company_profile_image = await this.safeGetProfileImage(job.company.user_id);
         return {
         id: job.id,
         job_title: job.job_title,
@@ -38,7 +41,7 @@ export class JobPostingService {
     // Use the foreign key on job itself; single-item query may not select company.id
     company_id: job.company_id,
         company_name: job.company.company_name,
-        company_profile_image: await this.userService.get_profile_image(job.company.user_id),
+    company_profile_image,
         company_location: job.company.location,
         company_tel: job.company.tel,
         created_at: job.created_at,
@@ -46,6 +49,14 @@ export class JobPostingService {
         posted_ago: this.postedAgo(job.created_at),
 
         };
+    }
+
+    private async safeGetProfileImage(user_id: number){
+        try {
+            return await this.userService.get_profile_image(user_id);
+        } catch {
+            return null;
+        }
     }
 
     async get_all_job_postings(keyword?: string, category?: string, jobType?: string, sortOrder?: string): Promise<JobPostingFeedDTO[]> {

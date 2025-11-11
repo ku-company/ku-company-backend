@@ -1,7 +1,7 @@
 import { UserRepository } from "../repository/userRepository.js"
 import type { sign_up_input, UserDB, Login, sign_up_company_input, IUserRequest } from "../model/userModel.js";
 import type { UserDTO, LoginResponse, RefreshTokenRequest, UserCompanyDTO } from "../dtoModel/userDTO.js";
-import bcrypt from "bcryptjs";
+import * as bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
 import { SignUpStrategyFactory, SignUpStrategy } from "../helper/signupStrategy.js";
 import { S3Service } from "../service/s3Services.js";
@@ -94,12 +94,51 @@ export class UserService {
         return response
     }
 
+    async change_password(user_id: number, current_password: string, new_password: string){
+        if(!current_password || !new_password){
+            throw new Error("Missing passwords")
+        }
+        // verify current
+        const user = await this.userRepository.get_user_by_id(user_id);
+        if (!user.password_hash) {
+            throw new Error("No password is set for this account");
+        }
+        const matches = await bcrypt.compare(current_password, user.password_hash);
+        if(!matches){
+            throw new Error("Current password is incorrect")
+        }
+        // Re-hash new password and persist
+        const new_hash = await bcrypt.hash(new_password, 10);
+        await this.userRepository.update_password(user_id, new_hash);
+        // Rotate tokens
+        const payload = {
+            id: user.id,
+            user_name: user.user_name,
+            email: user.email,
+            role: user.role,
+            verified: user.verified
+        }
+        const SECRET_KEY= process.env.SECRET_KEY;
+        const REFRESH_KEY = process.env.REFRESH_KEY;
+        if(!SECRET_KEY || !REFRESH_KEY){
+            throw new Error("Missing JWT keys")
+        }
+        const access_token = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m", algorithm: "HS256" });
+        const refresh_token = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d", algorithm: "HS256" });
+        return { message: "Password changed successfully", access_token, refresh_token };
+    }
+
     async refresh_token(token: string){
         const REFRESH_KEY = process.env.REFRESH_KEY;
         if(!REFRESH_KEY){
             throw new Error("Missing REFRESH_KEY")
         }
         try{
+            // Reject revoked tokens
+            const { isRefreshTokenRevoked, revokeRefreshToken } = await import('../utils/tokenBlacklist.js');
+            if (isRefreshTokenRevoked(token)) {
+                throw new Error("Invalid refresh token");
+            }
             const decoded = jwt.verify(token, REFRESH_KEY, { algorithms: ["HS256"] }) as jwt.JwtPayload;
             const payload = {
                 id: decoded.id,
@@ -113,10 +152,10 @@ export class UserService {
                 throw new Error("Missing SECRET_KEY")
             }
             const access_token = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m", algorithm: "HS256" });
-            const response = {
-                "access_token": access_token
-            }
-            return response
+            const refresh_token = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d", algorithm: "HS256" });
+            // Revoke the old refresh token after rotation
+            revokeRefreshToken(token);
+            return { access_token, refresh_token };
         }catch(err){
             throw new Error("Invalid refresh token")
         }

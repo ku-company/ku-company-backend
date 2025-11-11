@@ -1,12 +1,16 @@
 import { Router } from "express"
+import * as cookieParser from "cookie-parser";
 import type { Request, Response } from "express"
 import { UserController } from "../controller/userController.js";
 import verifiedMiddleware from "../middlewares/verifiedMiddleware.js";
 import { validationHandler } from "../middlewares/validationHandler.js";
-import { signUpValidators, loginValidators } from "../validators/userValidators.js";
+import { signUpValidators, loginValidators, changePasswordValidators } from "../validators/userValidators.js";
 import { param, body } from "express-validator";
 
 const router = Router();
+// Support both CJS and ESM interop for cookie-parser
+const cookieParserMw = (cookieParser as any).default ?? (cookieParser as any);
+router.use(cookieParserMw());
 
 // Simple in-memory rate limiter (IP + route key). For production, replace with Redis or robust store.
 interface RateRecord { count: number; firstTs: number; }
@@ -56,6 +60,24 @@ router.post("/login",
         async (req: Request, res: Response) => {
             userController.login(req,res)
         }
+);
+
+router.patch("/password",
+    changePasswordValidators,
+    validationHandler,
+    async (req: Request, res: Response) => {
+        try {
+            const user = req.user as { id: number };
+            const { current_password, new_password } = req.body;
+            const result = await userController.change_password(user.id, current_password, new_password)
+            const secureFlag = process.env.NODE_ENV === 'production';
+            res.cookie("access_token", result.access_token, { httpOnly: true, maxAge: 15*60*1000, sameSite: 'strict', secure: secureFlag });
+            res.cookie("refresh_token", result.refresh_token, { httpOnly: true, maxAge: 7*24*60*60*1000, sameSite: 'strict', secure: secureFlag });
+            res.status(200).json({ message: result.message });
+        } catch (err: any) {
+            res.status(400).json({ message: err.message });
+        }
+    }
 );
 router.get("/logout", async (req, res) => {
     userController.logout(req, res)

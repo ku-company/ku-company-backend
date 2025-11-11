@@ -247,6 +247,16 @@ export class UserRepository {
         });
     }
 
+    async update_password(user_id: number, password_hash: string): Promise<void> {
+        await this.prisma.user.update({
+            where: { id: user_id },
+            data: {
+                password_hash,
+                updated_at: new Date()
+            }
+        });
+    }
+
     async update_role(user_id: number, new_role: Role): Promise<UserSummaryDTO> {
         const user = await this.prisma.user.findUnique({
             where: { id: user_id }

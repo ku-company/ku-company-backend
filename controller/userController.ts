@@ -44,13 +44,22 @@ export class UserController {
         }
     }
     
+    async change_password(user_id: number, current_password: string, new_password: string){
+        const result = await this.userService.change_password(user_id, current_password, new_password);
+        return result;
+    }
+    
     async refresh_token(req: Request, res: Response){
         try {
-            const result = await this.userService.refresh_token(req.cookies.refresh_token);;
-            res.status(200).json({
-                message: "Token refreshed successfully",
-                data: result
-            })
+            const token = (req as any).cookies?.refresh_token || (req.body && (req.body as any).refresh_token);
+            if (!token) {
+                return res.status(400).json({ message: "Missing refresh token" });
+            }
+            const result = await this.userService.refresh_token(token);
+            const secureFlag = process.env.NODE_ENV === 'production';
+            res.cookie("access_token", result.access_token, { httpOnly: true, maxAge: 15*60*1000, sameSite: 'strict', secure: secureFlag });
+            res.cookie("refresh_token", result.refresh_token, { httpOnly: true, maxAge: 7*24*60*60*1000, sameSite: 'strict', secure: secureFlag });
+            res.status(200).json({ message: "Token refreshed successfully", data: { access_token: result.access_token } })
         }
         catch (error: any){
             res.status(400).json({
@@ -59,11 +68,21 @@ export class UserController {
         }
     }
     async logout(req: Request, res: Response){
-        res.clearCookie('access_token');
-        res.clearCookie('refresh_token');
-        res.status(200).json({
-            message: "Logout successful"
-        })
+        try{
+            const refresh = (req as any).cookies?.refresh_token; // defensively access cookies
+            if (refresh) {
+                const { revokeRefreshToken } = await import('../utils/tokenBlacklist.js');
+                revokeRefreshToken(refresh);
+            }
+            res.clearCookie('access_token');
+            res.clearCookie('refresh_token');
+            res.status(200).json({ message: "Logout successful" })
+        }catch(err){
+            // Even if revocation fails, attempt to clear cookies and return success to avoid leaking token presence
+            res.clearCookie('access_token');
+            res.clearCookie('refresh_token');
+            res.status(200).json({ message: "Logout successful" })
+        }
     }
 
     async upload_profile_image(req: Request, res: Response){
@@ -116,6 +135,12 @@ export class UserController {
         try{
             const user = req.user as { id: number, role: string };
             const role = req.body.role as string;
+            // Revoke existing refresh token (if any) before issuing new tokens
+            const oldRefresh = (req as any).cookies?.refresh_token;
+            if (oldRefresh) {
+                const { revokeRefreshToken } = await import('../utils/tokenBlacklist.js');
+                revokeRefreshToken(oldRefresh);
+            }
             const result = await this.userService.update_role(user.id, role);
             const secureFlag = process.env.NODE_ENV === 'production';
             res.cookie("access_token", result.access_token, { httpOnly: true, maxAge: 15*60*1000, sameSite: 'strict', secure: secureFlag });
