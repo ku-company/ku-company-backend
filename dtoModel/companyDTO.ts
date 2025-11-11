@@ -7,11 +7,6 @@ export enum JobType {
   Contract = "Contract",
 }
 
-export enum Position {
-  Backend_Developer = "Backend_Developer",
-  Frontend_Developer = "Frontend_Developer",
-  Fullstack_Developer = "Fullstack_Developer",
-}
 
 export enum WorkPlace {
   OnSite = "On-Site",
