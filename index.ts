@@ -30,6 +30,8 @@ const HSTS_MAX_AGE = Number(process.env.HSTS_MAX_AGE || 31536000); // 1 year def
 dotenv.config();
 const port = process.env.PORT || 8000;
 const app: Express = express();
+// Always trust proxy so req.secure reflects X-Forwarded-Proto when behind a TLS terminator (NGINX/ELB)
+if (!app.get('trust proxy')) app.set('trust proxy', 1);
 
 // Strict CORS allowlist: ALLOWED_ORIGINS (comma-separated) or fallback to CLIENT_URL_DEV
 const allowedOrigins = (
@@ -61,13 +63,13 @@ app.use((req, res, next) => {
   // Basic clickjacking & MIME sniff protections (defense in depth)
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "no-referrer");
-  if (FORCE_HTTPS) {
-    // In production behind a proxy, ensure trustProxy is set to evaluate req.secure
-    if (!app.get('trust proxy')) app.set('trust proxy', 1);
-    if (!req.secure) {
-      const host = req.headers.host;
-      return res.redirect(301, `https://${host}${req.originalUrl}`);
-    }
+  // If FORCE_HTTPS is enabled, redirect plain HTTP to HTTPS
+  if (FORCE_HTTPS && !req.secure) {
+    const host = req.headers.host;
+    return res.redirect(301, `https://${host}${req.originalUrl}`);
+  }
+  // Include HSTS when the request is already over HTTPS (regardless of redirect setting)
+  if (req.secure) {
     res.setHeader("Strict-Transport-Security", `max-age=${HSTS_MAX_AGE}; includeSubDomains`);
   }
   next();
