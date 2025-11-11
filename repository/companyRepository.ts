@@ -269,6 +269,14 @@ export class CompanyRepository {
             where: { company_id }
         });
 
+        const lastUpdatedtotalJobPostings = await this.prisma.jobPost.findMany({
+            where: { company_id },
+            orderBy: {
+                updated_at: 'desc' // latest update first
+            },
+            take: 1
+        });
+
         const totalApplications = await this.prisma.jobApplication.count({
             where: {
                 job_post: {
@@ -277,11 +285,36 @@ export class CompanyRepository {
             }
         });
 
+        const lastUpdatedtotalApplications = await this.prisma.jobApplication.findMany({
+            where: {
+                job_post: {
+                    company_id
+                }
+            },
+            orderBy: {
+                applied_at: 'desc' // latest first
+            },
+            take: 1
+        });
+
         const newApplicants = await this.prisma.jobApplication.count({
             where: {
                 job_post: { company_id },
                 applied_at: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // last 7 days
             },
+        });
+
+        const lastUpdatedConfirmedApplications = await this.prisma.jobApplication.findMany({
+            where: {
+                job_post: {
+                    company_id
+                },
+                company_send_status: CompanyJobApplicationStatus.Confirmed
+            },
+            orderBy: {
+                company_responded_at: 'desc' // latest confirmation first
+            },
+            take: 1
         });
 
         const confirmedApplications = await this.prisma.jobApplication.count({
@@ -293,9 +326,12 @@ export class CompanyRepository {
 
         return {
             total_job_postings: totalJobPostings,
+            last_updated_total_job_postings: lastUpdatedtotalJobPostings[0]?.updated_at ?? null,
             total_applicants: totalApplications,
             new_applicants: newApplicants,
-            confirmed_applications: confirmedApplications
+            last_updated_total_applicants: lastUpdatedtotalApplications[0]?.applied_at ?? null,
+            confirmed_applications: confirmedApplications,
+            last_updated_confirmed_applications: lastUpdatedConfirmedApplications[0]?.company_responded_at ?? null
         };
     }
 
