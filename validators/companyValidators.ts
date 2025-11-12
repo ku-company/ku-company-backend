@@ -1,5 +1,5 @@
 import { body, param } from "express-validator";
-import { JobType, Position } from "../utils/enums.js";
+import { JobType } from "../utils/enums.js";
 
 export const jobPostingIdParam = [
   param("id").isInt({ min: 1 }).withMessage("Invalid job posting ID")
@@ -8,7 +8,8 @@ export const jobPostingIdParam = [
 export const createJobPostingValidators = [
   body("description").isString().trim().isLength({ min: 1 }).withMessage("Invalid description"),
   body("jobType").isIn(Object.values(JobType)).withMessage("Invalid job type"),
-  body("position").isIn(Object.values(Position)).withMessage("Invalid position"),
+  // position is now free-text; validate as a bounded, trimmed string
+  body("position").isString().trim().isLength({ min: 1, max: 120 }).withMessage("Invalid position"),
   body("available_position").isInt({ min: 1, max: 10000 }).withMessage("Invalid available position"),
   body("job_title").optional().isString().trim().isLength({ min: 1, max: 120 }).withMessage("Invalid job title"),
   body("location").optional().isString().trim().isLength({ min: 1, max: 120 }).withMessage("Invalid location"),
@@ -25,7 +26,7 @@ export const updateJobPostingValidators = [
   ...jobPostingIdParam,
   body("description").optional().isString().trim().isLength({ min: 1 }).withMessage("Invalid description"),
   body("jobType").optional().isIn(Object.values(JobType)).withMessage("Invalid job type"),
-  body("position").optional().isIn(Object.values(Position)).withMessage("Invalid position"),
+  body("position").optional().isString().trim().isLength({ min: 1, max: 120 }).withMessage("Invalid position"),
   body("available_position").optional().isInt({ min: 1, max: 10000 }).withMessage("Invalid available position"),
   body("job_title").optional().isString().trim().isLength({ min: 1, max: 120 }).withMessage("Invalid job title"),
   body("location").optional().isString().trim().isLength({ min: 1, max: 120 }).withMessage("Invalid location"),

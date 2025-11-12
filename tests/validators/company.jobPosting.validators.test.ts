@@ -12,14 +12,14 @@ describe('Validators: Company Job Postings', () => {
   });
 
   describe('create job posting', () => {
-    it('rejects invalid position', async () => {
+    it('rejects invalid job type', async () => {
       const res = await request(app)
         .post('/api/company/job-postings')
         .set('x-user-id', '1')
         .set('x-role', 'Company')
-        .send({ description: 'd', jobType: 'FullTime', position: 'NotARealPosition', available_position: 1 });
+        .send({ description: 'd', jobType: 'NotARealType', position: 'Some Role', available_position: 1 });
       expect(res.status).toBe(400);
-      expect(res.body?.message).toMatch(/Invalid position|Invalid job type/);
+      expect(res.body?.message).toMatch(/Invalid job type/);
     });
 
     it('rejects invalid available_position', async () => {
@@ -27,7 +27,7 @@ describe('Validators: Company Job Postings', () => {
         .post('/api/company/job-postings')
         .set('x-user-id', '1')
         .set('x-role', 'Company')
-        .send({ description: 'd', jobType: 'FullTime', position: 'Backend_Developer', available_position: 0 });
+  .send({ description: 'd', jobType: 'FullTime', position: 'Backend_Developer', available_position: 0 });
       expect(res.status).toBe(400);
       expect(res.body?.message).toMatch(/Invalid available position/);
     });
@@ -38,7 +38,7 @@ describe('Validators: Company Job Postings', () => {
         .post('/api/company/job-postings')
         .set('x-user-id', '1')
         .set('x-role', 'Company')
-        .send({ description: 'd', jobType: 'FullTime', position: 'Backend_Developer', available_position: 1 });
+  .send({ description: 'd', jobType: 'FullTime', position: 'Backend_Developer', available_position: 1 });
       expect(res.status).toBe(201);
       expect(res.body?.data?.id).toBe(77);
       spy.mockRestore();
