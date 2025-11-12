@@ -23,11 +23,12 @@ import { csrfProtection } from "./middlewares/csrf.js";
 import { requestLogging } from "./middlewares/requestLogging.js";
 import { appLogger } from "./utils/logger.js";
 
+// Load environment variables before reading them
+dotenv.config();
+
 // Optional HTTPS redirect & HSTS hardening
 const FORCE_HTTPS = process.env.FORCE_HTTPS === 'enabled';
 const HSTS_MAX_AGE = Number(process.env.HSTS_MAX_AGE || 31536000); // 1 year default
-
-dotenv.config();
 const port = process.env.PORT || 8000;
 const app: Express = express();
 // Always trust proxy so req.secure reflects X-Forwarded-Proto when behind a TLS terminator (NGINX/ELB)
@@ -65,6 +66,9 @@ app.use((req, res, next) => {
   res.setHeader("Referrer-Policy", "no-referrer");
   // Lock down powerful browser APIs by default
   res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  // Conservative Content Security Policy suitable for an API server
+  // This reduces the risk of browser-based injection if any HTML is accidentally served
+  res.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
   // Disallow Flash/Adobe cross-domain policies
   res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
   // If FORCE_HTTPS is enabled, redirect plain HTTP to HTTPS
