@@ -27,13 +27,34 @@ export function truncateSafe(input = "", max = 200): string {
 
 export function sanitizeSvg(svg: string): string {
   // Placeholder: strip scriptable elements/attrs; prefer vetted libs if enabling SVG.
-  let clean = svg.replace(/<\/(?:script|style|foreignObject)\s*>/gi, "")
-                 .replace(/<(?:script|style|foreignObject)[^>]*>/gi, "");
-  clean = clean.replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, "");
-  clean = clean.replace(/\son[a-z]+\s*=\s*'[^']*'/gi, "");
-  clean = clean.replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, "");
-  clean = clean.replace(/\s(?:href|xlink:href|src)\s*=\s*"javascript:[^"]*"/gi, "");
-  clean = clean.replace(/\s(?:href|xlink:href|src)\s*=\s*'javascript:[^']*'/gi, "");
+  // Repeat removal of dangerous container elements until stable
+  let previous = "";
+  while (previous !== svg) {
+    previous = svg;
+    svg = svg
+      .replace(/<\/(?:script|style|foreignObject)\s*>/gi, "")
+      .replace(/<(?:script|style|foreignObject)[^>]*>/gi, "");
+  }
+  let clean = svg;
+  // Remove event handler attributes (multi-pass) until stable
+  const eventAttrPatterns = [
+    /\son[a-z]+\s*=\s*"[^"]*"/gi,
+    /\son[a-z]+\s*=\s*'[^']*'/gi,
+    /\son[a-z]+\s*=\s*[^\s>]+/gi,
+  ];
+  let prevClean = "";
+  while (prevClean !== clean) {
+    prevClean = clean;
+    for (const pattern of eventAttrPatterns) {
+      clean = clean.replace(pattern, "");
+    }
+  }
+  // Remove javascript: href/src/xlink references (multi-pass not typically needed but safe)
+  const jsHrefPatterns = [
+    /\s(?:href|xlink:href|src)\s*=\s*"javascript:[^"]*"/gi,
+    /\s(?:href|xlink:href|src)\s*=\s*'javascript:[^']*'/gi,
+  ];
+  for (const p of jsHrefPatterns) clean = clean.replace(p, "");
   return clean;
 }
 

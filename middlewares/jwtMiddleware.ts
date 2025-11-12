@@ -1,5 +1,6 @@
 import { expressjwt } from "express-jwt";
 import type { Request } from "express";
+import { decryptCookieValue } from "../utils/cookies.js";
 
 // Defensive decode options: limit payload size indirectly by rejecting overly large headers via custom getToken logic if needed later.
 
@@ -10,7 +11,8 @@ const jwtMiddleware = expressjwt({
   getToken: (req: Request) => {
     // Check cookie first
     if (req.cookies && req.cookies.access_token) {
-      return req.cookies.access_token;
+      const maybe = decryptCookieValue(req.cookies.access_token);
+      return maybe || req.cookies.access_token;
     }
     // Fallback to Authorization header
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {

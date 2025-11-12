@@ -4,9 +4,21 @@ import authorizeRole from "../middlewares/rolebasedMiddleware.js";
 import { param, body } from "express-validator";
 import { validationHandler } from "../middlewares/validationHandler.js";
 import { addUserValidators, editUserStatusValidators, editUserVerifiedValidators, filterUsersValidators } from "../validators/adminValidators.js";
+import rateLimit from "express-rate-limit";
 
 
 const router = Router();
+// Apply a rate limiter to all admin routes (defense-in-depth against abuse)
+const adminLimiter = rateLimit({
+    windowMs: Number(process.env.ADMIN_RATE_LIMIT_WINDOW_MS ?? 15 * 60 * 1000), // 15 minutes default
+    max: Number(process.env.ADMIN_RATE_LIMIT_MAX ?? 100), // limit each user/IP to 100 requests per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: any) => String(req?.user?.id ?? req.ip ?? 'unknown'),
+    handler: (_req, res) => res.status(429).json({ message: 'Too many admin requests. Please try again later.' })
+});
+// Limit before any specific admin handlers
+router.use(adminLimiter);
 const adminController = new AdminController()
 
 router.patch("/verify-user/:id",

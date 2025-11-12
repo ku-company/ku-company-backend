@@ -50,7 +50,12 @@ router.post("/refresh-token",
             userController.refresh_token(req, res)
         }
 )
-router.post("/sign-up", signUpValidators, validationHandler, async (req: Request, res: Response) => {
+router.post(
+    "/sign-up",
+    authRateLimiter('sign-up'),
+    signUpValidators,
+    validationHandler,
+    async (req: Request, res: Response) => {
     userController.sign_up(req, res)
 });
 router.post("/login",
@@ -79,7 +84,7 @@ router.patch("/password",
     }
 );
 // Use POST for logout to avoid state-changing GET and align with KISS (method simplicity)
-router.post("/logout", async (req, res) => {
+router.post("/logout", authRateLimiter('logout'), async (req, res) => {
     userController.logout(req, res)
 })
 

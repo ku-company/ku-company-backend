@@ -70,7 +70,12 @@ export class UserController {
   async refresh_token(req: Request, res: Response) {
     try {
       const token =
-        (req as any).cookies?.refresh_token ||
+        (await (async () => {
+          const raw = (req as any).cookies?.refresh_token;
+          if (!raw) return undefined;
+          const { decryptCookieValue } = await import("../utils/cookies.js");
+          return decryptCookieValue(raw) || raw;
+        })()) ||
         (req.body && (req.body as any).refresh_token);
       if (!token) {
         return res.status(400).json({ message: "Missing refresh token" });
@@ -92,7 +97,12 @@ export class UserController {
   }
   async logout(req: Request, res: Response) {
     try {
-      const refresh = (req as any).cookies?.refresh_token; // defensively access cookies
+      const refresh = await (async () => {
+        const raw = (req as any).cookies?.refresh_token;
+        if (!raw) return undefined;
+        const { decryptCookieValue } = await import("../utils/cookies.js");
+        return decryptCookieValue(raw) || raw;
+      })();
       if (refresh) {
         const { revokeRefreshToken } = await import(
           "../utils/tokenBlacklist.js"
@@ -184,7 +194,12 @@ export class UserController {
       const user = req.user as { id: number; role: string };
       const role = req.body.role as string;
       // Revoke existing refresh token (if any) before issuing new tokens
-      const oldRefresh = (req as any).cookies?.refresh_token;
+      const oldRefresh = await (async () => {
+        const raw = (req as any).cookies?.refresh_token;
+        if (!raw) return undefined;
+        const { decryptCookieValue } = await import("../utils/cookies.js");
+        return decryptCookieValue(raw) || raw;
+      })();
       if (oldRefresh) {
         const { revokeRefreshToken } = await import(
           "../utils/tokenBlacklist.js"
