@@ -2,7 +2,7 @@ import { CompanyRepository } from "../repository/companyRepository.js";
 import { UserRepository } from "../repository/userRepository.js";
 import type { CompanyProfileDTO } from "../dtoModel/companyDTO.js";
 import type { CompanyProfileDB } from "../model/companyModel.js";
-import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/companyDTO.js";
+import { JobType, type CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
 import { S3Service } from "./s3Services.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
 import { JobStatus } from "../utils/enums.js";

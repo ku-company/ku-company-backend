@@ -65,12 +65,6 @@ enum EmployeeJobApplicationStatus {
   Pending
 }
 
-enum Position {
-  Backend_Developer
-  Frontend_Developer
-  Fullstack_Developer
-}
-
 enum NotificationStatus {
   Pending
   Accepted
