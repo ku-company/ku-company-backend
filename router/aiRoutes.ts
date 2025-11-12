@@ -38,7 +38,7 @@ function aiRateLimiter() {
 }
 
 router.post("/verify-user/:id",
-    aiRateLimiter(),
+    aiRateLimiter(), // ensure rate limiting for verification route
     param("id").isInt().withMessage("Invalid id"),
     validationHandler,
     async (req , res) => {

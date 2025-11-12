@@ -56,6 +56,8 @@ app.use(
   }),
 );
 app.use(express.json());
+// Parse cookies before CSRF so middleware can read csrf_token
+app.use(cookieParser());
 // Optional CSRF protection (double-submit). Enable by setting CSRF_PROTECTION=enabled.
 app.use(csrfProtection);
 // Minimal security headers
@@ -82,7 +84,6 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use(cookieParser());
 app.use(passport.initialize());
 // Request logging and correlation ID
 app.use(requestLogging);

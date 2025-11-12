@@ -68,6 +68,7 @@ router.post("/login",
 );
 
 router.patch("/password",
+    authRateLimiter('password'),
     changePasswordValidators,
     validationHandler,
     async (req: Request, res: Response) => {
@@ -89,6 +90,7 @@ router.post("/logout", authRateLimiter('logout'), async (req, res) => {
 })
 
 router.patch("/role",
+    authRateLimiter('role'),
     body("role").isString().withMessage("Invalid role"),
     validationHandler,
     async (req, res) => {
