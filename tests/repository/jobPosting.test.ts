@@ -43,6 +43,7 @@ describe("JobPostingPublicRepository - get_all_job_postings", () => {
       where: {
         available_position: { gt: 0 },
         status: "Active",
+        verified: true,
       },
       orderBy: { updated_at: "desc" },
       include: {
