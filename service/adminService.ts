@@ -10,6 +10,10 @@ export class AdminService{
         this.adminRepository = new AdminRepository();
     }
 
+     async find_user_by_id(user_id: number){
+         return await this.adminRepository.find_user_by_id(user_id);
+     }
+
      async verify_user(user_id: number){
         return await this.adminRepository.verify_user(user_id)
      }
