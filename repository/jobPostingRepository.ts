@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import { JobType } from "../dtoModel/companyDTO.js";
+import { JobType } from "../utils/enums.js";
 
 export class JobPostingPublicRepository {
 

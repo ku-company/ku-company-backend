@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { CompanyService } from "../service/companyService.js";
-import type { CompanyProfileDTO } from "../dtoModel/companyDTO.js";
-import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
+import type { CompanyProfileDTO, CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
 
 export class CompanyController {
     private companyService: CompanyService;
@@ -141,7 +140,7 @@ export class CompanyController {
                 expired_at: req.body.expired_at ? new Date(req.body.expired_at) : null,
                 jobType: req.body.jobType,
                 position: req.body.position,
-                available_position: req.body.available_position
+                available_position: req.body.available_position,
             };
             const result = await this.companyService.update_job_posting(job_posting_id, input);
             if (!result) {
@@ -313,6 +312,36 @@ export class CompanyController {
             const result = await this.companyService.send_the_confirmation_to_employee(user.id, job_application_id)
             res.status(200).json({
                 message: "Confirmation sent successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+
+    async get_stats(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const result = await this.companyService.get_stats(user.id);
+            res.status(200).json({
+                message: "Company stats retrieved successfully",
+                data: result
+            });
+        } catch (error: any){
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+
+    async get_active_job_postings(req: Request, res: Response){
+        try{
+            const user = req.user as { id: number };
+            const result = await this.companyService.get_active_job_postings(user.id);
+            res.status(200).json({
+                message: "Active job postings count retrieved successfully",
                 data: result
             });
         } catch (error: any){

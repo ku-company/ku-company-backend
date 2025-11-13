@@ -21,7 +21,6 @@ export class JobPostingPublicController {
     }
 
     async get_all_job_types(req: Request, res: Response) {
-        console.log("Getting all job types");
         const jobTypes = enumToDropdown(JobType);
         res.json({ jobTypes });
     }

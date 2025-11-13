@@ -46,3 +46,9 @@ export enum AnnouncementType {
   Repost = "Repost",
   Opinion = "Opinion"
 }
+
+export enum JobPostStatus {
+  Active = "Active",
+  Expired = "Expired",
+  Closed = "Closed"
+}
