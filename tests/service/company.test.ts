@@ -269,5 +269,39 @@ describe('CompanyService', () => {
 			expect(out).toEqual({ id: 77 });
 		});
 	});
+
+	describe('dashboard stats and active postings', () => {
+		it('get_stats requires profile and proxies to repository', async () => {
+			const svc = makeSvc();
+			// no profile
+			(svc as any).companyRepository = { find_profile_by_user_id: jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue(null) } as any;
+			await expect(svc.get_stats(1)).rejects.toThrow('Company profile not found');
+
+			// with profile
+			const repo = {
+				find_profile_by_user_id: jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue({ id: 77 }),
+				get_stats: jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue({ total_job_postings: 3 }),
+			} as any;
+			(svc as any).companyRepository = repo;
+			const out = await svc.get_stats(1);
+			expect(out).toEqual({ total_job_postings: 3 });
+			expect(repo.get_stats).toHaveBeenCalledWith(77);
+		});
+
+		it('get_active_job_postings requires profile and proxies to repository', async () => {
+			const svc = makeSvc();
+			(svc as any).companyRepository = { find_profile_by_user_id: jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue(null) } as any;
+			await expect(svc.get_active_job_postings(2)).rejects.toThrow('Company profile not found');
+
+			const repo = {
+				find_profile_by_user_id: jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue({ id: 88 }),
+				get_active_job_postings: jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue([{ id: 1 }]),
+			} as any;
+			(svc as any).companyRepository = repo;
+			const out = await svc.get_active_job_postings(2);
+			expect(out).toEqual([{ id: 1 }]);
+			expect(repo.get_active_job_postings).toHaveBeenCalledWith(88);
+		});
+	});
 });
 
