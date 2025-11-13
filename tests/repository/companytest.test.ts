@@ -20,12 +20,14 @@ const mockPrisma: any = {
 		findUnique: jest.fn<(...args: any[]) => any>(),
 		update: jest.fn<(...args: any[]) => any>(),
 		delete: jest.fn<(...args: any[]) => any>(),
+		count: jest.fn<(...args: any[]) => any>(),
 	},
 	jobApplication: {
 		findMany: jest.fn<(...args: any[]) => any>(),
 		findFirst: jest.fn<(...args: any[]) => any>(),
 		findUnique: jest.fn<(...args: any[]) => any>(),
 		update: jest.fn<(...args: any[]) => any>(),
+		count: jest.fn<(...args: any[]) => any>(),
 	},
 	notification: {
 		create: jest.fn<(...args: any[]) => any>(),
@@ -286,6 +288,53 @@ describe('CompanyRepository - applications', () => {
 				notification_type: 'ApplicationConfirmed',
 			}),
 			include: { application: true },
+		});
+	});
+});
+
+describe('CompanyRepository - stats and active postings', () => {
+	it('get_stats aggregates counts and last updated timestamps', async () => {
+		const repo = makeRepo();
+		mockPrisma.jobPost.count.mockResolvedValueOnce(7); // totalJobPostings
+		mockPrisma.jobPost.findMany.mockResolvedValueOnce([{ updated_at: new Date('2025-11-01T00:00:00Z') }]);
+
+		mockPrisma.jobApplication.count.mockResolvedValueOnce(21); // totalApplications
+		mockPrisma.jobApplication.findMany.mockResolvedValueOnce([{ applied_at: new Date('2025-11-02T00:00:00Z') }]);
+
+		// newApplicants count
+		mockPrisma.jobApplication.count.mockResolvedValueOnce(5);
+
+		// last updated confirmed apps
+		mockPrisma.jobApplication.findMany.mockResolvedValueOnce([{ company_responded_at: new Date('2025-11-03T00:00:00Z') }]);
+		// confirmedApplications
+		mockPrisma.jobApplication.count.mockResolvedValueOnce(9);
+
+		const out = await repo.get_stats(123);
+		expect(out.total_job_postings).toBe(7);
+		expect(new Date(out.last_updated_total_job_postings as any).toISOString()).toBe('2025-11-01T00:00:00.000Z');
+		expect(out.total_applicants).toBe(21);
+		expect(new Date(out.last_updated_total_applicants as any).toISOString()).toBe('2025-11-02T00:00:00.000Z');
+		expect(out.new_applicants).toBe(5);
+		expect(out.confirmed_applications).toBe(9);
+		expect(new Date(out.last_updated_confirmed_applications as any).toISOString()).toBe('2025-11-03T00:00:00.000Z');
+
+		// Verify called with expected filters and ordering
+		expect(mockPrisma.jobPost.count).toHaveBeenCalledWith({ where: { company_id: 123 } });
+		expect(mockPrisma.jobPost.findMany).toHaveBeenCalledWith({ where: { company_id: 123 }, orderBy: { updated_at: 'desc' }, take: 1 });
+		expect(mockPrisma.jobApplication.count).toHaveBeenCalledWith({ where: { job_post: { company_id: 123 } } });
+		expect(mockPrisma.jobApplication.findMany).toHaveBeenCalledWith({ where: { job_post: { company_id: 123 } }, orderBy: { applied_at: 'desc' }, take: 1 });
+		expect(mockPrisma.jobApplication.findMany).toHaveBeenCalledWith({ where: { job_post: { company_id: 123 }, company_send_status: 'Confirmed' }, orderBy: { company_responded_at: 'desc' }, take: 1 });
+		expect(mockPrisma.jobApplication.count).toHaveBeenCalledWith({ where: { job_post: { company_id: 123 }, company_send_status: 'Confirmed' } });
+	});
+
+	it('get_active_job_postings queries with correct where/order', async () => {
+		const repo = makeRepo();
+		mockPrisma.jobPost.findMany.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+		const out = await repo.get_active_job_postings(55);
+		expect(out).toEqual([{ id: 1 }, { id: 2 }]);
+		expect(mockPrisma.jobPost.findMany).toHaveBeenCalledWith({
+			where: { company_id: 55, available_position: { gt: 0 }, status: 'Active' },
+			orderBy: { created_at: 'desc' },
 		});
 	});
 });

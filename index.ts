@@ -108,7 +108,7 @@ app.use(
   authorizeRole("Student", "Alumni", "Admin"),
   employeeRouter,
 );
-app.use("/api/company", authorizeRole("Company"), companyRouter);
+app.use("/api/company", authorizeRole("Company", "Admin"), companyRouter);
 app.use("/api/job-postings", companyJobPostingRouter); // public feed job postings
 app.use("/api/professor", professorRouter);
 app.use("/api/announcements", professorAnnouncementRouter); // public feed announcements

@@ -169,4 +169,26 @@ describe('Controller: Company', () => {
 
     aspy.mockRestore(); gspy.mockRestore(); uspy.mockRestore(); cspy.mockRestore();
   });
+
+  it('GET /api/company/dashboard/overall returns stats', async () => {
+    const spy = jest.spyOn(CompanyService.prototype, 'get_stats').mockResolvedValue({ total_job_postings: 4 } as any);
+    const res = await request(app)
+      .get('/api/company/dashboard/overall')
+      .set('x-user-id', '1')
+      .set('x-role', 'Company');
+    expect(res.status).toBe(200);
+    expect(res.body?.data?.total_job_postings).toBe(4);
+    spy.mockRestore();
+  });
+
+  it('GET /api/company/dashboard/active-postings returns list of active postings', async () => {
+    const spy = jest.spyOn(CompanyService.prototype, 'get_active_job_postings').mockResolvedValue([{ id: 1 }] as any);
+    const res = await request(app)
+      .get('/api/company/dashboard/active-postings')
+      .set('x-user-id', '1')
+      .set('x-role', 'Company');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body?.data)).toBe(true);
+    spy.mockRestore();
+  });
 });
