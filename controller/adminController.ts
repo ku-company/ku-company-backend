@@ -78,6 +78,7 @@ export class AdminController{
 
     async list_filtering_jobPosting(req: any, res: any){
         try{
+        
             const filtering_jobPosting = await this.admminService.list_filtering_jobPosting(req.query.verified)
             res.status(200).json({
                 message: "Job posting filtered successfully",

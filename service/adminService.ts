@@ -2,6 +2,7 @@ import { AdminRepository } from "../repository/adminRepository.js";
 import type { UserDB } from "../model/userModel.js";
 import type { UserRepository } from "../repository/userRepository.js";
 import type { VerifiedStatus } from "@prisma/client";
+import type { BooleanSchema } from "joi";
 
 export class AdminService{
     private adminRepository: AdminRepository
@@ -36,9 +37,16 @@ export class AdminService{
         return await this.adminRepository.list_jobPosting()
      }
 
-     async list_filtering_jobPosting(verified: string){
-        const verified_bool = Boolean(verified)
-        return await this.adminRepository.list_jobPosting_filtering(verified_bool)
+      async list_filtering_jobPosting(verified: string){
+         let verified_bool: boolean;
+         if (verified === "false") {
+             verified_bool = false;
+         } else if (verified === "true") {
+             verified_bool = true;
+         } else {
+             throw new Error("Invalid 'verified' query; use true/false");
+         }
+         return await this.adminRepository.list_jobPosting_filtering(verified_bool);
      }
 
      async delete_jobPosting(post_id: number){
