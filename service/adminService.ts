@@ -22,6 +22,30 @@ export class AdminService{
          return await this.adminRepository.delete_user(user_id)
      }
 
+     async get_jobPosting_by_id(post_id: number){
+        const num_post_id = Number(post_id)
+        return  await this.adminRepository.get_jobPosting_by_id(num_post_id)
+     }
+     
+     async edit_jobPosting_verified(post_id: number, verified: boolean){
+        const num_post_id = Number(post_id)
+        return await this.adminRepository.edit_verified_status(num_post_id, verified)
+     }
+
+     async list_jobPosting(){
+        return await this.adminRepository.list_jobPosting()
+     }
+
+     async list_filtering_jobPosting(verified: string){
+        const verified_bool = Boolean(verified)
+        return await this.adminRepository.list_jobPosting_filtering(verified_bool)
+     }
+
+     async delete_jobPosting(post_id: number){
+            const num_post_id = Number(post_id)
+            return await this.adminRepository.delete_jobPosting(num_post_id)
+     }
+
      async edit_user_status(user_id: number, status: VerifiedStatus){
             return await this.adminRepository.edit_user_status(user_id, status)
      }
