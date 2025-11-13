@@ -5,6 +5,7 @@ export interface JobPostingFeedDTO {
   job_title: string;
   location: string;
   work_place: string;
+  verified: boolean;
   minimum_expected_salary: number;
   maximum_expected_salary: number;
   expired_at: Date | null;

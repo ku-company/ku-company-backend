@@ -35,7 +35,7 @@ export class UserService {
         if(input.email.length < 5 || !input.email.includes("@")){
             throw new Error("Invalid email")
         }
-        if(!input.is_consent){
+        if(!input.is_consent && input.role !== Role.Admin){
             throw new Error("Please agree to the terms and conditions")
         }
         if(await this.userRepository.is_valid_create_user(input.user_name, input.email, input.company_name)){

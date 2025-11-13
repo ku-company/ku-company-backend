@@ -170,6 +170,52 @@ export class AdminRepository{
         return updated_user;
     }
 
+    async list_jobPosting(){
+        const list_jobPosting = await this.prisma.jobPost.findMany({})
+        return list_jobPosting
+    }
+
+    async list_jobPosting_filtering(verified: boolean){
+        const list_jobPosting = await this.prisma.jobPost.findMany({
+            where: {
+                verified: verified
+            }
+        })
+        return list_jobPosting
+    }
+
+
+    async edit_verified_status(job_post_id: number, verified: boolean){
+        const updated_jobPosting = await this.prisma.jobPost.update({
+            where: {
+                id: job_post_id
+            },
+            data: {
+                verified: verified,
+                updated_at: new Date()
+            }
+        })
+        return updated_jobPosting
+    }
+
+    async get_jobPosting_by_id(job_post_id: number){
+        const job_posting = await this.prisma.jobPost.findUnique({
+            where: {
+                id: job_post_id
+            }
+        })
+        return job_posting
+    }
+
+    async delete_jobPosting(job_post_id: number){
+        const deleted_jobPosting = await this.prisma.jobPost.delete({
+            where: {
+                id: job_post_id
+            }
+        })
+        return deleted_jobPosting
+    }
+
 
     async add_user(input: UserDB){
         const add_user = await this.prisma.user.create({

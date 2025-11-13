@@ -131,6 +131,8 @@ describe('CompanyService', () => {
 			} as any;
 			(svc as any).companyRepository = repo;
 			(svc as any).userRepository = { get_user_by_id: jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue({ verified: false }) } as any;
+			// Stub AI verification to avoid DB calls in unit test
+			(svc as any).aiRepository = { verify_jobPosting_by_ai: jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue({ trust_level: 'High', reason: 'ok' }) } as any;
 			const out = await svc.create_job_posting(5, {
 				description: 'd',
 				jobType: 'FullTime',

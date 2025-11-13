@@ -71,6 +71,7 @@ describeIf("Integration: JobPostingPublicRepository", () => {
         position: "Developer",
         available_position: 2,
         status: "Active",
+        verified: true,
       } as any,
     });
     jobId1 = job1.id;

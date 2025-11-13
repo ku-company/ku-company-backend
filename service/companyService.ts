@@ -9,6 +9,7 @@ import { JobStatus } from "../utils/enums.js";
 import {CompanyJobApplicationStatus} from "../utils/enums.js";
 import {isJobType, isJobPostStatus} from "../utils/validatorEnum.js";
 import type { WorkPlace } from "../dtoModel/companyDTO.js";
+import { AIRepository } from "../repository/aiRepository.js";
 
 
 
@@ -17,11 +18,13 @@ export class CompanyService {
     private companyRepository: CompanyRepository;
     private userRepository: UserRepository;
     private s3Service: S3Service;
+    private aiRepository: AIRepository;
     private RESUME_BUCKET_NAME = process.env.RESUME_BUCKET_NAME || "";
 
     constructor(){
         this.companyRepository = new CompanyRepository();
         this.userRepository = new UserRepository();
+        this.aiRepository = new AIRepository();
         this.s3Service = new S3Service(this.RESUME_BUCKET_NAME, new DocumentKeyStrategy());
     }
     
@@ -103,7 +106,10 @@ export class CompanyService {
         // // Validate enums
         // if (!isJobType(input.jobType)) throw new Error("Invalid job type");
         
-        return this.companyRepository.create_job_posting(repoInput);
+        const jobPosting =  await this.companyRepository.create_job_posting(repoInput);
+        const ai_verify = await this.aiRepository.verify_jobPosting_by_ai(jobPosting.id)
+        console.log("ai_verify" , ai_verify)
+        return jobPosting;
     }
 
     async update_job_posting(post_id: number, input: CompanyJobPostingDTO) {

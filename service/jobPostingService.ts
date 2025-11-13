@@ -30,6 +30,7 @@ export class JobPostingService {
         minimum_expected_salary: job.minimum_expected_salary,
         maximum_expected_salary: job.maximum_expected_salary,
         expired_at: job.expired_at || null,
+        verified: job.verified,
 
         description: job.description,
         jobType: job.jobType,

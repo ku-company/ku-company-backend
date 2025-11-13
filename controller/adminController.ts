@@ -34,6 +34,77 @@ export class AdminController{
         }
     }
 
+    async edit_jobPosting_verified(req: any, res: any){
+        try{
+            const result = await this.admminService.edit_jobPosting_verified(req.params.id, req.body.verified)
+            res.status(200).json({
+                message: "Job posting verified status edited successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async list_all_jobPosting(req: any, res: any){
+        try{
+            const result = await this.admminService.list_jobPosting()
+            res.status(200).json({
+                message: "Job posting listed successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async get_jobPosting_by_id(req: any, res: any){
+        try{
+            const result = await this.admminService.get_jobPosting_by_id(req.params.id)
+            res.status(200).json({
+                message: "Job posting listed successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async list_filtering_jobPosting(req: any, res: any){
+        try{
+        
+            const filtering_jobPosting = await this.admminService.list_filtering_jobPosting(req.query.verified)
+            res.status(200).json({
+                message: "Job posting filtered successfully",
+                data: filtering_jobPosting
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async delete_jobPosting(req: any, res: any){
+        try{
+            const result = await this.admminService.delete_jobPosting(req.params.id)
+            res.status(200).json({
+                message: "Job posting deleted successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
     async edit_user_verified(req: any, res: any){
         try{
             const result = await this.admminService.edit_user_verified(req.params.id, req.body.verified)

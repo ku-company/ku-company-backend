@@ -26,6 +26,7 @@ export class JobPostingPublicRepository {
                 available_position: {
                     gt: 0 // only show job postings with available positions
                 },
+                verified: true,
                 status: "Active",
                 ...(keyword && {
                     OR: [

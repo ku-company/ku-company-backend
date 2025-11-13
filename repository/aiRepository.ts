@@ -140,6 +140,115 @@ export class AIRepository {
         return response
     }
 
+    async verify_jobPosting(job_postId: number){
+        const job_post = await this.prisma.jobPost.findUnique({
+            where: {
+                id: job_postId
+            },
+            include: {
+                company: {
+                    include:{
+                        user: true
+                    }
+                }
+            }
+        })
+        console.log(job_post)
+        if(!job_post){
+            throw new Error("Job post not found")
+        }
+        const prompt = `
+                You are an AI JobPost verifier.
+                Check if this user is real and trustworthy based on the below rule.
+                - Consistency and metadata
+                    - Role, job type, location, and salary range consistent → positive
+                    - Conflicts (e.g., “remote” + “on-site required”) → negative
+                    - Posting older than 180 days and still “Active” → negative
+                - Company signals
+                    - Verified company → strong positive
+                    - Known domain/website present and matches contact domain → positive
+                    - No website or free-mail contact (gmail, yahoo, outlook) → negative
+                - Posting Content Quality
+                    - Clear responsibilities/requirements and normal benefits → positive
+                    - “Too good to be true” (salary >> market, no experience, vague) → negative
+                - Final decision mapping
+                    - Any hard scam indicator → Low
+                    - Mostly positive signals, no negatives → High
+                    - Mixed or insufficient evidence → Medium
+                Return a valid JSON object with the following structure:
+                {
+                    "trust_level": "High" | "Medium" | "Low",
+                    "reason": "explanation",
+                    "evidence_url": "most relevant link
+                }
+                email: ${job_post.company.email}
+                description: ${job_post.description}
+                minimum_expected_salary: ${job_post.minimum_expected_salary}
+                maximum_expected_salary: ${job_post.maximum_expected_salary}
+                "company verify": ${job_post.company.verif}
+                "company name": ${job_post.company.company_name}
+                Data: ${JSON.stringify(job_post)}
+                `
+        const response = await this.gen_ai(prompt)
+        return response
+    }
+
+    async update_verify_jobPosting_status(job_postId: number, trust_level: string, reason: string, evidence_url?: string){
+        const job_post = await this.prisma.jobPost.findUnique({
+            where: {
+                id: job_postId
+            }
+        })
+        if(!job_post){
+            throw new Error("Job post not found")
+        }
+        if(job_post.verified === true){
+            throw new Error("Job post already verified")
+        }
+        try {
+            const create_ai_verification = await this.prisma.aiVerification.create({
+                data: {
+                    job_post_id: job_postId,
+                    verified_by: "Gemini Flash 2.5",
+                    trust_level: trust_level,
+                    reason: reason,
+                    evidence_url: evidence_url || null,
+                    created_at: new Date()
+                },
+                include: {
+                    job_post: true
+                }
+            })
+        } catch (error) {
+            console.log(error)
+            throw new Error("Failed to create AI verification record")
+        }
+        if(trust_level === "High" || trust_level === "Medium"){
+            const update_job_post = await this.prisma.jobPost.update({
+                where: {
+                    id: job_postId
+                },
+                data: {
+                    verified: true,
+                    verified_at: new Date()
+                }
+            })
+            return update_job_post
+        }
+        else {
+            const update_job_post = await this.prisma.jobPost.update({
+                where: {
+                    id: job_postId
+                },
+                data: {
+                    verified: false,
+                    updated_at: new Date()
+                }
+            })
+            return update_job_post
+        }
+    }
+
     async update_verify_status(user_id: number, trust_level: string, reason: string, evidence_url?: string){
         const user = await this.prisma.user.findUnique({
             where: {
@@ -233,6 +342,26 @@ export class AIRepository {
         }
     }
 
+    async verify_jobPosting_by_ai(job_postId: number){
+        const job_post = await this.prisma.jobPost.findUnique({
+            where: {
+                id: job_postId
+            },
+            include: {
+                company: {
+                    include:{
+                        user: true
+                    }
+                }
+            }
+        })
+        if(!job_post){
+            throw new Error("Job post not found")
+        }
+        const response =  await this.verify_jobPosting(job_postId);
+        const ai_verification = await this.update_verify_jobPosting_status(job_postId, response.trust_level, response.reason, response.evidence_url);
+        return ai_verification;
+    }
 
 
     async verify_user_by_ai(user_id: number){
