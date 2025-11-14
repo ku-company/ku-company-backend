@@ -1,14 +1,15 @@
 import { CompanyRepository } from "../repository/companyRepository.js";
 import { UserRepository } from "../repository/userRepository.js";
-import type { CompanyProfileDTO } from "../dtoModel/companyDTO.js";
 import type { CompanyProfileDB } from "../model/companyModel.js";
-import { JobType, type CompanyJobPostingDTO, Position } from "../dtoModel/companyDTO.js";
+import {type CompanyProfileDTO, type CompanyJobPostingDTO} from "../dtoModel/companyDTO.js";
+import {JobType, JobPostStatus} from "../utils/enums.js";   
 import { S3Service } from "./s3Services.js";
 import { DocumentKeyStrategy } from "../helper/s3KeyStrategy.js";
 import { JobStatus } from "../utils/enums.js";
 import {CompanyJobApplicationStatus} from "../utils/enums.js";
+import {isJobType, isJobPostStatus} from "../utils/validatorEnum.js";
 import type { WorkPlace } from "../dtoModel/companyDTO.js";
-
+import { AIRepository } from "../repository/aiRepository.js";
 
 
 
@@ -17,11 +18,13 @@ export class CompanyService {
     private companyRepository: CompanyRepository;
     private userRepository: UserRepository;
     private s3Service: S3Service;
+    private aiRepository: AIRepository;
     private RESUME_BUCKET_NAME = process.env.RESUME_BUCKET_NAME || "";
 
     constructor(){
         this.companyRepository = new CompanyRepository();
         this.userRepository = new UserRepository();
+        this.aiRepository = new AIRepository();
         this.s3Service = new S3Service(this.RESUME_BUCKET_NAME, new DocumentKeyStrategy());
     }
     
@@ -82,6 +85,9 @@ export class CompanyService {
             throw new Error("Minimum expected salary cannot be greater than maximum expected salary");
         }
 
+        const resolvedJobType = (input.jobType ??
+            (isJobType(input.jobType) ? input.jobType : JobType.FullTime)) as JobType;
+
         const repoInput = {
             company_id: companyProfile.id,
             job_title: input.job_title,
@@ -92,12 +98,18 @@ export class CompanyService {
             maximum_expected_salary: input.maximum_expected_salary,
             expired_at: input.expired_at || null,
             description: input.description,
-            jobType: input.jobType,
+            jobType: resolvedJobType,
             position: input.position,
             available_position: input.available_position
         };
+
+        // // Validate enums
+        // if (!isJobType(input.jobType)) throw new Error("Invalid job type");
         
-        return this.companyRepository.create_job_posting(repoInput);
+        const jobPosting =  await this.companyRepository.create_job_posting(repoInput);
+        const ai_verify = await this.aiRepository.verify_jobPosting_by_ai(jobPosting.id)
+        console.log("ai_verify" , ai_verify)
+        return jobPosting;
     }
 
     async update_job_posting(post_id: number, input: CompanyJobPostingDTO) {
@@ -105,19 +117,30 @@ export class CompanyService {
         if (!existingPost) {
             throw new Error("Job posting not found");
         }
-        input.job_title = input.job_title ? input.job_title : existingPost.job_title;
-        input.location = input.location ? input.location : existingPost.location;
-        input.minimum_expected_salary = input.minimum_expected_salary ? input.minimum_expected_salary : existingPost.minimum_expected_salary;
-        input.maximum_expected_salary = input.maximum_expected_salary ? input.maximum_expected_salary : existingPost.maximum_expected_salary;
-        input.work_place = input.work_place ? (input.work_place as WorkPlace) : existingPost.work_place as WorkPlace;
-        input.description = input.description ? input.description : existingPost.description;
-        input.jobType = input.jobType ? input.jobType : JobType[existingPost.jobType as keyof typeof JobType];
-        input.position = input.position ? input.position : existingPost.position;
-        input.expired_at = input.expired_at ? input.expired_at : existingPost.expired_at;
-        input.status = input.status ? input.status : existingPost.status;
+        if (input.status && !isJobPostStatus(input.status)) {
+            throw new Error("Invalid job post status");
+        }
+        const resolvedStatus = (input.status ??
+            (isJobPostStatus(existingPost.status) ? existingPost.status : JobPostStatus.Active)) as JobPostStatus;
+        
+        const resolvedJobType = (input.jobType ??
+            (isJobType(existingPost.jobType) ? existingPost.jobType : JobType.FullTime)) as JobType;
 
-        input.available_position = input.available_position ? input.available_position : existingPost.available_position;
-        return this.companyRepository.update_job_posting(post_id, input);
+        const repoInput: CompanyJobPostingDTO = {
+            job_title: input.job_title ?? existingPost.job_title,
+            location: input.location ?? existingPost.location,
+            minimum_expected_salary: input.minimum_expected_salary ?? existingPost.minimum_expected_salary,
+            maximum_expected_salary: input.maximum_expected_salary ?? existingPost.maximum_expected_salary,
+            work_place: (input.work_place ?? existingPost.work_place) as WorkPlace,
+            description: input.description ?? existingPost.description,
+            jobType: resolvedJobType,
+            position: input.position ?? existingPost.position,
+            expired_at: input.expired_at ?? existingPost.expired_at ?? null,
+            status: resolvedStatus,
+            available_position: input.available_position ?? existingPost.available_position
+        };
+
+        return this.companyRepository.update_job_posting(post_id, repoInput);
     }
 
     async get_job_posting(post_id: number) {
@@ -223,5 +246,21 @@ export class CompanyService {
         }
 
         return this.companyRepository.send_the_confirmation_to_employee(app_id, user_id);
+    }
+
+    async get_stats(user_id: number) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        return this.companyRepository.get_stats(companyProfile.id);
+    }
+
+    async get_active_job_postings(user_id: number) {
+        const companyProfile = await this.companyRepository.find_profile_by_user_id(user_id);
+        if (!companyProfile) {
+            throw new Error("Company profile not found");
+        }
+        return this.companyRepository.get_active_job_postings(companyProfile.id);
     }
 }

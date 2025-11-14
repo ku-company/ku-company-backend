@@ -35,7 +35,7 @@ export class UserService {
         if(input.email.length < 5 || !input.email.includes("@")){
             throw new Error("Invalid email")
         }
-        if(!input.is_consent){
+        if(!input.is_consent && input.role !== Role.Admin){
             throw new Error("Please agree to the terms and conditions")
         }
         if(await this.userRepository.is_valid_create_user(input.user_name, input.email, input.company_name)){
@@ -270,6 +270,12 @@ export class UserService {
     async get_other_profile(user_id: number){
         const user = await this.userRepository.get_profile(user_id)
         return user
+    }
+
+    async get_company_profile(company_id: string){
+        const company_id_num = Number(company_id)
+        const company = await this.userRepository.get_company_profile(company_id_num)
+        return company
     }
 
 }

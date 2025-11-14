@@ -65,12 +65,6 @@ enum EmployeeJobApplicationStatus {
   Pending
 }
 
-enum Position {
-  Backend_Developer
-  Frontend_Developer
-  Fullstack_Developer
-}
-
 enum NotificationStatus {
   Pending
   Accepted
@@ -241,6 +235,7 @@ model jobPost {
   jobType     JobType 
   position    String  @db.Text()
   available_position Int
+  verified    Boolean @default(false)
   status   JobPostStatus @default(Active)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -248,6 +243,7 @@ model jobPost {
   company companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
   applications jobApplication[]
   reposts Announcement[]
+  aiVerifications aiVerification[]
 }
 
 model Announcement {
@@ -302,14 +298,16 @@ model Comment {
 
 model aiVerification {
   id          Int       @id @default(autoincrement())
-  user_id     Int       @unique
+  user_id     Int?       @unique
+  job_post_id Int?      @unique
   verified_by String?   @db.Text()
   trust_level String?   @db.Text()
   reason      String?   @db.Text()
   evidence_url String?  @db.Text() 
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
-  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user        User?       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  job_post    jobPost?  @relation(fields: [job_post_id], references: [id], onDelete: Cascade)
 
 }
 

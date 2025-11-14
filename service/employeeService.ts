@@ -111,7 +111,6 @@ export class EmployeeService{
         if (!resumes.length) return [];
 
         const resumeCount = await this.employeeRepository.resume_count(profile.id);
-            console.log(`Total resumes found: ${resumeCount}`);
         // Attach signed S3 URLs to each resume record
         const signedResumes = await Promise.all(
             resumes.map(async (r: Resume) => ({

@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import { JobType } from "../dtoModel/companyDTO.js";
+import { JobType } from "../utils/enums.js";
 
 export class JobPostingPublicRepository {
 
@@ -26,6 +26,7 @@ export class JobPostingPublicRepository {
                 available_position: {
                     gt: 0 // only show job postings with available positions
                 },
+                verified: true,
                 status: "Active",
                 ...(keyword && {
                     OR: [

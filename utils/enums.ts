@@ -20,11 +20,6 @@ export enum JobType {
   Contract = "Contract"
 }
 
-export enum Position {
-  Backend_Developer = "Backend_Developer",
-  Frontend_Developer = "Frontend_Developer",
-  Fullstack_Developer = "Fullstack_Developer"
-}
 
 export enum NotificationStatus {
   Pending = "Pending",
@@ -50,4 +45,10 @@ export enum AnnouncementType {
   Announcement = "Announcement",
   Repost = "Repost",
   Opinion = "Opinion"
+}
+
+export enum JobPostStatus {
+  Active = "Active",
+  Expired = "Expired",
+  Closed = "Closed"
 }

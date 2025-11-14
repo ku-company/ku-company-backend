@@ -1,17 +1,4 @@
-import type { JobPostStatus } from "@prisma/client";
-
-export enum JobType {
-  FullTime = "FullTime",
-  PartTime = "PartTime",
-  Internship = "Internship",
-  Contract = "Contract",
-}
-
-export enum Position {
-  Backend_Developer = "Backend_Developer",
-  Frontend_Developer = "Frontend_Developer",
-  Fullstack_Developer = "Fullstack_Developer",
-}
+import { JobPostStatus, JobType } from "../utils/enums.js";
 
 export enum WorkPlace {
   OnSite = "On-Site",
