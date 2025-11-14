@@ -26,4 +26,8 @@ router.get("/profile/:id", verifiedMiddleware ,async(req, res) =>{
     userController.get_profile(req, res)
 })
 
+router.get("/company-profile/:id", verifiedMiddleware, async(req , res ) => {
+    userController.get_company_profile(req, res)
+})
+
 export default router

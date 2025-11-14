@@ -145,6 +145,21 @@ export class UserController {
         }
     }
 
+    async get_company_profile(req: Request, res: Response){
+        try{
+            const result = await this.userService.get_company_profile(req.params.id!);
+            console.log(result)
+            res.status(200).json({
+                message: "Company profile retrieved successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
     
 
 

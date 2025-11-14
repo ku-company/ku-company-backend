@@ -296,4 +296,16 @@ export class UserRepository {
         return profile
     }
 
+    async get_company_profile(company_id: number){
+        const company_profile = await this.prisma.companyProfile.findUnique({
+            where: {
+                id: company_id
+            }
+        })
+        if(!company_profile){
+            throw new Error("Company profile not found")
+        }
+        return company_profile
+    }
+
 }
