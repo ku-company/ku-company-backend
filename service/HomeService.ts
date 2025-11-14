@@ -1,18 +1,12 @@
-import { JobPostingPublicRepository } from "../repository/jobPostingRepository.js";
-import { UserService } from "./userService.js";
 import { HomeRepository } from "../repository/HomeRepository.js";
 
 
 export class HomeService {
 
-    private jobPostingRepository: JobPostingPublicRepository;
-    private userService: UserService;
     private homeRepository: HomeRepository;
 
     constructor() {
-        this.jobPostingRepository = new JobPostingPublicRepository()
         this.homeRepository = new HomeRepository();
-        this.userService = new UserService();
     }
 
     private postedAgo(created_at: Date) {
@@ -24,6 +18,17 @@ export class HomeService {
 
     async get_top_companies(){
         return this.homeRepository.get_top_companies();
+    }
+
+    async get_top_job_postings() {
+        const jobPostings = await this.homeRepository.get_top_job_postings();
+        const jobPostingsWithPostedAgo = await Promise.all(jobPostings.map(async (job) => {
+            return {
+                ...job,
+                posted_ago: this.postedAgo(job.created_at),
+            }
+        }));
+        return jobPostingsWithPostedAgo;
     }
 
 }

@@ -28,4 +28,16 @@ export class HomeRepository {
         });
     }
 
+    async get_top_job_postings() {
+        return await this.prisma.jobPost.findMany({
+            take: 3,
+            orderBy: {
+                created_at: 'desc'
+            },
+            include: {
+                company: true
+            }
+        });
+    }
+
 }
