@@ -19,6 +19,7 @@ import errorHandler from "./middlewares/errorHandler.js";
 import professorRouter from "./router/professorRoutes.js";
 import professorAnnouncementRouter from "./router/announcementFeedPublicRoutes.js";
 import aiRouter from "./router/aiRoutes.js";
+import homeRouter from "./router/homeRoutes.js";
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -29,7 +30,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
 app.use("/api/ai", aiRouter)
-
+app.use("/api/home", homeRouter);
 app.use(jwtMiddleware);
 app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
