@@ -272,4 +272,10 @@ export class UserService {
         return user
     }
 
+    async get_company_profile(company_id: string){
+        const company_id_num = Number(company_id)
+        const company = await this.userRepository.get_company_profile(company_id_num)
+        return company
+    }
+
 }
