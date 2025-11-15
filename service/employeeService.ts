@@ -233,4 +233,8 @@ export class EmployeeService{
     async delete_comment(user_id: number, comment_id: number){
         return await this.employeeRepository.delete_comment(user_id, comment_id)
     }
+
+    async update_student_id(user_id: number, student_id: string){
+        return await this.employeeRepository.update_student_id(user_id, student_id)
+    }
 }
