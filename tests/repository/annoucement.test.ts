@@ -66,6 +66,7 @@ describe('AnnouncementRepository', () => {
 					select: {
 						user: {
 							select: {
+								id: true,
 								email: true,
 								verified: true,
 								user_name: true,
