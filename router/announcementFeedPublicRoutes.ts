@@ -2,6 +2,12 @@ import { Router } from "express"
 import verifiedMiddleware from "../middlewares/verifiedMiddleware.js";
 import { AnnouncementController } from "../controller/announcementFeedPublicController.js";
 import authorizeRole from "../middlewares/rolebasedMiddleware.js";
+/**
+ * @swagger
+ * tags:
+ *   - name: AnnouncementPublic
+ *     description: Public announcements and opinions
+ */
 import { param } from "express-validator";
 import { validationHandler } from "../middlewares/validationHandler.js";
 

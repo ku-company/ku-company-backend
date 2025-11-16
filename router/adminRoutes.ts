@@ -8,6 +8,12 @@ import rateLimit from "express-rate-limit";
 
 
 const router = Router();
+/**
+ * @swagger
+ * tags:
+ *   - name: Admin
+ *     description: Admin management endpoints (requires Admin role)
+ */
 // Apply a rate limiter to all admin routes (defense-in-depth against abuse)
 const adminLimiter = rateLimit({
     windowMs: Number(process.env.ADMIN_RATE_LIMIT_WINDOW_MS ?? 15 * 60 * 1000), // 15 minutes default
@@ -27,6 +33,29 @@ router.patch("/verify-user/:id",
     validationHandler,
     async (req , res) => { adminController.verify_user(req, res) }
 )
+/**
+ * @swagger
+ * /api/admin/verify-user/{id}:
+ *   patch:
+ *     summary: Verify a user (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: User verified
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 
 router.patch("/reject-user/:id",
     authorizeRole("Admin"),

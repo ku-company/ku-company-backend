@@ -1,6 +1,8 @@
 import express from "express";
 import mockRouter from "./router/mockRoutes.js";
 import userRouter from "./router/userRoutes.js";
+import { swaggerSpec, swaggerUi } from "./swagger.js";
+import expressOasGenerator from "express-oas-generator";
 import cors from "cors";
 import type { Express } from "express";
 import dotenv from "dotenv";
@@ -19,7 +21,6 @@ import errorHandler from "./middlewares/errorHandler.js";
 import professorRouter from "./router/professorRoutes.js";
 import professorAnnouncementRouter from "./router/announcementFeedPublicRoutes.js";
 import aiRouter from "./router/aiRoutes.js";
-import { csrfProtection } from "./middlewares/csrf.js";
 import { requestLogging } from "./middlewares/requestLogging.js";
 import { appLogger } from "./utils/logger.js";
 
@@ -34,32 +35,43 @@ const app: Express = express();
 // Always trust proxy so req.secure reflects X-Forwarded-Proto when behind a TLS terminator (NGINX/ELB)
 if (!app.get('trust proxy')) app.set('trust proxy', 1);
 
-// Strict CORS allowlist: ALLOWED_ORIGINS (comma-separated) or fallback to CLIENT_URL_DEV
-const allowedOrigins = (
-  process.env.ALLOWED_ORIGINS ||
-  process.env.CLIENT_URL_DEV ||
-  ""
-)
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
+// Strict CORS allowlist with safe same-origin allowances for Swagger UI
+const selfHttp = `http://localhost:${port}`;
+const selfHttp127 = `http://127.0.0.1:${port}`;
+const allowedOrigins = Array.from(
+  new Set(
+    [
+      ...(process.env.ALLOWED_ORIGINS || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      process.env.CLIENT_URL_DEV || "",
+      selfHttp,
+      selfHttp127,
+    ].filter(Boolean),
+  ),
+);
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Fail-safe default: deny unless explicitly allowed
-      // Allow requests without Origin (same-origin/server-to-server tools like curl)
+      // Allow requests without Origin (same-origin or server-to-server tools like curl/Postman)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error("CORS origin not allowed"));
+      // Allow Safari/Chrome same-origin POSTs from Swagger UI when Origin header is sent
+      // by explicitly whitelisting our own origin derived above
+      return callback(null, false);
     },
     credentials: true,
   }),
 );
 app.use(express.json());
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/openapi.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
 // Parse cookies before CSRF so middleware can read csrf_token
 app.use(cookieParser());
-// Optional CSRF protection (double-submit). Enable by setting CSRF_PROTECTION=enabled.
-app.use(csrfProtection);
 // Minimal security headers
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");

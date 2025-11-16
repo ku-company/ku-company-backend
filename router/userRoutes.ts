@@ -8,6 +8,12 @@ import { signUpValidators, loginValidators, changePasswordValidators } from "../
 import { param, body } from "express-validator";
 
 const router = Router();
+/**
+ * @swagger
+ * tags:
+ *   - name: User
+ *     description: User authentication and profile endpoints
+ */
 // Support both CJS and ESM interop for cookie-parser
 const cookieParserMw = (cookieParser as any).default ?? (cookieParser as any);
 router.use(cookieParserMw());
@@ -50,6 +56,18 @@ router.post("/refresh-token",
             userController.refresh_token(req, res)
         }
 )
+/**
+ * @swagger
+ * /api/user/refresh-token:
+ *   post:
+ *     summary: Refresh access token using refresh token cookie
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: Token refreshed
+ *       429:
+ *         description: Too many requests
+ */
 router.post(
     "/sign-up",
     authRateLimiter('sign-up'),
@@ -58,6 +76,26 @@ router.post(
     async (req: Request, res: Response) => {
     userController.sign_up(req, res)
 });
+/**
+ * @swagger
+ * /api/user/sign-up:
+ *   post:
+ *     summary: Sign up a new user
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: User created
+ *       400:
+ *         description: Validation error
+ *       429:
+ *         description: Too many requests
+ */
 router.post("/login",
         authRateLimiter('login'),
         loginValidators,
@@ -66,6 +104,26 @@ router.post("/login",
             userController.login(req,res)
         }
 );
+/**
+ * @swagger
+ * /api/user/login:
+ *   post:
+ *     summary: Login with email/credentials
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Logged in
+ *       400:
+ *         description: Validation error
+ *       429:
+ *         description: Too many requests
+ */
 
 router.patch("/password",
     authRateLimiter('password'),
@@ -84,10 +142,54 @@ router.patch("/password",
         }
     }
 );
+/**
+ * @swagger
+ * /api/user/password:
+ *   patch:
+ *     summary: Change current user's password
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               current_password: { type: string }
+ *               new_password: { type: string }
+ *             required: [current_password, new_password]
+ *     responses:
+ *       200:
+ *         description: Password changed
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       429:
+ *         description: Too many requests
+ */
 // Use POST for logout to avoid state-changing GET and align with KISS (method simplicity)
 router.post("/logout", authRateLimiter('logout'), async (req, res) => {
     userController.logout(req, res)
 })
+/**
+ * @swagger
+ * /api/user/logout:
+ *   post:
+ *     summary: Logout current user (clears cookies)
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out
+ *       401:
+ *         description: Unauthorized
+ *       429:
+ *         description: Too many requests
+ */
 
 router.patch("/role",
     authRateLimiter('role'),
@@ -96,6 +198,31 @@ router.patch("/role",
     async (req, res) => {
     userController.update_role(req, res)
 })
+/**
+ * @swagger
+ * /api/user/role:
+ *   patch:
+ *     summary: Update current user's role (admin-only in practice)
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               role: { type: string }
+ *             required: [role]
+ *     responses:
+ *       200:
+ *         description: Updated
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
 
 router.get("/profile/:id",
     verifiedMiddleware,
@@ -104,5 +231,26 @@ router.get("/profile/:id",
     async(req, res) =>{
     userController.get_profile(req, res)
 })
+/**
+ * @swagger
+ * /api/user/profile/{id}:
+ *   get:
+ *     summary: Get user profile by id (verified users)
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Profile retrieved
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 
 export default router

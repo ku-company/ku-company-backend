@@ -5,6 +5,12 @@ import { validationHandler } from "../middlewares/validationHandler.js";
 
 
 const router = Router();
+/**
+ * @swagger
+ * tags:
+ *   - name: AI
+ *     description: AI verification endpoints (requires Admin)
+ */
 const aiController = new AIController();
 
 // Simple in-memory rate limiter specific to AI verification route
@@ -44,6 +50,31 @@ router.post("/verify-user/:id",
     async (req , res) => {
         aiController.verify_user(req, res)
 })
+
+/**
+ * @swagger
+ * /api/ai/verify-user/{id}:
+ *   post:
+ *     summary: Trigger AI verification for a user by ID
+ *     tags: [AI]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Verification completed
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: User not found
+ *       429:
+ *         description: Too many requests
+ *       500:
+ *         description: Error verifying user
+ */
 
 
 export default router;

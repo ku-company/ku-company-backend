@@ -23,6 +23,12 @@ const clientUrl = ((): string => {
   return allowedOrigins[0] || url;
 })();
 const authController = new AuthController();
+/**
+ * @swagger
+ * tags:
+ *   - name: Auth
+ *     description: Authentication via Google OAuth and token utilities
+ */
 
 
 router.get('/google', (req, res, next) => {
@@ -36,6 +42,20 @@ router.get('/google', (req, res, next) => {
     state: state
   })(req, res, next);
 });
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current user from token
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Success
+ *       401:
+ *         description: Unauthorized
+ */
 
 
 router.get(
