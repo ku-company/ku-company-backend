@@ -101,16 +101,18 @@ export class UserService {
         }
         try{
             const decoded = jwt.verify(token, REFRESH_KEY) as jwt.JwtPayload;
-            const payload = {
-                id: decoded.id,
-                user_name: decoded.user_name,
-                email: decoded.email,
-                role: decoded.role,
-                verified: decoded.verified
-            }
+
             const SECRET_KEY= process.env.SECRET_KEY;
             if(!SECRET_KEY){
                 throw new Error("Missing SECRET_KEY")
+            }
+            const user = await this.userRepository.get_user_by_id(decoded.id)
+            const payload = {
+                id: user.id,
+                user_name: user.user_name,
+                email: user.email,
+                role: user.role,
+                verified: user.verified
             }
             const access_token = jwt.sign(payload, SECRET_KEY, {expiresIn: "15m"});
             const refresh_token = jwt.sign(payload, REFRESH_KEY, {expiresIn: "7d"});
