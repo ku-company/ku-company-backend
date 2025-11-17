@@ -7,8 +7,8 @@ import jwt from "jsonwebtoken";
 import type { UserOauth } from "../model/userModel.js";
 import { AuthController } from '../controller/authController.js';
 import { getValidRoles } from '../utils/roleUtils.js';
-import type { Role } from '../utils/enums.js';
-
+// import type { Role } from '../utils/enums.js';
+import { Role } from '../utils/enums.js';
 const router = Router();
 const clientUrl = process.env.CLIENT_URL_DEV;
 const authController = new AuthController();
@@ -17,12 +17,15 @@ const authController = new AuthController();
 router.get('/google', (req, res, next) => {
   const validRoles = getValidRoles();
   const role = req.query.role;
-  const state = validRoles.includes(role as Role)
-    ? JSON.stringify({ role })
-    : JSON.stringify({});
+  const stdId = req.query.stdId; // only relevant for students
+  
+  const state: Record<string, any> = {};
+  if (validRoles.includes(role as Role)) state.role = role;
+  if ((role === Role.Student || role === Role.Alumni) && stdId) state.stdId = stdId;
+
   passportLib.authenticate('google', {
     scope: ['profile', 'email'],
-    state: state
+    state: JSON.stringify(state),
   })(req, res, next);
 });
 

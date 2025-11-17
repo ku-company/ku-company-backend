@@ -30,6 +30,9 @@ describe('HomeRepository.get_top_companies', () => {
     expect(out).toBe(sample);
     expect(mockPrisma.companyProfile.findMany).toHaveBeenCalledWith({
       take: 10,
+      where: {
+        user:{ verified: true }
+      },
       orderBy: { jobPosts: { _count: 'desc' } },
       include: { _count: { select: { jobPosts: true } } },
     });
@@ -45,8 +48,14 @@ describe('HomeRepository.get_top_job_postings', () => {
     expect(out).toBe(sample);
     expect(mockPrisma.jobPost.findMany).toHaveBeenCalledWith({
       take: 3,
+      where: {
+        status: "Active",
+        verified: true,
+        available_position: { gt: 0 }
+      },
       orderBy: { created_at: 'desc' },
       include: { company: true },
+      
     });
   });
 });
