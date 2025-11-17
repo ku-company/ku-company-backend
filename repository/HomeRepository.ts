@@ -13,6 +13,9 @@ export class HomeRepository {
     async get_top_companies() {
         return await this.prisma.companyProfile.findMany({
             take: 10,
+            where: {
+                user:{ verified: true }
+            },
             orderBy: {
             jobPosts: {
                 _count: 'desc'
@@ -31,6 +34,11 @@ export class HomeRepository {
     async get_top_job_postings() {
         return await this.prisma.jobPost.findMany({
             take: 3,
+            where: {
+                status: "Active",
+                verified: true,
+                available_position: { gt: 0 }
+            },
             orderBy: {
                 created_at: 'desc'
             },

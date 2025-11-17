@@ -280,7 +280,6 @@ export class AIRepository {
             throw new Error("Failed to create AI verification record")
         }
         if(trust_level === "High" || trust_level === "Medium"){
-            console.log("WIN")
             const update_user = await this.prisma.user.update({
             where: {
                 id: user_id
@@ -290,8 +289,15 @@ export class AIRepository {
                 status: "Approved",
                 updated_at: new Date()
             },
-            include: {
-                ai_verification: true
+            select:{ 
+                id: true,
+                email: true,
+                first_name: true,
+                last_name: true,
+                role: true,
+                status: true,
+                verified: true,
+                updated_at: true,
             }
             })
             return update_user
@@ -306,8 +312,15 @@ export class AIRepository {
                 status: "Rejected",
                 updated_at: new Date()
             },
-            include: {
-                ai_verification :true
+            select:{
+                id: true,
+                email: true,
+                first_name: true,
+                last_name: true,
+                role: true,
+                status: true,
+                verified: true,
+                updated_at: true,
             }
             })
             return update_user
