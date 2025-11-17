@@ -113,8 +113,10 @@ export class UserService {
                 throw new Error("Missing SECRET_KEY")
             }
             const access_token = jwt.sign(payload, SECRET_KEY, {expiresIn: "15m"});
+            const refresh_token = jwt.sign(payload, REFRESH_KEY, {expiresIn: "7d"});
             const response = {
-                "access_token": access_token
+                "access_token": access_token,
+                "refresh_token": refresh_token
             }
             return response
         }catch(err){
