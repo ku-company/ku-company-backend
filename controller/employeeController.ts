@@ -275,4 +275,18 @@ export class EmployeeController{
             })
         }
     }
+
+    async update_student_id(req: any, res: any){
+        try{
+            const result = await this.employeeService.update_student_id(req.user.id, req.body.stdId)
+            res.status(200).json({
+                message: "Student ID updated successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
 }

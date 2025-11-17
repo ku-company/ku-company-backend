@@ -13,6 +13,11 @@ const userController = new UserController();
 
 router.use(authorizeRole("Student", "Alumni", "Admin"));
 
+
+router.patch("/stdId", async (req , res) =>{
+    employeeController.update_student_id(req, res)
+})
+
 router.post("/my-profile/create", async (req , res) =>{
     employeeController.create_profile(req, res)
 })

@@ -591,4 +591,24 @@ export class EmployeeRepository{
         })
 
     }
+    async update_student_id(user_id: number, student_id: string){
+        const existingUser = await this.prisma.user.findFirst({
+            where: {
+                stdId: student_id,
+                id: { not: user_id }   // prevent false positive when user updates same ID
+            }
+        });
+        if(existingUser){
+            throw new Error("Student ID already in use");
+        }
+        
+        return await this.prisma.user.update({
+            where: {
+                id: user_id
+            },
+            data: {
+                stdId: student_id
+            }
+        })
+    }
 }
