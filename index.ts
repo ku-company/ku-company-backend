@@ -18,26 +18,52 @@ import companyJobPostingRouter from "./router/jobPostingPublicRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import professorRouter from "./router/professorRoutes.js";
 import professorAnnouncementRouter from "./router/announcementFeedPublicRoutes.js";
+import aiRouter from "./router/aiRoutes.js";
+import homeRouter from "./router/homeRoutes.js";
 
 dotenv.config();
 const port = process.env.PORT || 8000;
 const app: Express = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL_DEV, credentials: true }));
+
+const allowed = (process.env.ALLOWED_ORIGINS ?? process.env.CLIENT_URL_DEV ?? '')
+  .split(',')
+  .map(s => s.trim().replace(/\/$/, ''))
+  .filter(Boolean);
+
+const corsOptions: cors.CorsOptions = {
+  origin(origin, cb) {
+    console.log('CORS incoming Origin header:', origin); // <--- debug
+    if (!origin) return cb(null, true);
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    console.log('CORS normalizedOrigin:', normalizedOrigin, 'allowed?', allowed.includes(normalizedOrigin)); // <--- debug
+    if (allowed.includes(normalizedOrigin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalizedOrigin)) {
+      return cb(null, true);
+    }
+    return cb(null, false);
+  },
+  credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Authorization','Content-Type','X-Requested-With','x-role','x-user-id'],
+  exposedHeaders: ['Content-Disposition'],
+};
+app.use(cors(corsOptions))
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
-
+app.use("/api/ai", aiRouter)
+app.use("/api/home", homeRouter);
 app.use(jwtMiddleware);
 app.use("/api/mock", mockRouter);
 app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/employee", authorizeRole("Student", "Alumni", "Admin"), employeeRouter );
-app.use("/api/company", authorizeRole("Company"), companyRouter);
+app.use("/api/company", authorizeRole("Company", "Admin"), companyRouter);
 app.use("/api/job-postings", companyJobPostingRouter); // public feed job postings
 app.use("/api/professor", professorRouter);
 app.use("/api/announcements", professorAnnouncementRouter); // public feed announcements
+
 
 
 app.get("/", (req, res) => {

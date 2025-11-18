@@ -23,6 +23,67 @@ export class AdminRepository{
         }
         return user_id
     }
+
+    async edit_user_status(id:number, status: VerifiedStatus){
+        const user_id = Number(id)
+        try{
+        if (status == "Approved"){
+            const updated_user= await this.prisma.user.update({
+            where: {
+                id: user_id
+            },
+            data: {
+                status: status,
+                verified: true,
+                updated_at: new Date()
+            }
+            })
+            return updated_user
+        }
+        else if(status == "Rejected"){
+            const updated_user = await this.prisma.user.update({
+                where: {
+                    id: user_id
+                },
+                data: {
+                    status: status,
+                    verified: false,
+                    updated_at: new Date()
+                }
+            })
+            return updated_user
+            }
+        else if(status == "Pending"){
+            const updated_user = await this.prisma.user.update({
+                where: {
+                    id: user_id
+                },
+                data: {
+                    status: status,
+                    verified: false,
+                    updated_at: new Date()
+                }
+            })
+            return updated_user
+        }
+        }catch(error){
+            throw new Error("Invalid status value")
+        }
+    }
+
+    async edit_user_verified(id:number, verified: boolean){
+        const user_id = Number(id)
+        const updated_user= await this.prisma.user.update({
+            where: {
+                id: user_id
+            },
+            data: {
+                verified: verified,
+                updated_at: new Date()
+            }
+        })
+        return updated_user
+    }
     
     async verify_user(id: number){
         const user_id =  await this.find_user(id)
@@ -109,6 +170,52 @@ export class AdminRepository{
         return updated_user;
     }
 
+    async list_jobPosting(){
+        const list_jobPosting = await this.prisma.jobPost.findMany({})
+        return list_jobPosting
+    }
+
+    async list_jobPosting_filtering(verified: boolean){
+        const list_jobPosting = await this.prisma.jobPost.findMany({
+            where: {
+                verified: verified
+            }
+        })
+        return list_jobPosting
+    }
+
+
+    async edit_verified_status(job_post_id: number, verified: boolean){
+        const updated_jobPosting = await this.prisma.jobPost.update({
+            where: {
+                id: job_post_id
+            },
+            data: {
+                verified: verified,
+                updated_at: new Date()
+            }
+        })
+        return updated_jobPosting
+    }
+
+    async get_jobPosting_by_id(job_post_id: number){
+        const job_posting = await this.prisma.jobPost.findUnique({
+            where: {
+                id: job_post_id
+            }
+        })
+        return job_posting
+    }
+
+    async delete_jobPosting(job_post_id: number){
+        const deleted_jobPosting = await this.prisma.jobPost.delete({
+            where: {
+                id: job_post_id
+            }
+        })
+        return deleted_jobPosting
+    }
+
 
     async add_user(input: UserDB){
         const add_user = await this.prisma.user.create({
@@ -134,6 +241,7 @@ export class AdminRepository{
                 created_at: "desc"
             },
             select:{
+                id: true,
                 user_name: true,
                 role: true,
                 email: true,
@@ -151,6 +259,7 @@ export class AdminRepository{
                 status: status
             },
             select:{
+                id: true,
                 user_name: true,
                 role: true,
                 email: true,
@@ -169,6 +278,7 @@ export class AdminRepository{
                 id: user_id
             },
             select: {
+                id: true,
                 user_name: true,
                 role: true,
                 email: true,

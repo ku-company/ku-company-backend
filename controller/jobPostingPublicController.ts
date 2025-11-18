@@ -1,44 +1,41 @@
 import type { Request, Response } from "express";
 import { JobPostingService } from "../service/jobPostingService.js";
-import {isJobType, isPosition} from "../utils/validatorEnum.js";
-import { JobType, Position } from "../utils/enums.js";
+import  { JobPostingPublicRepository } from "../repository/jobPostingRepository.js";
+import {isJobType } from "../utils/validatorEnum.js";
+import { JobType } from "../utils/enums.js";
 import { enumToDropdown } from "../utils/enumToDropdown.js";
 
 export class JobPostingPublicController {
 
     private JobPostingService: JobPostingService;
+    private JobPostingPublicRepository: JobPostingPublicRepository;
 
     constructor(){
         this.JobPostingService = new JobPostingService();
+        this.JobPostingPublicRepository = new JobPostingPublicRepository();
     }
 
     async get_all_job_categories(req: Request, res: Response) {
-        const categories = enumToDropdown(Position);
+        const categories = await this.JobPostingPublicRepository.get_all_job_categories();
         res.json({ categories });
     }
 
     async get_all_job_types(req: Request, res: Response) {
-        console.log("Getting all job types");
         const jobTypes = enumToDropdown(JobType);
         res.json({ jobTypes });
     }
 
     async get_all_job_postings(req: Request, res: Response){
         try{
-            const { keyword, category, jobType } = req.query as { keyword: string; category: string; jobType: string };
-
-            // Validate category
-            const positionEnum = category && isPosition(category) ? category : undefined;
-            if (category && !positionEnum) {
-                return res.status(400).json({ message: `Invalid category: ${category}` });
-            }
+            const { keyword, category, jobType, sortOrder } = req.query as { keyword: string; category: string; jobType: string; sortOrder: string };
 
             // Validate jobType
             const jobTypeEnum = jobType && isJobType(jobType) ? jobType : undefined;
             if (jobType && !jobTypeEnum) {
                 return res.status(400).json({ message: `Invalid jobType: ${jobType}` });
             }
-            const jobPostings = await this.JobPostingService.get_all_job_postings(keyword, positionEnum, jobTypeEnum);
+
+            const jobPostings = await this.JobPostingService.get_all_job_postings(keyword, category, jobTypeEnum, sortOrder);
             res.json({ job_postings: jobPostings });
         }catch(error: unknown){
             console.error((error as Error).message);

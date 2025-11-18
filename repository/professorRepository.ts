@@ -1,8 +1,23 @@
 import type { PrismaClient } from "@prisma/client/extension";
 import { PrismaDB } from "../helper/prismaSingleton.js";
-import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorEditAnnouncementDTO,ProfessorAnnouncementDTO } from "../dtoModel/professorDTO.js";
-import { lstat } from "fs";
-import type { employeeProfile } from "@prisma/client";
+import type { EditProfessorProfileDTO, InputProfessorProfileDTO, ProfessorEditAnnouncementDTO,ProfessorAnnouncementDTO, DegreeInputDTO } from "../dtoModel/professorDTO.js";
+import type { employeeProfile, User } from "@prisma/client";
+import type { Transporter } from "nodemailer";
+import validator from "validator";
+
+let mailerPromise: Promise<Transporter | null> | null = null;
+
+const getMailer = async (): Promise<Transporter | null> => {
+    if (!mailerPromise) {
+        mailerPromise = import("../helper/mail.js")
+            .then((module) => module.mailer)
+            .catch((error) => {
+                console.error("Failed to load mailer transport:", error);
+                return null;
+            });
+    }
+    return mailerPromise;
+};
 
 export class ProfessorRepository{
 
@@ -23,15 +38,96 @@ export class ProfessorRepository{
         }
         return await this.prisma.professorProfile.create({
             data: {
-                ...input,
+                department: input.department,
+                faculty: input.faculty,
+                position: input.position,
+                contactInfo: input.contactInfo,
+                summary: input.summary,
+                lab: input.lab,
                 user: {
-                    connect: {
-                        id: user_id
-                    }
-                }
-            }
+                    connect: { id: user_id },
+                },
+            },
         })
+    
     };
+
+
+    private validateGraduationDate(date?: string | Date | null) {
+        if (!date) return;
+
+        const gradDate = new Date(date);
+        if (isNaN(gradDate.getTime())) {
+            throw new Error("Invalid graduation date format");
+        }
+
+        if (gradDate > new Date()) {
+            throw new Error("Graduation date cannot be in the future");
+        }
+    }
+
+
+
+    async add_degree(profile_id: number, input: DegreeInputDTO) {
+        this.validateGraduationDate(input.graduation_date);
+        return await this.prisma.degree.create({
+            data: {
+            professor_profile_id: profile_id,
+            title: input.title,
+            institution: input.institution ?? null,
+            graduation_date: input.graduation_date
+                ? new Date(input.graduation_date)
+                : null,
+            description: input.description ?? null,
+            },
+        });
+    }
+
+    // === EDIT DEGREE ===
+    async edit_degree(degree_id: number, profile_id: number, input: DegreeInputDTO) {
+        const existingDegree = await this.prisma.degree.findFirst({
+            where: {
+                id: degree_id,
+                professor_profile_id: profile_id
+            }
+        });
+        if (!existingDegree) {
+            throw new Error("Degree not found");
+        }
+        this.validateGraduationDate(input.graduation_date);
+        return await this.prisma.degree.update({
+            where: { id: degree_id, professor_profile_id: profile_id },
+            data: {
+            title: input.title,
+            institution: input.institution ?? null,
+            graduation_date: input.graduation_date
+                ? new Date(input.graduation_date)
+                : null,
+            description: input.description ?? null,
+            },
+        });
+    }
+
+    async delete_degree(degree_id: number, profile_id: number) {
+        const existingDegree = await this.prisma.degree.findFirst({
+            where: {
+                id: degree_id,
+                professor_profile_id: profile_id
+            }
+        });
+        if (!existingDegree) {
+            throw new Error("Degree not found");
+        }
+        return await this.prisma.degree.delete({
+            where: { id: degree_id, professor_profile_id: profile_id },
+        });
+    }
+
+    async get_all_degrees(profile_id: number) {
+        return await this.prisma.degree.findMany({
+            where: { professor_profile_id: profile_id },
+        });
+    }
 
     async get_profile(user_id: number){
         const result = await this.prisma.professorProfile.findUnique({
@@ -47,7 +143,8 @@ export class ProfessorRepository{
                         profile_image: true,
                         verified: true
                     }
-                }
+                },
+                degrees: true
             }
         })
         return result
@@ -63,7 +160,7 @@ export class ProfessorRepository{
 
     async edit_profile(user_id: number, input: EditProfessorProfileDTO){
         try{
-            const { first_name, last_name, department, faculty, position, contactInfo, summary } = input;
+            const { first_name, last_name, department, faculty, position, contactInfo, summary, lab} = input;
             await this.prisma.user.update({
                 where: {
                     id: user_id
@@ -94,7 +191,8 @@ export class ProfessorRepository{
                         profile_image: true,
                         verified: true
                     }
-                }
+                },
+                degrees: true
             }
         })
         }catch(e){
@@ -118,23 +216,67 @@ export class ProfessorRepository{
             include: { user: true },
         });
 
-        const students = await this.prisma.employeeProfile.findMany();
+        if (!profile) {
+            throw new Error("Professor profile not found");
+        }
+
+        const professorFirstName = profile.user.first_name ?? "";
+        const professorLastInitial = profile.user.last_name?.[0] ?? "";
+        const professorName = `${professorFirstName} ${profile.user.last_name ?? ""}`.trim();
+        const announcementContent = content ?? "";
+        const preview =
+            announcementContent.length > 50
+                ? `${announcementContent.substring(0, 50)}...`
+                : announcementContent;
+
+        const students = (await this.prisma.employeeProfile.findMany({
+            where: {
+                user: { verified: true},
+            },
+            include: { user: true },
+
+        })) as Array<employeeProfile & { user: User | null }>;
+
         await Promise.all(
-            students.map((student: employeeProfile) =>
-            this.prisma.notification.create({
-                data: {
-                employee_id: student.id,
-                professor_id: profile_id,
-                announcement_id: announcement_id,
-                message: `New announcement from Professor ${profile?.user.first_name ?? ""} ${profile?.user.last_name?.[0] ?? ""}: ${content?.substring(0, 50)}...`,
-                notification_status: "Unread",
-                notification_type: "NewAnnouncement",
-                },
+            students.map(async (student) => {
+                await this.prisma.notification.create({
+                    data: {
+                        employee_id: student.id,
+                        professor_id: profile_id,
+                        announcement_id,
+                        message: `New announcement from Professor ${professorFirstName} ${professorLastInitial}: ${preview}`,
+                        notification_status: "Unread",
+                        notification_type: "NewAnnouncement",
+                    },
+                });
+
+                if (student.user?.email) {
+                    const mailer = await getMailer();
+                    if (!mailer) {
+                        return;
+                    }
+
+                if (!validator.isEmail(student.user.email)) {
+                    console.warn(`Invalid email format skipped: ${student.user.email}`);
+                return;
+            }
+                    try {
+                        await mailer.sendMail({
+                            from: `"KU Company System" <${process.env.MAIL_USER ?? ""}>`,
+                            replyTo: profile.user.email ?? undefined,
+                            to: student.user.email,
+                            subject: `📢 New Announcement from Professor ${professorName}`,
+                            text: `New announcement from Professor ${professorName}:\n\n${content}\n\n— KU Company System`,
+                        });
+                        console.log(`Email sent to ${student.user.email} about announcement ${announcement_id}`);
+                    } catch (error) {
+                        console.error(`Failed to send email to ${student.user.email}:`, error);
+                    }
+                }
             })
-            )
         );
     }
-    
+
     async create_post(
         profile_id: number,
         input: ProfessorAnnouncementDTO 
@@ -368,4 +510,17 @@ export class ProfessorRepository{
             }
         })
     }
+
+    async get_all_opinions(profile_id: number){
+        return await this.prisma.announcement.findMany({
+            where: {
+                professor_id: profile_id,
+                type_post: "Opinion"
+            },
+            orderBy: {
+                created_at: 'desc'
+            }
+        })
+    }
+    
 }

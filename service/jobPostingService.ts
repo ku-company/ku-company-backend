@@ -23,10 +23,21 @@ export class JobPostingService {
     private async toFeedDTO(job: JobPostWithCompany): Promise<JobPostingFeedDTO> {
         return {
         id: job.id,
+        job_title: job.job_title,
         position: job.position,
+        location: job.location,
+        work_place: job.work_place,
+        minimum_expected_salary: job.minimum_expected_salary,
+        maximum_expected_salary: job.maximum_expected_salary,
+        expired_at: job.expired_at || null,
+        verified: job.verified,
+
         description: job.description,
         jobType: job.jobType,
+        status: job.status,
         available_position: job.available_position,
+    // Use the foreign key on job itself; single-item query may not select company.id
+    company_id: job.company_id,
         company_name: job.company.company_name,
         company_profile_image: await this.userService.get_profile_image(job.company.user_id),
         company_location: job.company.location,
@@ -34,11 +45,12 @@ export class JobPostingService {
         created_at: job.created_at,
         updated_at: job.updated_at,
         posted_ago: this.postedAgo(job.created_at),
+
         };
     }
 
-    async get_all_job_postings(keyword?: string, category?: string, jobType?: string): Promise<JobPostingFeedDTO[]> {
-        const items = await this.jobPostingRepository.get_all_job_postings(keyword, category, jobType);
+    async get_all_job_postings(keyword?: string, category?: string, jobType?: string, sortOrder?: string): Promise<JobPostingFeedDTO[]> {
+        const items = await this.jobPostingRepository.get_all_job_postings(keyword, category, jobType, sortOrder);
         return Promise.all(items.map((job) => this.toFeedDTO(job)));
     }
 

@@ -1,9 +1,12 @@
 import type { PrismaClient } from "@prisma/client/extension";
 import { profile } from "console";
+import { UserService } from "../service/userService.js";
 
 abstract class ProfileStrategy{
+    protected userService: UserService;
     constructor(protected prisma: PrismaClient){
         this.prisma = prisma
+        this.userService = new UserService()
     }
     abstract get_profile(user_id: number): any
 
@@ -17,8 +20,21 @@ export class EmployeeProfile extends ProfileStrategy {
         const result = await this.prisma.employeeProfile.findUnique({
             where: {
                 user_id: user_id
+            },
+            include: {
+                user: {
+                    select: {
+                        role: true,
+                        first_name: true,
+                        last_name: true,
+                        email:true,
+                        profile_image: true,
+                        verified: true
+                    }
+                }
             }
         })
+        result.user.profile_image = await this.userService.get_profile_image(user_id)
         return result
     }
 }
@@ -30,7 +46,21 @@ export class Professor extends ProfileStrategy {
             where: {
                 user_id: user_id
             },
+            include: {
+                user: {
+                    select: {
+                        role: true,
+                        email: true,
+                        profile_image: true,
+                        verified: true,
+                        first_name: true,
+                        last_name: true
+                    }
+                },
+                degrees: true
+            }
         })
+        result.user.profile_image = await this.userService.get_profile_image(user_id)
         return result
     }
 }
@@ -47,9 +77,19 @@ export class Company extends ProfileStrategy {
                     orderBy: { 
                         created_at: "desc"
                     }
+                },
+                user: {
+                    select: {
+                        role: true,
+                        email: true,
+                        profile_image: true,
+                        verified: true
+
+                    }
                 }
             }
         })
+        result.user.profile_image = await this.userService.get_profile_image(user_id)
         return result
     }
 }

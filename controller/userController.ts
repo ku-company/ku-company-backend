@@ -45,7 +45,9 @@ export class UserController {
     
     async refresh_token(req: Request, res: Response){
         try {
-            const result = await this.userService.refresh_token(req.cookies.refresh_token);;
+            const result = await this.userService.refresh_token(req.cookies.refresh_token);
+            res.cookie("access_token", result.access_token, { httpOnly: true, maxAge: 15*60*1000 });
+            res.cookie("refresh_token", result.refresh_token, { httpOnly: true, maxAge: 7*24*60*60*1000 });
             res.status(200).json({
                 message: "Token refreshed successfully",
                 data: result
@@ -58,7 +60,14 @@ export class UserController {
         }
     }
     async logout(req: Request, res: Response){
-        res.clearCookie('access_token')
+        const cookieOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none' as const,
+            path: '/', 
+        };
+        res.clearCookie('access_token', cookieOptions);
+        res.clearCookie('refresh_token', cookieOptions);
         res.status(200).json({
             message: "Logout successful"
         })
@@ -136,6 +145,21 @@ export class UserController {
             const result = await this.userService.get_other_profile(user_id);
             res.status(200).json({
                 message: "Profile retrieved successfully",
+                data: result
+            })
+        }catch(error: any){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+
+    async get_company_profile(req: Request, res: Response){
+        try{
+            const result = await this.userService.get_company_profile(req.params.id!);
+            console.log(result)
+            res.status(200).json({
+                message: "Company profile retrieved successfully",
                 data: result
             })
         }catch(error: any){

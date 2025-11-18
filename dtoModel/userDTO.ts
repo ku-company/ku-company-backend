@@ -9,6 +9,7 @@ export interface UserDTO{
     verified: boolean;
     status: string;
     profile_image: string | null;
+    is_consent?: boolean;
     employee_profile?: object | null;
     company_profile?: object | null;
 }
@@ -21,6 +22,7 @@ export interface UserCompanyDTO {
     verified: boolean;
     status: string;
     profile_image: string | null;
+    is_consent?: boolean;
     company_profile?: object | null;
 }
 

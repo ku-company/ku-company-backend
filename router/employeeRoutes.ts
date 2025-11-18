@@ -13,12 +13,22 @@ const userController = new UserController();
 
 router.use(authorizeRole("Student", "Alumni", "Admin"));
 
+
+router.patch("/stdId", async (req , res) =>{
+    employeeController.update_student_id(req, res)
+})
+
 router.post("/my-profile/create", async (req , res) =>{
     employeeController.create_profile(req, res)
 })
 router.get("/my-profile", async (req , res) =>{
     employeeController.get_employee_profile(req, res)
 })
+
+router.get("/profile/image", async (req: Request, res: Response) => {
+  userController.get_profile_image(req, res);
+});
+
 router.use(verifiedMiddleware);
 
 
@@ -30,9 +40,6 @@ router.post(
     userController.upload_profile_image(req, res);
 });
 
-router.get("/profile/image", async (req: Request, res: Response) => {
-  userController.get_profile_image(req, res);
-});
 
 router.patch("/profile/image", uploadImage.single("profile_image"), async (req: Request, res: Response) => {
   //update profile image
@@ -115,4 +122,20 @@ router.post("/checkout/apply-jobs", async(req , res) => {
 router.post("/job-applications/:id/confirm", async(req , res) =>{
     employeeController.sent_the_confirmation_to_company(req, res)
 })
+
+// comment company profile
+// === Employee Comment Routes ===
+router.post("/comment/:id", async (req , res) =>{
+    // id is company id
+    employeeController.add_comment_to_company(req, res)
+})
+router.patch("/comment/:id/edit", async (req , res ) => {
+    // id is comment id
+    employeeController.edit_comment(req, res)
+})
+router.delete("/comment/:id/delete", async (req , res ) =>{
+    // id is comment id
+    employeeController.delete_comment(req, res)
+})
+
 export default router;

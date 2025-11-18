@@ -1,17 +1,19 @@
-export enum JobType {
-  FullTime = "FullTime",
-  PartTime = "PartTime",
-  Internship = "Internship",
-  Contract = "Contract",
-}
+import { JobPostStatus, JobType } from "../utils/enums.js";
 
-export enum Position {
-  Backend_Developer = "Backend_Developer",
-  Frontend_Developer = "Frontend_Developer",
-  Fullstack_Developer = "Fullstack_Developer",
+export enum WorkPlace {
+  OnSite = "On-Site",
+  Online = "Online",
+  Hybrid = "Hybrid"
 }
 
 export interface CompanyJobPostingDTO {
+  job_title: string;
+  location: string;
+  status: JobPostStatus;
+  work_place: WorkPlace;
+  minimum_expected_salary: number;
+  maximum_expected_salary: number;
+  expired_at?: Date | null;
   description: string;
   jobType: JobType;
   position: string;

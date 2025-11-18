@@ -6,18 +6,21 @@ import { ProfessorController } from "../controller/professorController.js";
 
 const router = Router();
 const professorController = new ProfessorController();
-router.use(verifiedMiddleware);
 router.use(authorizeRole("Professor", "Admin"));
 
 
 // === Professor Profile Routes ===
 router.get("/my-profile", async (req: Request, res: Response) =>{
+    // does not require verified middleware
     professorController.get_professor_profile(req, res)
 })
 
 router.post("/my-profile", async (req , res) =>{
+    // does not require verified middleware
     professorController.create_profile(req, res)
 })
+
+router.use(verifiedMiddleware);
 
 router.patch("/my-profile", async (req , res) => {
     professorController.edit_profile(req, res)
@@ -27,6 +30,26 @@ router.delete("/my-profile", async (req , res) => {
     professorController.delete_profile(req,res)
 })
 
+// === Degree Routes ===
+router.post("/degrees", async (req , res) =>{
+    professorController.add_degree(req, res)
+})
+
+router.get("/degrees", async (req , res) =>{
+    // get all degrees of professor
+    professorController.get_all_degrees(req, res)
+})
+
+router.patch("/degrees/:id", async (req , res ) => {
+    professorController.edit_degree(req, res)
+})
+
+router.delete("/degrees/:id", async (req , res ) =>{
+    professorController.delete_degree(req, res)
+})
+
+
+// === Professor Comment Routes ===
 router.post("/comment/:id", async (req , res) =>{
     professorController.add_comment_to_company(req, res)
 })
@@ -58,6 +81,15 @@ router.post("/announcements", async (req , res) =>{
 
 router.get("/announcements/all", async (req , res) =>{
     professorController.get_all_announcement(req, res)
+})
+
+// === Opinion Routes ===
+router.post("/opinions", async (req, res) => {
+    professorController.create_opinion(req, res)
+})
+
+router.get("/opinions/all", async (req, res) => {
+    professorController.get_all_opinions(req, res)
 })
 
 

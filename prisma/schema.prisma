@@ -13,6 +13,12 @@ enum Role {
   Unknown
 }
 
+enum WorkPlace {
+  Online
+  OnSite
+  Hybrid
+}
+
 enum NotificationType {
   ApplicationSubmitted
   ApplicationConfirmed 
@@ -59,12 +65,6 @@ enum EmployeeJobApplicationStatus {
   Pending
 }
 
-enum Position {
-  Backend_Developer
-  Frontend_Developer
-  Fullstack_Developer
-}
-
 enum NotificationStatus {
   Pending
   Accepted
@@ -96,6 +96,7 @@ model User {
   id      Int @id @default(autoincrement())
   first_name   String? @db.VarChar(255)
   last_name    String? @db.VarChar(255)
+  stdId        String? @db.VarChar(255) @unique
   company_name String? @db.VarChar(255) @unique
   user_name    String? @db.VarChar(255) @unique
   email        String @unique @db.VarChar(255)
@@ -110,6 +111,8 @@ model User {
   professorProfile professorProfile? @relation(name: "UserProfessor")
   employeeProfile employeeProfile? @relation(name: "UserEmployee")
   companyProfile  companyProfile? @relation(name: "UserCompany")
+  ai_verification aiVerification[]
+  user_consent    userConsent?
 
   comment Comment[]
 }
@@ -124,9 +127,22 @@ model professorProfile {
   summary      String?        @db.Text()
   link        String?        @db.Text()
   updated_at   DateTime       @updatedAt
+  lab          String?        @db.Text() 
   annoucements Announcement[]
   notifications Notification[]
+  degrees        Degree[] 
   user         User           @relation(name: "UserProfessor",fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Degree {
+  id                    Int               @id @default(autoincrement())
+  professor_profile_id  Int
+  title                 String            @db.Text() // e.g. "Bachelor of Science in Computer Engineering"
+  institution           String?           @db.Text() // e.g. "Kasetsart University"
+  graduation_date       DateTime?         // e.g. 2019-05-15
+  description           String?           @db.Text() // optional extra info
+
+  professor      professorProfile  @relation(fields: [professor_profile_id], references: [id], onDelete: Cascade)
 }
 
 model employeeProfile {
@@ -209,10 +225,17 @@ model jobApplication {
 model jobPost {
   id          Int     @id @default(autoincrement())
   company_id  Int
+  job_title   String  @db.Text()
   description String  @db.Text()
+  location    String  @db.Text()
+  work_place  WorkPlace
+  minimum_expected_salary Int
+  maximum_expected_salary Int
+  expired_at  DateTime?
   jobType     JobType 
   position    String  @db.Text()
   available_position Int
+  verified    Boolean @default(false)
   status   JobPostStatus @default(Active)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -220,6 +243,7 @@ model jobPost {
   company companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
   applications jobApplication[]
   reposts Announcement[]
+  aiVerifications aiVerification[]
 }
 
 model Announcement {
@@ -269,4 +293,28 @@ model Comment {
 
   company      companyProfile @relation(fields: [company_id], references: [id], onDelete: Cascade)
   user         User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+
+model aiVerification {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?       @unique
+  job_post_id Int?      @unique
+  verified_by String?   @db.Text()
+  trust_level String?   @db.Text()
+  reason      String?   @db.Text()
+  evidence_url String?  @db.Text() 
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  user        User?       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  job_post    jobPost?  @relation(fields: [job_post_id], references: [id], onDelete: Cascade)
+
+}
+
+model userConsent {
+  id          Int       @id @default(autoincrement())
+  user_id     Int       @unique
+  consented   Boolean   @default(false)
+  consented_at DateTime?
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }

@@ -1,8 +1,7 @@
-import { type PrismaClient } from "@prisma/client";
+import { WorkPlace, type PrismaClient } from "@prisma/client";
 import { PrismaDB } from "../helper/prismaSingleton.js";
 import type { CompanyProfileDB } from "../model/companyModel.js";
-import type {CompanyProfileDTO} from "../dtoModel/companyDTO.js";
-import type { CompanyJobPostingDTO } from "../dtoModel/companyDTO.js";
+import type { CompanyProfileDTO, CompanyJobPostingDTO} from "../dtoModel/companyDTO.js";
 import { CompanyJobApplicationStatus } from "../utils/enums.js";
 
 export class CompanyRepository {
@@ -66,7 +65,14 @@ export class CompanyRepository {
     async create_job_posting(input: CompanyJobPostingDTO & { company_id: number }) {
         return this.prisma.jobPost.create({
             data: {
+                job_title: input.job_title,
                 description: input.description,
+                status: input.status,
+                minimum_expected_salary: input.minimum_expected_salary,
+                maximum_expected_salary: input.maximum_expected_salary,
+                location: input.location,
+                work_place: input.work_place as WorkPlace,
+                expired_at: input.expired_at || null,
                 jobType: input.jobType,
                 position: input.position,
                 available_position: input.available_position,
@@ -107,16 +113,23 @@ export class CompanyRepository {
     }
 
 
-    async update_job_posting(id: number, input: CompanyJobPostingDTO) {
+    async update_job_posting(id: number, input: CompanyJobPostingDTO){
         return this.prisma.jobPost.update({
             where: {
                 id: id
             },
             data: {
+                job_title: input.job_title,
                 description: input.description,
+                minimum_expected_salary: input.minimum_expected_salary,
+                maximum_expected_salary: input.maximum_expected_salary,
+                location: input.location,
+                status: input.status,
+                work_place: input.work_place as WorkPlace,
+                expired_at: input.expired_at || null,
                 jobType: input.jobType,
                 position: input.position,
-                available_position: input.available_position
+                available_position: input.available_position,
             }
         });
     }
@@ -134,6 +147,7 @@ export class CompanyRepository {
         const resumeUrl = app.resume?.file_url ?? app.jobBatch?.resume?.file_url ?? "";
         return {
             id: app.id,
+            user_id: employeeUser?.id,
             batch_id: app.batch_id ?? null,
             job_id: app.job_id,
             resume_id: app.resume_id ?? app.jobBatch?.resume?.id ?? null,
@@ -165,7 +179,7 @@ export class CompanyRepository {
             include: {
                 //individual job-applications
                 job_post: { select: { position: true, description: true, jobType: true } },
-                employee: {include: { user: { select: { first_name: true, last_name: true, email: true } } } },
+                employee: {include: { user: { select: { id: true, first_name: true, last_name: true, email: true } } } },
                 resume: { select: {id: true, file_url: true } }, 
             },
             // add sort
@@ -247,6 +261,93 @@ export class CompanyRepository {
             }
         })
         return notification
+    }
+
+    async get_stats(company_id: number) {
+        // Fetch total job postings and total applications for the company
+        const totalJobPostings = await this.prisma.jobPost.count({
+            where: { company_id }
+        });
+
+        const lastUpdatedtotalJobPostings = await this.prisma.jobPost.findMany({
+            where: { company_id },
+            orderBy: {
+                updated_at: 'desc' // latest update first
+            },
+            take: 1
+        });
+
+        const totalApplications = await this.prisma.jobApplication.count({
+            where: {
+                job_post: {
+                    company_id
+                }
+            }
+        });
+
+        const lastUpdatedtotalApplications = await this.prisma.jobApplication.findMany({
+            where: {
+                job_post: {
+                    company_id
+                }
+            },
+            orderBy: {
+                applied_at: 'desc' // latest first
+            },
+            take: 1
+        });
+
+        const newApplicants = await this.prisma.jobApplication.count({
+            where: {
+                job_post: { company_id },
+                applied_at: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // last 7 days
+            },
+        });
+
+        const lastUpdatedConfirmedApplications = await this.prisma.jobApplication.findMany({
+            where: {
+                job_post: {
+                    company_id
+                },
+                company_send_status: CompanyJobApplicationStatus.Confirmed
+            },
+            orderBy: {
+                company_responded_at: 'desc' // latest confirmation first
+            },
+            take: 1
+        });
+
+        const confirmedApplications = await this.prisma.jobApplication.count({
+            where: {
+                job_post: { company_id },
+                company_send_status: CompanyJobApplicationStatus.Confirmed,
+            },
+        });
+
+        return {
+            total_job_postings: totalJobPostings,
+            last_updated_total_job_postings: lastUpdatedtotalJobPostings[0]?.updated_at ?? null,
+            total_applicants: totalApplications,
+            new_applicants: newApplicants,
+            last_updated_total_applicants: lastUpdatedtotalApplications[0]?.applied_at ?? null,
+            confirmed_applications: confirmedApplications,
+            last_updated_confirmed_applications: lastUpdatedConfirmedApplications[0]?.company_responded_at ?? null
+        };
+    }
+
+    async get_active_job_postings(company_id: number) {
+        return this.prisma.jobPost.findMany({
+            where: {
+                company_id: company_id,
+                available_position: {
+                    gt: 0
+                },
+                status: "Active"
+            },
+            orderBy: {
+                created_at: 'desc' // latest first
+            }
+        });
     }
 
 }

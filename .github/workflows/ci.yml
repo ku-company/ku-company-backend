@@ -1,0 +1,63 @@
+name: CI Backend Tests
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: hackme
+          POSTGRES_DB: mydatabase
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U admin -d mydatabase"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DOCKER_DATABASE_URL: ${{ secrets.DOCKER_DATABASE_URL }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      REFRESH_KEY: ${{ secrets.REFRESH_KEY }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      RESUME_BUCKET_NAME: ${{ secrets.RESUME_BUCKET_NAME }}
+      GOOGLE_REDIRECT_URL: ${{ secrets.GOOGLE_REDIRECT_URL }}
+      CLIENT_URL_DEV: ${{ secrets.CLIENT_URL_DEV }}
+      BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+      PORT: 8000
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_DATABASE: ${{ secrets.DB_DATABASE }}
+      ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+      SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
+      STATE_SECRET: ${{ secrets.STATE_SECRET }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      RESUME_BUCKET_REGION: ${{ secrets.RESUME_BUCKET_REGION }}
+      BUCKET_REGION: ${{ secrets.BUCKET_REGION }}
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Prisma migrations
+        run: npx prisma migrate deploy && npx prisma generate
+
+      - name: Run tests
+        run: npm test

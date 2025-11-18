@@ -5,6 +5,7 @@ import type { UserSummaryDTO } from "../dtoModel/userDTO.js";
 import { Role } from "../utils/enums.js";
 import bcrypt from "bcryptjs";
 import { ProfileFactory } from "../helper/profileStrategy.js";
+import { DEFAULT_PROFILE_IMAGE_KEY } from "../utils/constants.js";
 
 export class UserRepository {
 
@@ -14,14 +15,20 @@ export class UserRepository {
         this.prisma = PrismaDB.getInstance();
     }
 
-    async create_user(input: UserDB): Promise<UserDB>{
+    async create_user(input: UserDB): Promise<any>{
+        if (!input.profile_image) {
+            input.profile_image = DEFAULT_PROFILE_IMAGE_KEY;
+        }
         if(input.role === Role.Alumni  || input.role === Role.Student){
+            if(!input.stdId) {
+                throw new Error("StudentId is required for Student and Alumni roles");
+            }
             if(input.email.endsWith("@ku.th")){
                 return await this.prisma.user.create({
                     data: {
                     first_name: input.first_name,
                     last_name: input.last_name,
-                    company_name: input.company_name,
+                    stdId: input.stdId,
                     user_name: input?.user_name,
                     email: input.email,
                     password_hash: input.password_hash,
@@ -31,22 +38,28 @@ export class UserRepository {
                     profile_image: input.profile_image,
                     employeeProfile: {
                         create: {}
+                    },
+                    user_consent: {
+                        create: {
+                            consented: input.is_consent,
+                            consented_at: new Date()
+                        }
                     }
                 }, 
                 include: {
                     employeeProfile: true,
-                }
+                    user_consent: true
+                    }
                 })
             }
             throw new Error("Email must be a valid ku.th email address");
         }
         else if(input.role === Role.Professor){
-            if(input.email.endsWith("@ku.th") && input.email.startsWith("feng")){
+            if(input.email.endsWith("@ku.th") || input.email.endsWith("@ku.ac.th")){
                 return await this.prisma.user.create({
                     data: {
                         first_name: input.first_name,
                         last_name: input.last_name,
-                        company_name: input.company_name,
                         user_name: input?.user_name,
                         email: input.email,
                         password_hash: input.password_hash,
@@ -54,10 +67,20 @@ export class UserRepository {
                         verified: false,
                         status: "Pending",
                         profile_image: input.profile_image,
+                        user_consent: {
+                            create: {
+                                consented: input.is_consent,
+                                consented_at: new Date()
+                            }
+                        }
+                    },
+                    include: {
+                        user_consent: true
                     }
                 })
             }
-            throw new Error("Email must be a valid ku.th email address");
+            console.log("Invalid email for professor:", input.email);
+            throw new Error("Email must be a valid ku.th or ku.ac.th email address");
         }
         else if(input.role === Role.Admin){
             return await this.prisma.user.create({
@@ -72,6 +95,15 @@ export class UserRepository {
                     verified: true,
                     status: "Approved",
                     profile_image: input.profile_image,
+                    user_consent: {
+                        create: {
+                            consented: input.is_consent,
+                            consented_at: new Date()
+                        }
+                    }
+                },
+                include: {
+                    user_consent: true
                 }
             })
         }
@@ -87,6 +119,15 @@ export class UserRepository {
                 verified: false,
                 status: "Pending",
                 profile_image: input.profile_image,
+                user_consent: {
+                    create: {
+                        consented: input.is_consent,
+                        consented_at: new Date()
+                    }
+                }
+            },
+            include: {
+                user_consent: true
             }
         })
     }
@@ -175,6 +216,15 @@ export class UserRepository {
         return user;
     }
 
+    async get_user_by_email(email: string){
+        const user = await this.prisma.user.findFirst({
+            where: {
+                email: email
+            }
+        })
+        return user;
+    }
+
     async upload_profile_image(user_id: number, data: { profile_image: string }): Promise<void> {
         await this.prisma.user.update({
             where: {
@@ -192,12 +242,29 @@ export class UserRepository {
                 id: user_id
             },
             data: {
-                profile_image: null
+                profile_image: DEFAULT_PROFILE_IMAGE_KEY
             }
         });
     }
 
     async update_role(user_id: number, new_role: Role): Promise<UserSummaryDTO> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: user_id }
+        });
+
+        if (!user) throw new Error("User not found");
+
+        const email = user.email || "";
+          if (new_role === Role.Student || new_role === Role.Alumni) {
+            if (!email.endsWith("@ku.th")) {
+                throw new Error("Email must be a valid ku.th email address");
+            }
+        } else if (new_role === Role.Professor) {
+            if (!(email.endsWith("@ku.th") && !email.endsWith("@ku.ac.th"))) {
+            throw new Error("Email must be a valid ku.th or ku.ac.th email address for professors");
+            }
+        }
+        
         const updatedUser = await this.prisma.user.update({
             where: {
                 id: user_id
@@ -227,6 +294,18 @@ export class UserRepository {
             throw new Error("Profile not found")
         }
         return profile
+    }
+
+    async get_company_profile(company_id: number){
+        const company_profile = await this.prisma.companyProfile.findUnique({
+            where: {
+                id: company_id
+            }
+        })
+        if(!company_profile){
+            throw new Error("Company profile not found")
+        }
+        return company_profile
     }
 
 }
