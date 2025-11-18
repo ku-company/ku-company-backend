@@ -26,8 +26,28 @@ const port = process.env.PORT || 8000;
 const app: Express = express();
 
 
-app.use(cors({ origin: process.env.CLIENT_URL_DEV, credentials: true }));
-app.disable('x-powered-by');
+const allowed = (process.env.ALLOWED_ORIGINS ?? process.env.CLIENT_URL_DEV ?? '')
+  .split(',')
+  .map(s => s.trim().replace(/\/$/, ''))
+  .filter(Boolean);
+
+const corsOptions: cors.CorsOptions = {
+  origin(origin, cb) {
+    if (!origin) return cb(null, true);
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    if (allowed.includes(normalizedOrigin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalizedOrigin)) {
+      return cb(null, true);
+    }
+    return cb(null, false);
+  },
+  credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Authorization','Content-Type','X-Requested-With','x-role','x-user-id'],
+  exposedHeaders: ['Content-Disposition'],
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
