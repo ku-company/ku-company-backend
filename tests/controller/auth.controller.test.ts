@@ -28,7 +28,7 @@ describe('Controller: Auth', () => {
     expect(res.status).toBe(200);
     expect(res.text).toMatch(/Authentication failed/);
   });
-
+  
   it('GET /api/auth/me returns current user from token', async () => {
     jest.resetModules();
     // Create a valid JWT so AuthService can verify it (don't mock source)
