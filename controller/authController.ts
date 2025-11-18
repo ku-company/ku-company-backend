@@ -12,8 +12,6 @@ export class AuthController {
     async getCurrentUser(req: Request, res: Response) {
         try {
             const token = req.headers.authorization?.split(" ")[1] || req.cookies.access_token;
-            const cookie_token = req.cookies.access_token;
-            console.log(cookie_token)
             const user = await this.authService.getCurrentUser(token);
             res.status(200).json(user);
         } catch (error) {
