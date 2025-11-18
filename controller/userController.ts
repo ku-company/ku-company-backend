@@ -60,7 +60,14 @@ export class UserController {
         }
     }
     async logout(req: Request, res: Response){
-        res.clearCookie('access_token')
+        const cookieOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none' as const,
+            path: '/', 
+        };
+        res.clearCookie('access_token', cookieOptions);
+        res.clearCookie('refresh_token', cookieOptions);
         res.status(200).json({
             message: "Logout successful"
         })
