@@ -124,10 +124,6 @@ describe('UserService', () => {
 			// Construct a refresh by signing directly using jsonwebtoken (handle ESM/CJS interop)
 			const jwtMod: any = await import('jsonwebtoken');
 			const jwt = jwtMod.default ?? jwtMod;
-			// Stub repository to avoid depending on seeded DB in CI
-			(svc as any).userRepository = {
-				get_user_by_id: jest.fn<() => Promise<any>>().mockResolvedValue(validPayload)
-			};
 			const refresh = jwt.sign(validPayload, process.env.REFRESH_KEY as string, { expiresIn: '5m' });
 			const out = await svc.refresh_token(refresh);
 			expect(out).toHaveProperty('access_token');
