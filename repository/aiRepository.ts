@@ -329,7 +329,6 @@ export class AIRepository {
     
 
     async gen_ai(prompt: string){
-        console.log(process.env.GEMINI_API_KEY)
         const googleGenAI = new GoogleGenAI({
             apiKey: process.env.GEMINI_API_KEY ?? ''
         })
