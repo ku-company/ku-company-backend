@@ -64,7 +64,24 @@ describe('Controller: Announcement feed', () => {
     const profProfile = await prisma.professorProfile.create({ data: { user_id: prof.id, department: 'CS', faculty: 'ENG' } });
     const post = await prisma.announcement.create({ data: { professor_id: profProfile.id, type_post: 'Opinion', content: 'single post' } });
 
-    const res = await request(app)
+    // Mock AnnouncementService.get_post_by_id and re-import routes so controller uses the mock
+    jest.resetModules();
+    jest.doMock('../../service/announcementService.js', () => {
+      return {
+        AnnouncementService: class {
+          async get_post_by_id(id: number) {
+            // return the post record created above
+            return { id: post.id, professor_id: post.professor_id, type_post: post.type_post, content: post.content };
+          }
+        }
+      };
+    });
+    const { default: mockedRoutes } = await import('../../router/announcementFeedPublicRoutes.js');
+    const appWithMock = buildTestApp((a) => {
+      a.use('/api/announcements', mockedRoutes);
+    });
+
+    const res = await request(appWithMock)
       .get(`/api/announcements/${post.id}`)
       .set('x-user-id', String(viewer.id))
       .set('x-role', 'Student')

@@ -1,5 +1,36 @@
 import request from './_request.js';
 import { buildTestApp } from './_app.js';
+
+describe('Controller: Employee', () => {
+  afterEach(() => {
+    jest.resetModules();
+    jest.restoreAllMocks();
+  });
+
+  it('GET /api/employee/my-profile returns 200 with profile data', async () => {
+    jest.resetModules();
+    jest.doMock('../../service/employeeService.js', () => {
+      return {
+        EmployeeService: class {
+          async get_profile(req: any) { return { id: req.user.id, first_name: 'T' }; }
+        }
+      };
+    });
+
+    const { default: employeeRoutes } = await import('../../router/employeeRoutes.js');
+    const app = buildTestApp((a) => a.use('/api/employee', employeeRoutes));
+
+    const res = await request(app)
+      .get('/api/employee/my-profile')
+      .set('x-user-id', '7')
+      .set('x-role', 'Student');
+
+    expect(res.status).toBe(200);
+    expect(res.body?.data?.id).toBe(7);
+  });
+});
+import request from './_request.js';
+import { buildTestApp } from './_app.js';
 // Mock multer-based middlewares to no-op
 jest.mock('../../middlewares/uploadPdfMiddleware', () => ({ uploadPdf: { array: () => (_req: any, _res: any, next: any) => next() } }));
 jest.mock('../../middlewares/uploadImageMiddleware', () => ({ uploadImage: { single: () => (_req: any, _res: any, next: any) => next() } }));
