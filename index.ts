@@ -25,7 +25,29 @@ dotenv.config();
 const port = process.env.PORT || 8000;
 const app: Express = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL_DEV, credentials: true }));
+
+const allowed = (process.env.ALLOWED_ORIGINS ?? '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const corsOptions: cors.CorsOptions = {
+  origin(origin, cb) {
+    if (!origin) return cb(null, true); // curl/Swagger/no Origin
+    if (allowed.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return cb(null, true);
+    }
+    return cb(null, false); // don’t throw -> no 500
+  },
+  credentials: true, // set to false if you do NOT use cookies
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Authorization','Content-Type','X-Requested-With','x-role','x-user-id'],
+  exposedHeaders: ['Content-Disposition'],
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // handle preflight
+
+app.disable('x-powered-by');
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());

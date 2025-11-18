@@ -12,7 +12,10 @@
     "db:reset": "DOCKER_DATABASE_URL=\"${INTEGRATION_DB_URL:-$DOCKER_DATABASE_URL}\" npx prisma migrate reset --force",
     "build": "npx tsc",
     "start": "node dist/index.js",
+    "start:prod": "node -r dotenv/config dist/index.js dotenv_config_path=.env.prod",
+    "prisma:deploy:prod": "node -r dotenv/config -e dotenv_config_path=.env.prod ./node_modules/.bin/prisma migrate deploy",
     "dev": "tsc -w & nodemon dist/index.js",
+    
     "prisma-migrate-dev": "docker exec express_api npx prisma migrate dev",
     "prisma-studio": "docker exec express_api npx prisma studio"
   },
