@@ -31,10 +31,14 @@ const allowed = (process.env.ALLOWED_ORIGINS ?? process.env.CLIENT_URL_DEV ?? ''
   .map(s => s.trim().replace(/\/$/, ''))
   .filter(Boolean);
 
+console.log('CORS allowed origins:', allowed); // <--- debug
+
 const corsOptions: cors.CorsOptions = {
   origin(origin, cb) {
+    console.log('CORS incoming Origin header:', origin); // <--- debug
     if (!origin) return cb(null, true);
     const normalizedOrigin = origin.replace(/\/$/, '');
+    console.log('CORS normalizedOrigin:', normalizedOrigin, 'allowed?', allowed.includes(normalizedOrigin)); // <--- debug
     if (allowed.includes(normalizedOrigin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalizedOrigin)) {
       return cb(null, true);
     }
@@ -45,9 +49,7 @@ const corsOptions: cors.CorsOptions = {
   allowedHeaders: ['Authorization','Content-Type','X-Requested-With','x-role','x-user-id'],
   exposedHeaders: ['Content-Disposition'],
 };
-
-app.use(cors(corsOptions));
-
+app.use(cors(corsOptions))
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
