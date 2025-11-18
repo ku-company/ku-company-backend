@@ -1,5 +1,36 @@
 import request from './_request.js';
 import { buildTestApp } from './_app.js';
+
+describe('Controller: Admin', () => {
+  afterEach(() => {
+    jest.resetModules();
+    jest.restoreAllMocks();
+  });
+
+  it('PATCH /api/admin/verify-user/:id returns 200 when service verifies', async () => {
+    jest.resetModules();
+    jest.doMock('../../service/adminService.js', () => {
+      return {
+        AdminService: class {
+          async verify_user(id: number) { return { id, verified: true }; }
+        }
+      };
+    });
+
+    const { default: adminRoutes } = await import('../../router/adminRoutes.js');
+    const app = buildTestApp((a) => a.use('/api/admin', adminRoutes));
+
+    const res = await request(app)
+      .patch('/api/admin/verify-user/5')
+      .set('x-role', 'Admin')
+      .set('x-user-id', '1');
+
+    expect(res.status).toBe(200);
+    expect(res.body?.data?.verified).toBe(true);
+  });
+});
+import request from './_request.js';
+import { buildTestApp } from './_app.js';
 import adminRoutes from '../../router/adminRoutes.js';
 import { PrismaClient } from '@prisma/client';
 

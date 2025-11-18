@@ -1,5 +1,65 @@
 import request from './_request.js';
 import { buildTestApp } from './_app.js';
+
+describe('Controller: Company', () => {
+  afterEach(() => {
+    jest.resetModules();
+    jest.restoreAllMocks();
+  });
+
+  it('POST /api/company/profile returns 201 when service creates profile', async () => {
+    jest.resetModules();
+    jest.doMock('../../service/companyService.js', () => ({
+      CompanyService: class { async create_profile(input: any) { return { id: 7, ...input }; } }
+    }));
+
+    const { default: profileRoutes } = await import('../../router/company/profileRoutes.js');
+    const app = buildTestApp((a) => a.use('/api/company/profile', profileRoutes));
+
+    const res = await request(app)
+      .post('/api/company/profile')
+      .set('x-user-id', '3')
+      .set('x-role', 'Company')
+      .send({ company_name: 'C' });
+
+    expect(res.status).toBe(201);
+    expect(res.body?.data?.id).toBe(7);
+  });
+
+  it('GET /api/company/profile returns 404 when not found', async () => {
+    jest.resetModules();
+    jest.doMock('../../service/companyService.js', () => ({ CompanyService: class { async get_profile(id: number) { return null; } } }));
+
+    const { default: profileRoutes } = await import('../../router/company/profileRoutes.js');
+    const app = buildTestApp((a) => a.use('/api/company/profile', profileRoutes));
+
+    const res = await request(app)
+      .get('/api/company/profile')
+      .set('x-user-id', '3')
+      .set('x-role', 'Company');
+
+    expect(res.status).toBe(404);
+  });
+
+  it('POST /api/company/job-postings creates job posting', async () => {
+    jest.resetModules();
+    jest.doMock('../../service/companyService.js', () => ({ CompanyService: class { async create_job_posting(u: number, input: any) { return { id: 11, ...input }; } } }));
+
+    const { default: jobRoutes } = await import('../../router/company/jobPostingRoutes.js');
+    const app = buildTestApp((a) => a.use('/api/company/job-postings', jobRoutes));
+
+    const res = await request(app)
+      .post('/api/company/job-postings')
+      .set('x-user-id', '4')
+      .set('x-role', 'Company')
+      .send({ job_title: 'Dev' });
+
+    expect(res.status).toBe(201);
+    expect(res.body?.data?.id).toBe(11);
+  });
+});
+import request from './_request.js';
+import { buildTestApp } from './_app.js';
 // Mock multer-based middlewares to no-op
 jest.mock('../../middlewares/uploadImageMiddleware', () => ({ uploadImage: { single: () => (_req: any, _res: any, next: any) => next() } }));
 

@@ -17,26 +17,31 @@ describe('Controller: Auth', () => {
   it('GET /api/auth/failure returns message', async () => {
     jest.resetModules();
     const { default: authRoutes } = await import('../../router/authRoutes.js');
-    const app = buildTestApp((a) => a.use('/api/auth', authRoutes));
+    const cookieParserImport = await import('cookie-parser');
+    const cookieParser = (cookieParserImport as any).default || cookieParserImport;
+    const app = buildTestApp((a) => {
+      // install cookie-parser so `req.cookies` exists
+      a.use(cookieParser());
+      a.use('/api/auth', authRoutes);
+    });
     const res = await request(app).get('/api/auth/failure');
     expect(res.status).toBe(200);
     expect(res.text).toMatch(/Authentication failed/);
   });
-
+  
   it('GET /api/auth/me returns current user from token', async () => {
     jest.resetModules();
-    // Mock AuthService before importing routes so the controller uses the mock
-    jest.doMock('../../service/authService.js', () => ({
-      __esModule: true,
-      AuthService: class {
-        getCurrentUser = jest.fn().mockResolvedValue({ id: 1, email: 'a@b.com' });
-      },
-    }));
+    // Create a valid JWT so AuthService can verify it (don't mock source)
+    const jwtImport = await import('jsonwebtoken');
+    const jwt = (jwtImport as any).default || jwtImport;
+    const payload = { id: 1, user_name: '', email: 'a@b.com', role: 'Student', verified: true };
+    const token = jwt.sign(payload, process.env.SECRET_KEY as string || 'secret', { expiresIn: '1h' });
+
     const { default: authRoutes } = await import('../../router/authRoutes.js');
     const app = buildTestApp((a) => a.use('/api/auth', authRoutes));
     const res = await request(app)
       .get('/api/auth/me')
-      .set('Authorization', 'Bearer token');
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body?.email).toBe('a@b.com');
   });

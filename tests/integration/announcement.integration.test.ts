@@ -27,6 +27,8 @@ describeIf('Integration: AnnouncementRepository', () => {
     createdUserIds.push(companyUser.id);
     const company = await prisma.companyProfile.create({ data: { user_id: companyUser.id, company_name: 'ABC' } });
   const job = await prisma.jobPost.create({ data: { company_id: company.id, job_title: 'JD', description: 'JD', location: 'Bangkok', work_place: WorkPlace.OnSite, minimum_expected_salary: 12000, maximum_expected_salary: 24000, jobType: JobType.FullTime, position: 'Dev', available_position: 1 } as any });
+  // Clean up any existing announcements to ensure a clean test slate.
+  await prisma.announcement.deleteMany();
 
   // Ensure deterministic ordering by setting explicit created_at timestamps
   const t1 = new Date();

@@ -7,7 +7,6 @@ import jwt from "jsonwebtoken";
 import type { UserOauth } from "../model/userModel.js";
 import { AuthController } from '../controller/authController.js';
 import { getValidRoles } from '../utils/roleUtils.js';
-// import type { Role } from '../utils/enums.js';
 import { Role } from '../utils/enums.js';
 const router = Router();
 const clientUrl = process.env.CLIENT_URL_DEV;
@@ -65,15 +64,34 @@ router.get(
     }
     const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m" });
     const refreshToken = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d" });
-    res.cookie("refresh_token", refreshToken, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    // res.cookie("refresh_token", refreshToken, {
+    //   httpOnly: true,
+    //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    // });
 
-    res.cookie("access_token", accessToken, {
+    // res.cookie("access_token", accessToken, {
+    //   httpOnly: true,
+    //   maxAge: 15 * 60 * 1000, // 15 min
+    // });
+
+    const cookieOptions = {
       httpOnly: true,
-      maxAge: 15 * 60 * 1000, // 15 min
-    });
+      secure: true,      // required for cross-site
+      sameSite: "none" as const,  // required for cross-site
+    };
+
+    // Access token
+      res.cookie("access_token", accessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000,
+      });
+
+      // Refresh token
+      res.cookie("refresh_token", refreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
     res.redirect(clientUrl);
   },
 );

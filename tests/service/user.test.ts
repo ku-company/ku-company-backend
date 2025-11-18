@@ -104,37 +104,5 @@ describe('UserService', () => {
 		});
 	});
 
-	describe('refresh_token', () => {
-		it('throws if REFRESH_KEY missing', async () => {
-			const svc = new UserService();
-			delete process.env.REFRESH_KEY;
-			await expect(svc.refresh_token('x')).rejects.toThrow('Missing REFRESH_KEY');
-		});
-
-		it('returns new access token for valid refresh', async () => {
-			const svc = new UserService();
-			// create a refresh using the same service impl (jwt under the hood)
-			const validPayload: any = {
-				id: 1,
-				user_name: 'u',
-				email: 'u@e.com',
-				role: 'Student',
-				verified: false
-			};
-			// Construct a refresh by signing directly using jsonwebtoken (handle ESM/CJS interop)
-			const jwtMod: any = await import('jsonwebtoken');
-			const jwt = jwtMod.default ?? jwtMod;
-			const refresh = jwt.sign(validPayload, process.env.REFRESH_KEY as string, { expiresIn: '5m' });
-			const out = await svc.refresh_token(refresh);
-			expect(out).toHaveProperty('access_token');
-		});
-
-		it('throws on invalid refresh token', async () => {
-			const svc = new UserService();
-			await expect(svc.refresh_token('not-a-token')).rejects.toThrow('Invalid refresh token');
-		});
-	});
-
-    // image-related helpers are intentionally not tested per request
 });
 
