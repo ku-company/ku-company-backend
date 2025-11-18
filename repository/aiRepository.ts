@@ -230,7 +230,7 @@ export class AIRepository {
                 },
                 data: {
                     verified: true,
-                    verified_at: new Date()
+                    updated_at: new Date()
                 }
             })
             return update_job_post
