@@ -29,8 +29,6 @@ describe('Controller: Admin', () => {
     expect(res.body?.data?.verified).toBe(true);
   });
 });
-import request from './_request.js';
-import { buildTestApp } from './_app.js';
 import adminRoutes from '../../router/adminRoutes.js';
 import { PrismaClient } from '@prisma/client';
 

@@ -29,8 +29,6 @@ describe('Controller: Employee', () => {
     expect(res.body?.data?.id).toBe(7);
   });
 });
-import request from './_request.js';
-import { buildTestApp } from './_app.js';
 // Mock multer-based middlewares to no-op
 jest.mock('../../middlewares/uploadPdfMiddleware', () => ({ uploadPdf: { array: () => (_req: any, _res: any, next: any) => next() } }));
 jest.mock('../../middlewares/uploadImageMiddleware', () => ({ uploadImage: { single: () => (_req: any, _res: any, next: any) => next() } }));

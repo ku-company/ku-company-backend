@@ -23,10 +23,12 @@ it('list_filtering_jobPosting accepts true/false and throws on invalid', async (
 
   const resTrue = await svc.list_filtering_jobPosting('true');
   expect(Array.isArray(resTrue)).toBe(true);
-  expect(resTrue[0].verified).toBe(true);
+  expect((resTrue as any[]).length).toBeGreaterThan(0);
+  expect((resTrue as any[])[0].verified).toBe(true);
 
   const resFalse = await svc.list_filtering_jobPosting('false');
-  expect(resFalse[0].verified).toBe(false);
+  expect((resFalse as any[]).length).toBeGreaterThan(0);
+  expect((resFalse as any[])[0].verified).toBe(false);
 
   await expect(svc.list_filtering_jobPosting('not-bool')).rejects.toThrow("Invalid 'verified' query; use true/false");
 });
