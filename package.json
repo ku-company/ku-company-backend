@@ -15,7 +15,8 @@
     "start:prod": "node -r dotenv/config dist/index.js dotenv_config_path=.env.prod",
     "prisma:deploy:prod": "node -r dotenv/config -e dotenv_config_path=.env.prod ./node_modules/.bin/prisma migrate deploy",
     "dev": "tsc -w & nodemon dist/index.js",
-    
+    "seed:ci": "node scripts/seed-ci-users.js",
+    "gen:jwts": "node scripts/gen-jwts.js",
     "prisma-migrate-dev": "docker exec express_api npx prisma migrate dev",
     "prisma-studio": "docker exec express_api npx prisma studio"
   },

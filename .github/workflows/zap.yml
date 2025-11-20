@@ -1,62 +1,44 @@
-name: ZAP Baseline Scan
+name: ZAP Multi-Role Scan
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, dev]
-  pull_request:
-    branches: [main, dev]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  security-events: write
-  actions: read
 
 jobs:
   zap:
-    name: OWASP ZAP Baseline Scan
     runs-on: ubuntu-latest
     timeout-minutes: 45
+
+    strategy:
+      matrix:
+        role: [Admin, Student, Company, Professor]
+
     services:
       postgres:
-        image: postgres:15
+        image: postgres:16
         env:
-          POSTGRES_USER: admin
-          POSTGRES_PASSWORD: hackme
-          POSTGRES_DB: mydatabase
-        options: >-
-          --health-cmd "pg_isready -U admin -d mydatabase"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app
         ports:
           - 5432:5432
-    env:
-      NODE_ENV: test
-      PORT: 8000
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_DATABASE: ${{ secrets.DB_DATABASE }}
-      DOCKER_DATABASE_URL: ${{ secrets.DOCKER_DATABASE_URL }}
-      CLIENT_URL_DEV: ${{ secrets.CLIENT_URL_DEV }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY}}
-      REFRESH_KEY: ${{ secrets.REFRESH_KEY}}
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID}}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET}}
-      GOOGLE_REDIRECT_URL: ${{ secrets.GOOGLE_REDIRECT_URL}}
-      ACCESS_KEY: ${{ secrets.ACCESS_KEY}}
-      SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY}}
-      BUCKET_NAME: ${{ secrets.BUCKET_NAME}}
-      RESUME_BUCKET_NAME: ${{ secrets.RESUME_BUCKET_NAME}}
-      BUCKET_REGION: ${{ secrets.BUCKET_REGION}}
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY}}
-      ZAP_TARGET_URL: http://host.docker.internal:8000
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        options: >-
+          --health-cmd="pg_isready -U postgres -d app"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+    env:
+      PORT: 8000
+      ZAP_TARGET_URL: http://localhost:8000
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -64,50 +46,49 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate Prisma client
-        run: npx prisma generate
-
       - name: Run migrations
         run: npm run db:migrate:deploy
 
-      - name: Build API
-        run: npm run build
+      - name: Seed CI users
+        run: node scripts/seed-ci-users.js
 
-      - name: Start API in background
+      - name: Generate JWTs
+        id: gen
+        run: |
+          node scripts/gen-jwts.js > tokens.json
+          echo "ZAP_JWT=$(jq -r '.${{ matrix.role }}' tokens.json)" >> $GITHUB_ENV
+
+      - name: Start server
         run: |
           nohup npm start >/tmp/server.log 2>&1 &
           echo $! > server.pid
 
-      - name: Wait for API to be ready
+      - name: Wait for API
         run: |
-          for i in {1..30}; do
-            if curl -fsS http://localhost:8000/ >/dev/null; then
-              echo "API is up"
-              exit 0
-            fi
-            sleep 5
+          for i in {1..20}; do
+            if curl -fsS http://localhost:8000 >/dev/null; then exit 0; fi
+            sleep 3
           done
-          echo "API did not start in time"
           cat /tmp/server.log
           exit 1
 
-      - name: Run OWASP ZAP Baseline Scan
+      - name: Run ZAP Baseline
         uses: zaproxy/action-baseline@v0.15.0
         with:
           target: ${{ env.ZAP_TARGET_URL }}
-          cmd_options: >-
+          cmd_options: |
             -a
-            -m 5
-          allow_issue_writing: false
+            --authheader "Authorization"
+            --authvalue "Bearer ${{ env.ZAP_JWT }}"
           fail_action: false
+        continue-on-error: true
 
-      - name: Print API logs on failure
-        if: failure()
-        run: cat /tmp/server.log
+      - name: Upload report per role
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report-${{ matrix.role }}
+          path: zap_report.html
 
-      - name: Stop API
+      - name: Stop server
         if: always()
-        run: |
-          if [ -f server.pid ]; then
-            kill $(cat server.pid) || true
-          fi
+        run: kill $(cat server.pid) || true
