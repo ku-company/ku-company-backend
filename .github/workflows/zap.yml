@@ -153,7 +153,7 @@ jobs:
         mkdir -p reports
         chmod -R 777 reports
 
-    - name: Run ZAP API Scan
+    - name: Run ZAP API Scan (Authenticated)
       continue-on-error: true
       run: |
         TOKEN=$(jq -r ".${{ matrix.role }}" tokens.json)
@@ -165,10 +165,15 @@ jobs:
           --network=host \
           -v "$(pwd)/reports:/zap/wrk:rw" \
           ghcr.io/zaproxy/zaproxy:stable \
-          zap-full-scan.py \
-          -t http://localhost:8000 \
-          -z "-config globalheader.enabled=true -config globalheader.headers(0).name=Authorization -config globalheader.headers(0).value=Bearer $TOKEN" \
-          -r /zap/wrk/zap-report-${{ matrix.role }}.html
+          zap-api-scan.py \
+          -t http://localhost:8000/openapi.json \
+          -f openapi \
+          -z "-config globalheader.enabled=true" \
+          -z "-config globalheader.headers(0).name=Authorization" \
+          -z "-config globalheader.headers(0).value=Bearer $TOKEN" \
+          -r /zap/wrk/zap-report-${{ matrix.role }}.html \
+          -d -I
+
 
 
 
