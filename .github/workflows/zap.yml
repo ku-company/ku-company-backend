@@ -149,9 +149,11 @@ jobs:
         echo "✅ Token OK"
 
     - name: Run ZAP API Scan
-      continue-on-error: true  # Don't fail the workflow
+      continue-on-error: true
       run: |
         TOKEN=$(jq -r ".${{ matrix.role }}" tokens.json)
+
+        mkdir -p reports
 
         docker run --rm \
           --network="host" \
@@ -160,19 +162,20 @@ jobs:
           zap-api-scan.py \
           -t http://localhost:8000/openapi.json \
           -f openapi \
-          -r zap-report-${{ matrix.role }}.html \
+          -r /zap/wrk/reports/zap-report-${{ matrix.role }}.html \
           -z "-config globalheader.enabled=true" \
           -z "-config globalheader.headers(0).name=Authorization" \
           -z "-config globalheader.headers(0).value=Bearer $TOKEN" \
-          -I
+          -d
+
 
 
     - name: Upload ZAP report
       uses: actions/upload-artifact@v4
       with:
         name: zap-report-${{ matrix.role }}
-        path: zap-report-${{ matrix.role }}.html
-        retention-days: 30
+        path: reports/zap-report-${{ matrix.role }}.html
+
 
     - name: Stop application
       if: always()
