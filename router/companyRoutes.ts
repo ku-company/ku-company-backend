@@ -5,6 +5,12 @@ import jobApplicationRouter from "./company/jobApplicationRoutes.js";
 import dashboardRouter from "./company/dashboardRoutes.js";
 
 const router = Router();
+/**
+ * @swagger
+ * tags:
+ *   - name: Company
+ *     description: Company profile, job postings, dashboard, and applications (requires Company/Admin)
+ */
 
 router.use("/profile", profileRouter);       // /api/company/profile
 router.use("/job-postings", jobPostingRouter); // /api/company/job-postings

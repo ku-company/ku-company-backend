@@ -10,14 +10,12 @@ export default {
     "^file-type$": "<rootDir>/tests/__mocks__/file-type.js",
     "^jsonwebtoken$": "<rootDir>/tests/__mocks__/jsonwebtoken.js"
   },
-    modulePathIgnorePatterns: [
-      "<rootDir>/dist/",
-      "<rootDir>/tests/__mocks__/jsonwebtoken.ts"
-    ],
-  globals: {
-    "ts-jest": {
-      useESM: true,
-      tsconfig: "tsconfig.jest.json"
-    }
+  modulePathIgnorePatterns: [
+    "<rootDir>/dist/",
+    "<rootDir>/tests/__mocks__/jsonwebtoken.ts"
+  ],
+  // Migrate from deprecated globals.ts-jest config to transform options.
+  transform: {
+    "^.+\\.tsx?$": ["ts-jest", { useESM: true, tsconfig: "tsconfig.jest.json" }]
   }
 };
