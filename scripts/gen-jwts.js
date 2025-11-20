@@ -1,18 +1,16 @@
-import jwt from "jsonwebtoken";
+import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+import { writeFileSync } from 'fs';
+
+dotenv.config();
 
 const SECRET = process.env.SECRET_KEY;
-if (!SECRET) throw new Error("Missing SECRET_KEY");
 
-const roles = ["Admin", "Student", "Company", "Professor"];
+const tokens = {
+  "Student":   jwt.sign({ id: 1, role: "Student", verified: true }, SECRET, { expiresIn: '7d' }),
+  "Professor": jwt.sign({ id: 2, role: "Professor", verified: true }, SECRET, { expiresIn: '7d' }),
+  "Company":   jwt.sign({ id: 3, role: "Company", verified: true }, SECRET, { expiresIn: '7d' }),
+  "Admin":     jwt.sign({ id: 4, role: "Admin", verified: true }, SECRET, { expiresIn: '7d' }),
+};
 
-const tokens = {};
-
-for (const role of roles) {
-  tokens[role] = jwt.sign(
-    { id: `${role}-ci`, role, verified: true },
-    SECRET,
-    { expiresIn: "7d" }
-  );
-}
-
-console.log(JSON.stringify(tokens, null, 2));
+writeFileSync('tokens.json', JSON.stringify(tokens, null, 2));

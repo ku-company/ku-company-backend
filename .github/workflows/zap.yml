@@ -1,15 +1,17 @@
-name: ZAP Multi-Role Scan
+name: ZAP API Security Scan
 
 on:
   workflow_dispatch:
   push:
     branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
 
 jobs:
-  zap:
+  zap-scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-
+    timeout-minutes: 30
+    
     strategy:
       matrix:
         role: [Admin, Student, Company, Professor]
@@ -24,71 +26,109 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres -d app"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     env:
       PORT: 8000
-      ZAP_TARGET_URL: http://localhost:8000
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Run migrations
-        run: npm run db:migrate:deploy
+    - name: Wait for PostgreSQL
+      run: |
+        for i in {1..30}; do
+          pg_isready -h localhost -p 5432 && break
+          sleep 2
+        done
 
-      - name: Seed CI users
-        run: node scripts/seed-ci-users.js
+    - name: Run database migrations
+      run: npm run db:migrate:deploy
 
-      - name: Generate JWTs
-        id: gen
-        run: |
-          node scripts/gen-jwts.js > tokens.json
-          echo "ZAP_JWT=$(jq -r '.${{ matrix.role }}' tokens.json)" >> $GITHUB_ENV
+    - name: Seed test users
+      run: node scripts/seed-ci-users.js
 
-      - name: Start server
-        run: |
-          nohup npm start >/tmp/server.log 2>&1 &
-          echo $! > server.pid
+    - name: Generate JWT tokens
+      run: |
+        # Create clean token generation script
+        cat > scripts/gen-tokens-ci.js << 'EOF'
+        import { writeFileSync } from 'fs';
+        import jwt from 'jsonwebtoken';
+        
+        const SECRET = process.env.SECRET_KEY;
+        const tokens = {
+          "Admin": jwt.sign({ id: 1, role: "Admin", verified: true }, SECRET, { expiresIn: '7d' }),
+          "Student": jwt.sign({ id: 2, role: "Student", verified: true }, SECRET, { expiresIn: '7d' }),
+          "Company": jwt.sign({ id: 3, role: "Company", verified: true }, SECRET, { expiresIn: '7d' }),
+          "Professor": jwt.sign({ id: 4, role: "Professor", verified: true }, SECRET, { expiresIn: '7d' })
+        };
+        writeFileSync('tokens.json', JSON.stringify(tokens, null, 2));
+        EOF
+        
+        node scripts/gen-tokens-ci.js
 
-      - name: Wait for API
-        run: |
-          for i in {1..20}; do
-            if curl -fsS http://localhost:8000 >/dev/null; then exit 0; fi
-            sleep 3
-          done
-          cat /tmp/server.log
-          exit 1
+    - name: Start application
+      run: |
+        npm run build
+        nohup npm start > server.log 2>&1 &
+        echo $! > server.pid
+        sleep 10
+        
+        # Test if server is running
+        curl -f http://localhost:8000/health || cat server.log
 
-      - name: Run ZAP Baseline
-        uses: zaproxy/action-baseline@v0.15.0
-        with:
-          target: ${{ env.ZAP_TARGET_URL }}
-          cmd_options: |
-            -a
-            --authheader "Authorization"
-            --authvalue "Bearer ${{ env.ZAP_JWT }}"
-          fail_action: false
-        continue-on-error: true
+    - name: Verify token authentication
+      run: |
+        TOKEN=$(jq -r '.${{ matrix.role }}' tokens.json)
+        echo "Testing ${{ matrix.role }} token..."
+        
+        # Test authentication
+        curl -f -H "Authorization: Bearer $TOKEN" \
+          http://localhost:8000/api/auth/me
+        
+        echo "✅ Token authentication successful for ${{ matrix.role }}"
 
-      - name: Upload report per role
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report-${{ matrix.role }}
-          path: zap_report.html
+    - name: Run ZAP API Scan
+      run: |
+        TOKEN=$(jq -r '.${{ matrix.role }}' tokens.json)
 
-      - name: Stop server
-        if: always()
-        run: kill $(cat server.pid) || true
+        docker run --rm \
+          -v $(pwd):/zap/wrk \
+          ghcr.io/zaproxy/zaproxy:stable \
+          zap-api-scan.py \
+          -t http://host.docker.internal:8000/openapi.json \
+          -f openapi \
+          -r zap-report-${{ matrix.role }}.html \
+          -z "-config globalheader.enabled=true" \
+          -z "-config globalheader.headers(0).name=Authorization" \
+          -z "-config globalheader.headers(0).value=Bearer $TOKEN" \
+          -a -S -d
+
+
+    - name: Upload ZAP report
+      uses: actions/upload-artifact@v4
+      with:
+        name: zap-report-${{ matrix.role }}
+        path: zap-report-${{ matrix.role }}.html
+        retention-days: 30
+
+    - name: Stop application
+      if: always()
+      run: |
+        if [ -f server.pid ]; then
+          kill $(cat server.pid) 2>/dev/null || true
+        fi

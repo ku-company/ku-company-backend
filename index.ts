@@ -2,6 +2,7 @@ import express from "express";
 import mockRouter from "./router/mockRoutes.js";
 import userRouter from "./router/userRoutes.js";
 import { swaggerSpec, swaggerUi } from "./swagger.js";
+import expressOasGenerator from "express-oas-generator";
 import cors from "cors";
 import type { Express } from "express";
 import dotenv from "dotenv";
@@ -68,7 +69,8 @@ app.use(express.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get("/openapi.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
-  res.send(swaggerSpec);
+  return res.status(200).json(JSON.parse(JSON.stringify(swaggerSpec)));
+
 });
 // Parse cookies before CSRF so middleware can read csrf_token
 app.use(cookieParser());
@@ -97,7 +99,6 @@ app.use((req, res, next) => {
   next();
 });
 app.use(passport.initialize());
-
 // Request logging and correlation ID
 app.use(requestLogging);
 app.use("/api/ai", aiRouter);
