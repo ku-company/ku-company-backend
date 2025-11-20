@@ -148,21 +148,27 @@ jobs:
         curl -f -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/auth/me
         echo "✅ Token OK"
 
+    - name: Prepare report folder
+      run: |
+        mkdir -p reports
+        chmod -R 777 reports
+
     - name: Run ZAP API Scan
       continue-on-error: true
       run: |
         TOKEN=$(jq -r ".${{ matrix.role }}" tokens.json)
 
         mkdir -p reports
+        chmod -R 777 reports
 
         docker run --rm \
           --network="host" \
-          -v $(pwd):/zap/wrk \
+          -v "$(pwd)/reports:/zap/reports" \
           ghcr.io/zaproxy/zaproxy:stable \
           zap-api-scan.py \
           -t http://localhost:8000/openapi.json \
           -f openapi \
-          -r /zap/wrk/reports/zap-report-${{ matrix.role }}.html \
+          -r /zap/reports/zap-report-${{ matrix.role }}.html \
           -z "-config globalheader.enabled=true" \
           -z "-config globalheader.headers(0).name=Authorization" \
           -z "-config globalheader.headers(0).value=Bearer $TOKEN" \
