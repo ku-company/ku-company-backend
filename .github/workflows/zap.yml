@@ -84,6 +84,9 @@ jobs:
       - name: Seed test users
         run: node scripts/seed-ci-users.js
 
+      - name: Seed domain data (profiles, postings, resumes)
+        run: node scripts/seed-ci-domain-data.js
+
       - name: Generate JWT tokens
         run: |
           cat > scripts/gen-tokens-ci.js << 'EOF'
@@ -209,6 +212,36 @@ jobs:
               -r /zap/wrk/zap-baseline-${{ matrix.role }}.html \
               -d -I || true
           fi
+
+      - name: Run ZAP Baseline Crawl (Authenticated)
+        continue-on-error: true
+        run: |
+          TOKEN=$(jq -r ".${{ matrix.role }}" tokens.json)
+          ROLE="${{ matrix.role }}"
+          case "$ROLE" in
+            Student) USER_ID=1 ;;
+            Professor) USER_ID=2 ;;
+            Company) USER_ID=3 ;;
+            Admin) USER_ID=4 ;;
+            *) USER_ID=0 ;;
+          esac
+          docker run --rm \
+            --network=host \
+            -v "$(pwd)/reports:/zap/wrk:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t http://localhost:8000 \
+            -z "-config globalheader.enabled=true" \
+            -z "-config globalheader.headers(0).name=Authorization" \
+            -z "-config globalheader.headers(0).value=Bearer $TOKEN" \
+            -z "-config globalheader.headers(1).name=x-user-id" \
+            -z "-config globalheader.headers(1).value=$USER_ID" \
+            -z "-config globalheader.headers(2).name=x-role" \
+            -z "-config globalheader.headers(2).value=$ROLE" \
+            -z "-config globalheader.headers(3).name=x-verified" \
+            -z "-config globalheader.headers(3).value=true" \
+            -r /zap/wrk/zap-crawl-${{ matrix.role }}.html \
+            -d -I || true
 
 
 
