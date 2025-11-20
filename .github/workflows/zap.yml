@@ -59,142 +59,142 @@ jobs:
       MAIL_PASS: ${{ secrets.MAIL_PASS }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Wait for PostgreSQL
-      run: |
-        for i in {1..30}; do
-          pg_isready -h localhost -p 5432 && break
-          sleep 2
-        done
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 && break
+            sleep 2
+          done
 
-    - name: Run database migrations
-      run: npx prisma migrate deploy
+      - name: Run database migrations
+        run: npx prisma migrate deploy
 
-    - name: Seed test users
-      run: node scripts/seed-ci-users.js
+      - name: Seed test users
+        run: node scripts/seed-ci-users.js
 
-    - name: Generate JWT tokens
-      run: |
-        cat > scripts/gen-tokens-ci.js << 'EOF'
-        import { writeFileSync } from 'fs';
-        import jwt from 'jsonwebtoken';
-        
-        const SECRET = process.env.SECRET_KEY;
-        const tokens = {
-          "Student":   jwt.sign({ id: 1, role: "Student", verified: true }, SECRET, { expiresIn: '7d' }),
-          "Professor": jwt.sign({ id: 2, role: "Professor", verified: true }, SECRET, { expiresIn: '7d' }),
-          "Company":   jwt.sign({ id: 3, role: "Company", verified: true }, SECRET, { expiresIn: '7d' }),
-          "Admin":     jwt.sign({ id: 4, role: "Admin", verified: true }, SECRET, { expiresIn: '7d' })
-        };
-        writeFileSync('tokens.json', JSON.stringify(tokens, null, 2));
-        EOF
-        
-        node scripts/gen-jwts.js
+      - name: Generate JWT tokens
+        run: |
+          cat > scripts/gen-tokens-ci.js << 'EOF'
+          import { writeFileSync } from 'fs';
+          import jwt from 'jsonwebtoken';
+          
+          const SECRET = process.env.SECRET_KEY;
+          const tokens = {
+            "Student":   jwt.sign({ id: 1, role: "Student", verified: true }, SECRET, { expiresIn: '7d' }),
+            "Professor": jwt.sign({ id: 2, role: "Professor", verified: true }, SECRET, { expiresIn: '7d' }),
+            "Company":   jwt.sign({ id: 3, role: "Company", verified: true }, SECRET, { expiresIn: '7d' }),
+            "Admin":     jwt.sign({ id: 4, role: "Admin", verified: true }, SECRET, { expiresIn: '7d' })
+          };
+          writeFileSync('tokens.json', JSON.stringify(tokens, null, 2));
+          EOF
+          
+          node scripts/gen-jwts.js
 
-    - name: Create .env file
-      run: |
-        cat > .env << EOF
-        PORT=${PORT}
-        DOCKER_DATABASE_URL=${DOCKER_DATABASE_URL}
-        SECRET_KEY=${SECRET_KEY}
-        REFRESH_KEY=${REFRESH_KEY}
-        GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-        GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-        RESUME_BUCKET_NAME=${RESUME_BUCKET_NAME}
-        GOOGLE_REDIRECT_URL=${GOOGLE_REDIRECT_URL}
-        CLIENT_URL_DEV=${CLIENT_URL_DEV}
-        BUCKET_NAME=${BUCKET_NAME}
-        DB_USER=${DB_USER}
-        DB_PASSWORD=${DB_PASSWORD}
-        DB_DATABASE=${DB_DATABASE}
-        ACCESS_KEY=${ACCESS_KEY}
-        SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
-        STATE_SECRET=${STATE_SECRET}
-        GEMINI_API_KEY=${GEMINI_API_KEY}
-        RESUME_BUCKET_REGION=${RESUME_BUCKET_REGION}
-        BUCKET_REGION=${BUCKET_REGION}
-        NODE_ENV=test
-        MAIL_HOST=${MAIL_HOST}
-        MAIL_PORT=${MAIL_PORT}
-        MAIL_USER=${MAIL_USER}
-        MAIL_PASS=${MAIL_PASS}
-        EOF
-    - name: Start application
-      run: |
-        export DOCKER_DATABASE_URL="$DOCKER_DATABASE_URL"
-        npm run build
-        nohup npm start > server.log 2>&1 &
-        echo $! > server.pid
-        
-        # Just wait for server to start - no health check
-        echo "Waiting for server to start..."
-        sleep 20
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          PORT=${PORT}
+          DOCKER_DATABASE_URL=${DOCKER_DATABASE_URL}
+          SECRET_KEY=${SECRET_KEY}
+          REFRESH_KEY=${REFRESH_KEY}
+          GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+          GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+          RESUME_BUCKET_NAME=${RESUME_BUCKET_NAME}
+          GOOGLE_REDIRECT_URL=${GOOGLE_REDIRECT_URL}
+          CLIENT_URL_DEV=${CLIENT_URL_DEV}
+          BUCKET_NAME=${BUCKET_NAME}
+          DB_USER=${DB_USER}
+          DB_PASSWORD=${DB_PASSWORD}
+          DB_DATABASE=${DB_DATABASE}
+          ACCESS_KEY=${ACCESS_KEY}
+          SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
+          STATE_SECRET=${STATE_SECRET}
+          GEMINI_API_KEY=${GEMINI_API_KEY}
+          RESUME_BUCKET_REGION=${RESUME_BUCKET_REGION}
+          BUCKET_REGION=${BUCKET_REGION}
+          NODE_ENV=test
+          MAIL_HOST=${MAIL_HOST}
+          MAIL_PORT=${MAIL_PORT}
+          MAIL_USER=${MAIL_USER}
+          MAIL_PASS=${MAIL_PASS}
+          EOF
+      - name: Start application
+        run: |
+          export DOCKER_DATABASE_URL="$DOCKER_DATABASE_URL"
+          npm run build
+          nohup npm start > server.log 2>&1 &
+          echo $! > server.pid
+          
+          # Just wait for server to start - no health check
+          echo "Waiting for server to start..."
+          sleep 20
 
-    - name: Verify token authentication
-      run: |
-        TOKEN=$(jq -r ".${{ matrix.role }}" tokens.json)
-        echo "Testing ${{ matrix.role }} token..."
-        curl -f -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/auth/me
-        echo "✅ Token OK"
+      - name: Verify token authentication
+        run: |
+          TOKEN=$(jq -r ".${{ matrix.role }}" tokens.json)
+          echo "Testing ${{ matrix.role }} token..."
+          curl -f -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/auth/me
+          echo "✅ Token OK"
 
-    - name: Prepare report folder
-      run: |
-        mkdir -p reports
-        chmod -R 777 reports
+      - name: Prepare report folder
+        run: |
+          mkdir -p reports
+          chmod -R 777 reports
 
-    - name: Run ZAP API Scan (Authenticated)
-      continue-on-error: true
-      run: |
-        TOKEN=$(jq -r ".${{ matrix.role }}" tokens.json)
+      - name: Run ZAP API Scan (Authenticated)
+        continue-on-error: true
+        run: |
+          TOKEN=$(jq -r ".${{ matrix.role }}" tokens.json)
 
-        mkdir -p reports
-        chmod -R 777 reports
+          mkdir -p reports
+          chmod -R 777 reports
 
-        docker run --rm \
-          --network=host \
-          -v "$(pwd)/reports:/zap/wrk:rw" \
-          ghcr.io/zaproxy/zaproxy:stable \
-          zap-api-scan.py \
-          -t http://localhost:8000/openapi.json \
-          -f openapi \
-          -z "-config globalheader.enabled=true" \
-          -z "-config globalheader.headers(0).name=Authorization" \
-          -z "-config globalheader.headers(0).value=Bearer $TOKEN" \
-          -r /zap/wrk/zap-report-${{ matrix.role }}.html \
-          -d -I
-
-
+          docker run --rm \
+            --network=host \
+            -v "$(pwd)/reports:/zap/wrk:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-api-scan.py \
+            -t http://localhost:8000/openapi.json \
+            -f openapi \
+            -z "-config globalheader.enabled=true" \
+            -z "-config globalheader.headers(0).name=Authorization" \
+            -z "-config globalheader.headers(0).value=Bearer $TOKEN" \
+            -r /zap/wrk/zap-report-${{ matrix.role }}.html \
+            -d -I
 
 
-    - name: Copy reports from container
-      if: always()
-      run: |
-        # Reports should already be in reports/ due to volume mount
-        ls -la reports/ || true
-
-    - name: Upload ZAP report
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: zap-report-${{ matrix.role }}
-        path: reports/zap-report-${{ matrix.role }}.html
-        if-no-files-found: warn
 
 
-    - name: Stop application
-      if: always()
-      run: |
-        if [ -f server.pid ]; then
-          kill "$(cat server.pid)" || true
-        fi
+      - name: Copy reports from container
+        if: always()
+        run: |
+          # Reports should already be in reports/ due to volume mount
+          ls -la reports/ || true
+
+      - name: Upload ZAP report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report-${{ matrix.role }}
+          path: reports/zap-report-${{ matrix.role }}.html
+          if-no-files-found: warn
+
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill "$(cat server.pid)" || true
+          fi
