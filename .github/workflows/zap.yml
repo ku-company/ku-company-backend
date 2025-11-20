@@ -34,7 +34,7 @@ jobs:
     env:
       PORT: 8000
       # 🔧 Use CI-local database
-      DOCKER_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
     steps:
@@ -58,7 +58,6 @@ jobs:
         done
 
     - name: Run database migrations
-      # 🔥 Now this works because DATABASE_URL exists
       run: npx prisma migrate deploy
 
     - name: Seed test users
@@ -66,7 +65,6 @@ jobs:
 
     - name: Generate JWT tokens
       run: |
-        # Generate tokens directly
         cat > scripts/gen-tokens-ci.js << 'EOF'
         import { writeFileSync } from 'fs';
         import jwt from 'jsonwebtoken';
@@ -85,23 +83,29 @@ jobs:
 
     - name: Start application
       run: |
+        # make sure DB env is set at runtime
+        export DATABASE_URL=${{ env.DATABASE_URL }}
+
         npm run build
         nohup npm start > server.log 2>&1 &
         echo $! > server.pid
-        sleep 10
+
+        # wait longer so server boots fully
+        sleep 12
         
-        curl -f http://localhost:8000/health || cat server.log
+        # Debug output if server fails
+        curl -f http://localhost:8000/health || (echo "❌ SERVER CRASHED" && cat server.log && exit 1)
 
     - name: Verify token authentication
       run: |
-        TOKEN=$(jq -r '.${{ matrix.role }}' tokens.json)
+        TOKEN=$(jq -r ".${{ matrix.role }}" tokens.json)
         echo "Testing ${{ matrix.role }} token..."
         curl -f -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/auth/me
         echo "✅ Token OK"
 
     - name: Run ZAP API Scan
       run: |
-        TOKEN=$(jq -r '.${{ matrix.role }}' tokens.json)
+        TOKEN=$(jq -r ".${{ matrix.role }}" tokens.json)
 
         docker run --rm \
           -v $(pwd):/zap/wrk \
@@ -126,4 +130,5 @@ jobs:
       if: always()
       run: |
         if [ -f server.pid ]; then
-          kill $(cat server.pid) 2>/dev/null || true
+          kill "$(cat server.pid)" || true
+        fi
