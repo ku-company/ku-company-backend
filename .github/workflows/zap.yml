@@ -162,7 +162,7 @@ jobs:
         chmod -R 777 reports
 
         docker run --rm \
-          --network="host" \
+          --network=host \
           -v "$(pwd)/reports:/zap/reports" \
           ghcr.io/zaproxy/zaproxy:stable \
           zap-api-scan.py \
@@ -171,8 +171,7 @@ jobs:
           -r /zap/reports/zap-report-${{ matrix.role }}.html \
           -z "-config globalheader.enabled=true" \
           -z "-config globalheader.headers(0).name=Authorization" \
-          -z "-config globalheader.headers(0).value=Bearer $TOKEN" \
-          -d
+          -z "-config globalheader.headers(0).value=Bearer $TOKEN"
 
 
 
