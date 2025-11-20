@@ -33,7 +33,8 @@ jobs:
 
     env:
       PORT: 8000
-      DOCKER_DATABASE_URL: ${{secrets.DOCKER_DATABASE_URL}}
+      # 🔧 Use CI-local database
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
     steps:
@@ -57,14 +58,15 @@ jobs:
         done
 
     - name: Run database migrations
-      run: npm run db:migrate:deploy
+      # 🔥 Now this works because DATABASE_URL exists
+      run: npx prisma migrate deploy
 
     - name: Seed test users
       run: node scripts/seed-ci-users.js
 
     - name: Generate JWT tokens
       run: |
-        # Create clean token generation script
+        # Generate tokens directly
         cat > scripts/gen-tokens-ci.js << 'EOF'
         import { writeFileSync } from 'fs';
         import jwt from 'jsonwebtoken';
@@ -88,19 +90,14 @@ jobs:
         echo $! > server.pid
         sleep 10
         
-        # Test if server is running
         curl -f http://localhost:8000/health || cat server.log
 
     - name: Verify token authentication
       run: |
         TOKEN=$(jq -r '.${{ matrix.role }}' tokens.json)
         echo "Testing ${{ matrix.role }} token..."
-        
-        # Test authentication
-        curl -f -H "Authorization: Bearer $TOKEN" \
-          http://localhost:8000/api/auth/me
-        
-        echo "✅ Token authentication successful for ${{ matrix.role }}"
+        curl -f -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/auth/me
+        echo "✅ Token OK"
 
     - name: Run ZAP API Scan
       run: |
@@ -118,7 +115,6 @@ jobs:
           -z "-config globalheader.headers(0).value=Bearer $TOKEN" \
           -a -S -d
 
-
     - name: Upload ZAP report
       uses: actions/upload-artifact@v4
       with:
@@ -131,4 +127,3 @@ jobs:
       run: |
         if [ -f server.pid ]; then
           kill $(cat server.pid) 2>/dev/null || true
-        fi
