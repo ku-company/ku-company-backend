@@ -34,7 +34,7 @@ jobs:
     env:
       PORT: 8000
       # 🔧 Use CI-local database
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      DOCKER_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
     steps:
