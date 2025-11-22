@@ -1,25 +1,27 @@
 import type { Request, Response } from "express";
 import { AuthService } from "../service/authService.js";
+import { appLogger } from "../utils/logger.js";
 
 export class AuthController {
-    private authService: AuthService;
+  private authService: AuthService;
 
-    constructor() {
-        this.authService = new AuthService();
+  constructor() {
+    this.authService = new AuthService();
+  }
+
+  async getCurrentUser(req: Request, res: Response) {
+    try {
+      const token =
+        req.headers.authorization?.split(" ")[1] || req.cookies.access_token;
+      const user = await this.authService.getCurrentUser(token);
+      res.status(200).json(user);
+    } catch (error) {
+      appLogger.error({
+        msg: "getCurrentUser unauthorized",
+        error: (error as any)?.message,
+        correlationId: (req as any).correlationId,
+      });
+      res.status(401).json({ message: "Unauthorized" });
     }
-
-
-    async getCurrentUser(req: Request, res: Response) {
-        try {
-            const token = req.headers.authorization?.split(" ")[1] || req.cookies.access_token;
-            const user = await this.authService.getCurrentUser(token);
-            res.status(200).json(user);
-        } catch (error) {
-            console.error(error);
-            res.status(401).json({ message: "Unauthorized" });
-        }
-    }
-
-
-    
+  }
 }

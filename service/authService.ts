@@ -15,7 +15,7 @@ export class AuthService {
             throw new Error("Missing token")
         }
         try{
-            const decoded = jwt.verify(token, SECRET_KEY) as jwt.JwtPayload;
+            const decoded = jwt.verify(token, SECRET_KEY, { algorithms: ["HS256"] }) as jwt.JwtPayload;
             const payload = {
                 id: decoded.id,
                 user_name: decoded.user_name,
