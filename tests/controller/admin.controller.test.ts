@@ -12,7 +12,8 @@ describe('Controller: Admin', () => {
     jest.doMock('../../service/adminService.js', () => {
       return {
         AdminService: class {
-          async verify_user(id: number) { return { id, verified: true }; }
+          async find_user_by_id(id: number) { return { id, status: 'Pending', verified: false }; }
+          async verify_user(id: number) { return { id, verified: true, status: 'Approved' }; }
         }
       };
     });

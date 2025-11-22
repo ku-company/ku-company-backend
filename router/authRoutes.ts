@@ -9,8 +9,25 @@ import { AuthController } from '../controller/authController.js';
 import { getValidRoles } from '../utils/roleUtils.js';
 import { Role } from '../utils/enums.js';
 const router = Router();
-const clientUrl = process.env.CLIENT_URL_DEV;
+// CORS-safe client URL for redirects; validate against allowlist when provided
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL_DEV || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const clientUrl = ((): string => {
+  const url = process.env.CLIENT_URL_DEV as string | undefined;
+  if (!url) return '';
+  if (allowedOrigins.length === 0 || allowedOrigins.includes(url)) return url;
+  console.warn("CLIENT_URL_DEV not in ALLOWED_ORIGINS; falling back to first allowed origin");
+  return allowedOrigins[0] || url;
+})();
 const authController = new AuthController();
+/**
+ * @swagger
+ * tags:
+ *   - name: Auth
+ *     description: Authentication via Google OAuth and token utilities
+ */
 
 
 router.get('/google', (req, res, next) => {
@@ -27,6 +44,20 @@ router.get('/google', (req, res, next) => {
     state: JSON.stringify(state),
   })(req, res, next);
 });
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current user from token
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Success
+ *       401:
+ *         description: Unauthorized
+ */
 
 
 router.get(
@@ -35,7 +66,7 @@ router.get(
     failureRedirect: '/',
     session: false,
   }),
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     console.log("request user:",req.user)
     // issue JWT 
     const state = req.query.state ? JSON.parse(req.query.state as string) : {};
@@ -62,36 +93,16 @@ router.get(
     if (!SECRET_KEY || !REFRESH_KEY || !clientUrl) {
       throw new Error("Missing required environment variables");
     }
-    const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m" });
-    const refreshToken = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d" });
-    // res.cookie("refresh_token", refreshToken, {
-    //   httpOnly: true,
-    //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    // });
-
-    // res.cookie("access_token", accessToken, {
-    //   httpOnly: true,
-    //   maxAge: 15 * 60 * 1000, // 15 min
-    // });
-
-    const cookieOptions = {
-      httpOnly: true,
-      secure: true,      // required for cross-site
-      sameSite: "none" as const,  // required for cross-site
-    };
-
-    // Access token
-      res.cookie("access_token", accessToken, {
-        ...cookieOptions,
-        maxAge: 15 * 60 * 1000,
-      });
-
-      // Refresh token
-      res.cookie("refresh_token", refreshToken, {
-        ...cookieOptions,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
+  const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m", algorithm: "HS256" });
+  const refreshToken = jwt.sign(payload, REFRESH_KEY, { expiresIn: "7d", algorithm: "HS256" });
+    // Fail-safe: revoke all existing sessions for this user before registering new refresh
+    try {
+      const { revokeAllTokensForUser, registerRefreshToken } = await import('../utils/tokenBlacklist.js');
+      revokeAllTokensForUser(user.id);
+      registerRefreshToken(user.id, refreshToken);
+    } catch {/* ignore tracking errors */}
+    const { setAuthCookies } = await import('../utils/cookies.js');
+    setAuthCookies(res, accessToken, refreshToken);
     res.redirect(clientUrl);
   },
 );

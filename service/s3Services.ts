@@ -28,6 +28,8 @@ export class S3Service {
         Key: key,
         Body: file.buffer,
         ContentType: file.mimetype, // validated mime
+        // Enable server-side encryption with AES-256 (SSE-S3)
+        ServerSideEncryption: 'AES256' as any,
       };
         const command = new PutObjectCommand(params);
         await s3Client.send(command);
