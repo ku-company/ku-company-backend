@@ -52,14 +52,13 @@ describe('Controller: Company', () => {
       .post('/api/company/job-postings')
       .set('x-user-id', '4')
       .set('x-role', 'Company')
-      .send({ job_title: 'Dev' });
+      .send({ description: 'd', jobType: 'FullTime', position: 'Backend_Developer', available_position: 1, job_title: 'Dev' });
 
     expect(res.status).toBe(201);
     expect(res.body?.data?.id).toBe(11);
   });
 });
-import request from './_request.js';
-import { buildTestApp } from './_app.js';
+
 // Mock multer-based middlewares to no-op
 jest.mock('../../middlewares/uploadImageMiddleware', () => ({ uploadImage: { single: () => (_req: any, _res: any, next: any) => next() } }));
 

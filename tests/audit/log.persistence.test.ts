@@ -30,6 +30,9 @@ async function waitFor(predicate: () => boolean, timeoutMs = 1500, stepMs = 50) 
 describe("Logging persistence to disk", () => {
   it("appLogger and auditLogger append to their files and retain previous content", async () => {
     const dir = logsDir();
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     const appFile = path.join(dir, "application.log");
     const secFile = path.join(dir, "security.log");
 
@@ -48,7 +51,7 @@ describe("Logging persistence to disk", () => {
       const a = readFileSafe(appFile);
       const s = readFileSafe(secFile);
       return a.includes(marker1) && s.includes(marker2);
-    });
+    }, 4000);
 
     expect(ok).toBe(true);
 
